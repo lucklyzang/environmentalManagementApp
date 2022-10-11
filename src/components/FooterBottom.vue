@@ -1,20 +1,20 @@
 <template>
   <div class="tabBar-box">
-    <van-tabbar route v-model="active" placeholder  @change="onChange" active-color="#fff" inactive-color="#808188" :border="false" :safe-area-inset-bottom="true">
+    <van-tabbar route v-model="active" placeholder  @change="onChange" active-color="#1684FC" inactive-color="#333" :border="false" :safe-area-inset-bottom="true">
       <van-tabbar-item replace to="/home">
-        <span>首页</span>
+        <span>模块管理</span>
         <template #icon="props">
           <img :src="props.active ? icon.homeActive : icon.homeInactive" />
         </template>
       </van-tabbar-item>
-      <van-tabbar-item replace to="/myObject">
-        <span>藏品</span>
+      <van-tabbar-item replace>
+        <span>扫码</span>
         <template #icon="props">
           <img :src="props.active ? icon.objectActive : icon.objectInactive" />
         </template>
       </van-tabbar-item>
       <van-tabbar-item replace to="/myInfo">
-        <span>我的</span>
+        <span>个人中心</span>
         <template #icon="props">
           <img :src="props.active ? icon.mineActive : icon.mineInactive" />
         </template>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapMutations } from 'vuex'
 export default {
   name: 'FooterBottom',
   data () {

@@ -89,8 +89,7 @@
   #app {
     position: relative;
     min-height: 100vh;
-    width: 100%;
-    background: @color-background
+    width: 100%
   };
   .slide-right-leave-active,
   .slide-left-enter,

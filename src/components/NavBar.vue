@@ -27,7 +27,7 @@ export default {
     },
     leftText: {
       type: String,
-      default: ''
+      default: '返回'
     },
     leftArrow: {
       type: Boolean,
@@ -85,7 +85,7 @@ export default {
   @import "../common/stylus/variable.less";
   .tabBar-box  {
     /deep/ .van-nav-bar {
-      background: @color-background
+      background: transparent
     }
   }
 </style>

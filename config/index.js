@@ -53,12 +53,12 @@ module.exports = {
 
   build: {
     // Template for index.html
-    index: path.resolve(__dirname, '../digitalH5/index.html'),
+    index: path.resolve(__dirname, '../environmentalManagementApp/index.html'),
 
     // Paths
-    assetsRoot: path.resolve(__dirname, '../digitalH5'),
+    assetsRoot: path.resolve(__dirname, '../environmentalManagementApp'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/digitalH5/',
+    assetsPublicPath: '/environmentalManagementApp/',
 
     /**
      * Source Maps

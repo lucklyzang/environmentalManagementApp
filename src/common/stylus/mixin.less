@@ -27,17 +27,18 @@
   }
 }
 // 一像素上边框
-.top-border-1px(@color) {
+.top-border-1px(@color,@height:1px) {
   position: relative;
-  &::before {
+  border: none;
+  &:before {
     content: '';
     position: absolute;
     z-index: 200;
     left: 0;
     top: 0;
     width: 100%;
-    height: 1px;
-    background-color: $color
+    height: @height;
+    background-color: @color
   } 
 }
 //根据像素比缩放1px像素边框
