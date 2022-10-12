@@ -71,7 +71,7 @@ export default {
   },
 
   methods: {
-     onClickLeft() {
+    onClickLeft() {
       this.$router.push({path: this.path})
     },
     onClickRight() {

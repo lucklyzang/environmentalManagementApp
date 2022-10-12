@@ -6,6 +6,12 @@ const Home = () =>
     import ('@/pages/Home')
 const CleanTaskList = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/TaskList')
+const ForthwithCleaningTaskDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/ForthwithCleaningTaskDetails')
+const AttendanceManagement = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/AttendanceManagement')
+const AttendanceStatistics = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/AttendanceStatistics')    
 const Login = () =>
     import ('@/pages/Login')
 const MyInfo = () =>
@@ -30,6 +36,21 @@ let baseRoute = [{
         path: '/cleanTaskList',
         name: 'cleanTaskList',
         component: CleanTaskList
+    },
+    {
+        path: '/forthwithCleaningTaskDetails',
+        name: 'forthwithCleaningTaskDetails',
+        component: ForthwithCleaningTaskDetails
+    },
+    {
+        path: '/attendanceManagement',
+        name: 'attendanceManagement',
+        component: AttendanceManagement
+    },
+    {
+        path: '/attendanceStatistics',
+        name: 'attendanceStatistics',
+        component: AttendanceStatistics
     }
 ];
 let router = new Router({

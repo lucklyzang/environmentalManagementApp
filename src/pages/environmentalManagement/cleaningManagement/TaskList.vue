@@ -30,8 +30,77 @@
               <div class="forthwith-cleaning-task-title-left">
                 即时保洁任务
               </div>
-              <div class="forthwith-cleaning-task-title-right">
-                <img :src="detailsArrowPng" alt="">
+              <div class="forthwith-cleaning-task-title-right" @click="taskDetailsEvent(1)">
+                <span>详情</span>
+                <van-icon name="arrow" color="#1864FF" size="24" />
+              </div>
+            </div>
+            <div class="forthwith-cleaning-task-content">
+              <div class="forthwith-cleaning-task-content-left">
+                <div class="total">
+                  <span>总数: </span>
+                  <span>20</span>
+                </div>
+                <div class="execution">
+                  <span>执行中: </span>
+                  <span>20</span>
+                </div>
+                <div class="no-comolete">
+                  <span>未完成: </span>
+                  <span>20</span>
+                </div>
+              </div>
+              <div class="forthwith-cleaning-task-content-right">
+                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="35" :stroke-width="100" />
+                <div class="complete-info">
+                  <span>完成率:</span>
+                  <span>87%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="forthwith-cleaning-task special-cleaning-task">
+            <div class="forthwith-cleaning-task-title">
+              <div class="forthwith-cleaning-task-title-left">
+                专项保洁任务
+              </div>
+              <div class="forthwith-cleaning-task-title-right" @click="taskDetailsEvent(2)">
+                <span>详情</span>
+                <van-icon name="arrow" color="#1864FF" size="24" />
+              </div>
+            </div>
+            <div class="forthwith-cleaning-task-content">
+              <div class="forthwith-cleaning-task-content-left">
+                <div class="total">
+                  <span>总数: </span>
+                  <span>20</span>
+                </div>
+                <div class="execution">
+                  <span>执行中: </span>
+                  <span>20</span>
+                </div>
+                <div class="no-comolete">
+                  <span>未完成: </span>
+                  <span>20</span>
+                </div>
+              </div>
+              <div class="forthwith-cleaning-task-content-right">
+                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="35" :stroke-width="100" />
+                <div class="complete-info">
+                  <span>完成率:</span>
+                  <span>87%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="forthwith-cleaning-task polling-task">
+            <div class="forthwith-cleaning-task-title">
+              <div class="forthwith-cleaning-task-title-left">
+                巡检任务
+              </div>
+              <div class="forthwith-cleaning-task-title-right" @click="taskDetailsEvent(3)">
+                <span>详情</span>
+                <van-icon name="arrow" color="#1864FF" size="24" />
               </div>
             </div>
             <div class="forthwith-cleaning-task-content">
@@ -78,14 +147,13 @@ export default {
   },
   data() {
     return {
-      dataValue: '2022-08-23',
+      dataValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       currentRate: 0,
       calendarShow: false,
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       clockPng: require("@/common/images/home/clock.png"),
       calendarPng: require("@/common/images/home/calendar.png"),
-      arrowRightPng: require("@/common/images/home/arrow-right.png"),
-      detailsArrowPng: require("@/common/images/home/details-arrow.png"),
+      arrowRightPng: require("@/common/images/home/arrow-right.png")
     }
   },
 
@@ -109,13 +177,19 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin"]),
+    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName"]),
     formatDate(date) {
-      return `${date.getMonth() + 1}/${date.getDate()}`;
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
     onConfirm(date) {
       this.calendarShow = false;
       this.dataValue = this.formatDate(date);
+    },
+
+    // 任务详情事件
+    taskDetailsEvent (num) {
+      this.storeCurrentCleanTaskName(num);
+      this.$router.push({path: '/forthwithCleaningTaskDetails'})
     }
   }
 };
@@ -215,7 +289,6 @@ export default {
       margin: 0 auto;
       background: #F8F8F8;
       margin-top: -100px;
-      padding-top: 10px;
       box-sizing: border-box;
       z-index: 1000;
       font-size: 14px;
@@ -225,7 +298,7 @@ export default {
       .date-box {
         width: 90%;
         margin: 0 auto;
-        height: 30px;
+        height: 40px;
         display: flex;
         align-items: center;
         >span {
@@ -241,7 +314,7 @@ export default {
         }
       };
       .task-infobox {
-        width: 94%;
+        width: 96%;
         margin: 0 auto;
         flex: 1;
         overflow: auto;
@@ -250,32 +323,37 @@ export default {
           background: #fff;
           border-radius: 4px;
           box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
-          padding: 8px 0;
+          padding: 0 0 8px 0;
           box-sizing: border-box;
           .forthwith-cleaning-task-title {
             .bottom-border-1px(rgba(0, 0, 0, 0.23));
-            width: 94%;
-            padding: 0 6px;
+            width: 96%;
             box-sizing: border-box;
             margin: 0 auto;
-            height: 40px;
+            height: 44px;
             align-items: center;
             display: flex;
+            padding: 0 6px;
             justify-content: space-between;
             .forthwith-cleaning-task-title-left {
               font-size: 16px;
               color: #289E8E
             };
             .forthwith-cleaning-task-title-right {
-              >img {
-                width: 63px;
-                height: 24px
+              margin-right: -10px;
+              >span {
+                vertical-align: middle;
+                font-size: 16px;
+                color: #1864FF
+              };
+              /deep/ .van-icon {
+                vertical-align: middle
               }
             }
           };
           .forthwith-cleaning-task-content {
-            width: 94%;
-            padding: 0 6px;
+            width: 100%;
+            padding-left: 14px;
             box-sizing: border-box;
             margin: 0 auto;
             height: 113px;
@@ -327,6 +405,17 @@ export default {
               }
             }
           };
+        };
+        .special-cleaning-task {
+          margin: 14px 0;
+          .forthwith-cleaning-task-title-left {
+            color: #174E97 !important
+          }
+        };
+        .polling-task {
+          .forthwith-cleaning-task-title-left {
+            color: #E86F50 !important
+          }
         }
       }
     }

@@ -103,6 +103,10 @@
             cleanManagementEvent (item, index) {
                 if (item.name == '任务列表') {
                     this.$router.push({ path: "/cleanTaskList" })
+                } else if (item.name == '考勤管理') {
+                    this.$router.push({ path: "/attendanceManagement" })
+                } else if (item.name == '考勤统计') {
+                    this.$router.push({ path: "/attendanceStatistics" })
                 }
             }
         }
@@ -195,6 +199,7 @@
                                     >img {
                                         width: 50px;
                                         height: 50px;
+                                        margin-left: 6px;
                                     };
                                     >span {
                                         margin-top: 10px;
