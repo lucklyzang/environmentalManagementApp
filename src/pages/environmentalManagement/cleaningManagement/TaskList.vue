@@ -189,7 +189,7 @@ export default {
     // 任务详情事件
     taskDetailsEvent (num) {
       this.storeCurrentCleanTaskName(num);
-      this.$router.push({path: '/forthwithCleaningTaskDetails'})
+      this.$router.push({path: '/cleaningTask'})
     }
   }
 };

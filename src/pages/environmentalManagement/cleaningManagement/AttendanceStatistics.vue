@@ -41,7 +41,16 @@
                 出勤人数=出勤人数-迟到早退人数 (当天考勤)
             </div>
             <div class="attendance-status-list-box">
-                <div class="attendance-status-list" v-for="(item,index) in attendanceStatusList" :key="index">
+                <div class="attendance-status-list" v-for="(item,index) in attendanceStatusList"  @click="attendanceStatusEvent(index)"
+                    :key="index"
+                    :class="{'attendanceStyle': index == 0,'generalHolidayStyle': index == 1,
+                        'expatriateStyle': index == 2,'matterStyle': index == 3, 'sickLeaveStyle': index == 4, 'overtimeStyle': index == 5,
+                        'annualLeaveStyle': index == 6,'occupationalStyle': index == 7, 'clockingStyle': index == 8, 'sectionHughStyle': index == 9,
+                        'attendanceActiveStyle': index == 0 && attendanceStatusIndex == index,'generalHolidayActiveStyle': index == 1 && attendanceStatusIndex == index,
+                        'expatriateActiveStyle': index == 2 && attendanceStatusIndex == index,'matterActiveStyle': index == 3 && attendanceStatusIndex == index, 'sickLeaveActiveStyle': index == 4 && attendanceStatusIndex == index, 'overtimeActiveStyle': index == 5 && attendanceStatusIndex == index,
+                        'annualLeaveActiveStyle': index == 6 && attendanceStatusIndex == index,'occupationalActiveStyle': index == 7 && attendanceStatusIndex == index, 'clockingActiveStyle': index == 8 && attendanceStatusIndex == index, 'sectionHughActiveStyle': index == 9 && attendanceStatusIndex == index
+                    }"
+                >
                     {{item}}
                 </div> 
             </div>
@@ -82,6 +91,7 @@ export default {
     return {
       activeObjectName: 'attendance',
       currentRate: 50,
+      attendanceStatusIndex: null,
       statisticalTypeIndex: 0,
       dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       calendarShow: false,
@@ -132,12 +142,17 @@ export default {
     },
 
     onClickRight () {
-        console.log('刷新了')
+        this.$router.push({path: '/attendanceManagement'})
     },
 
     // 统计类型点击事件
     statisticalTypeEvent (item,index) {
         this.statisticalTypeIndex = index
+    },
+
+    // 出勤类型点击事件
+    attendanceStatusEvent (index) {
+        this.attendanceStatusIndex = index
     },
 
     formatDate(date) {
@@ -146,7 +161,7 @@ export default {
     onConfirm(date) {
       this.calendarShow = false;
       this.dateValue = this.formatDate(date);
-    },
+    }
   }
 };
 </script>
@@ -277,11 +292,100 @@ export default {
                 text-align: center;
                 line-height: 30px;
                 border-radius: 4px;
-                border: 1px solid #dfdddd;
                 box-sizing: border-box;
                 &:nth-child(3n) {
                     margin-right: 0
                 }
+            };
+            .attendanceStyle {
+                border: 1px solid #aafa91;
+                color: #aafa91
+            };
+            .generalHolidayStyle {
+                border: 1px solid #68ddf1;
+                color: #68ddf1
+            };
+            .expatriateStyle {
+                border: 1px solid #f1d168;
+                color: #f1d168
+            };
+            .matterStyle {
+                border: 1px solid #c037f7;
+                color: #c037f7
+            };
+            .sickLeaveStyle {
+                border: 1px solid #ee406c;
+                color: #ee406c
+            };
+            .overtimeStyle {
+                border: 1px solid #40eed7;
+                color: #40eed7
+            };
+            .annualLeaveStyle  {
+                border: 1px solid #d612f0;
+                color: #d612f0
+            };
+            .occupationalStyle  {
+                border: 1px solid #12aaf0;
+                color: #12aaf0
+            };
+            .clockingStyle {
+                border: 1px solid #f5f828;
+                color: #f5f828
+            };
+            .sectionHughStyle {
+                border: 1px solid #f828d5;
+                color: #f828d5
+            };
+            .attendanceActiveStyle {
+                background: #aafa91 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .generalHolidayActiveStyle {
+                background: #68ddf1 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .expatriateActiveStyle {
+                background:#f1d168 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .matterActiveStyle {
+                background:#c037f7 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .sickLeaveActiveStyle {
+                background: #ee406c !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .overtimeActiveStyle {
+                background:#40eed7 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .annualLeaveActiveStyle  {
+                background: #d612f0 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .occupationalActiveStyle  {
+                background:#12aaf0 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .clockingActiveStyle {
+                background:#f5f828 !important;
+                color: #fff !important;
+                border: none !important
+            };
+            .sectionHughActiveStyle {
+                background:#f828d5 !important;
+                color: #fff !important;
+                border: none !important
             }
         }
     };

@@ -1,23 +1,26 @@
 <template>
   <div class="tabBar-box">
     <van-tabbar route v-model="active" placeholder  @change="onChange" active-color="#1684FC" inactive-color="#333" :border="false" :safe-area-inset-bottom="true">
-      <van-tabbar-item replace to="/home">
-        <span>模块管理</span>
+      <van-tabbar-item replace to="/home" icon="wap-home-o">
+        模块管理
+        <!-- <span>模块管理</span>
         <template #icon="props">
           <img :src="props.active ? icon.homeActive : icon.homeInactive" />
-        </template>
+        </template> -->
       </van-tabbar-item>
-      <van-tabbar-item replace>
-        <span>扫码</span>
+      <van-tabbar-item replace to="/scanQRCode" icon="scan">
+        扫码
+        <!-- <span>扫码</span>
         <template #icon="props">
           <img :src="props.active ? icon.objectActive : icon.objectInactive" />
-        </template>
+        </template> -->
       </van-tabbar-item>
-      <van-tabbar-item replace to="/myInfo">
-        <span>个人中心</span>
+      <van-tabbar-item replace to="/myInfo" icon="contact">
+        个人中心
+        <!-- <span>个人中心</span>
         <template #icon="props">
           <img :src="props.active ? icon.mineActive : icon.mineInactive" />
-        </template>
+        </template> -->
       </van-tabbar-item>
     </van-tabbar>
   </div>  

@@ -445,6 +445,24 @@ export const compressImg = (originSite,callback) => {
   * @param{String} img 图片对象
 */
 export const compress = (image) => {
+    // let canvas = document.createElement('canvas'),
+    // context = canvas.getContext('2d');
+    // let x = image.width/500;  //压缩倍数
+    // if (image.width > 500) {
+    //   var imageWidth = image.width / x;   //压缩后图片的大小
+    //   var imageHeight = image.height / x;
+    // } else {
+    //   var imageWidth = image.width / 1;   //不进行压缩大小
+    //   var imageHeight = image.height / 1;
+    // };
+    // let data = '';
+    // canvas.width = imageWidth;
+    // canvas.height = imageHeight;
+    // context.drawImage(image, 0, 0, imageWidth, imageHeight);
+    // data = canvas.toDataURL('image/jpeg');
+    // return dataURItoBlob(data);
+
+
     let canvas = document.createElement('canvas'),
     context = canvas.getContext('2d');
     let x = image.width/500;  //压缩倍数
@@ -460,7 +478,7 @@ export const compress = (image) => {
     canvas.height = imageHeight;
     context.drawImage(image, 0, 0, imageWidth, imageHeight);
     data = canvas.toDataURL('image/jpeg');
-    return dataURItoBlob(data)
+    return data
 }
 
 

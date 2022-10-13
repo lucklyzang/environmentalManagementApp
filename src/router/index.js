@@ -6,8 +6,16 @@ const Home = () =>
     import ('@/pages/Home')
 const CleanTaskList = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/TaskList')
+const CleaningTask = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/CleaningTask')
 const ForthwithCleaningTaskDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/ForthwithCleaningTaskDetails')
+const SpecialCleaningTaskDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/SpecialCleaningTaskDetails')
+const PollingTaskDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDetails')
+const ScanQRCode = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/ScanQRCode')
 const AttendanceManagement = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/AttendanceManagement')
 const AttendanceStatistics = () =>
@@ -38,9 +46,29 @@ let baseRoute = [{
         component: CleanTaskList
     },
     {
+        path: '/cleaningTask',
+        name: 'cleaningTask',
+        component: CleaningTask
+    },
+    {
         path: '/forthwithCleaningTaskDetails',
         name: 'forthwithCleaningTaskDetails',
         component: ForthwithCleaningTaskDetails
+    },
+    {
+        path: '/specialCleaningTaskDetails',
+        name: 'specialCleaningTaskDetails',
+        component: SpecialCleaningTaskDetails
+    },
+    {
+        path: '/pollingTaskDetails',
+        name: 'pollingTaskDetails',
+        component: PollingTaskDetails
+    },
+    {
+        path: '/scanQRCode',
+        name: 'scanQRCode',
+        component: ScanQRCode
     },
     {
         path: '/attendanceManagement',

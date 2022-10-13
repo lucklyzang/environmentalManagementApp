@@ -6,7 +6,7 @@
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        <span>即时保洁编号000004</span>
+        <span>专项保洁编号000004</span>
         <span>未开始</span>
       </div>
       <div class="location">
@@ -22,7 +22,7 @@
         <span>王秀芬;张三</span>
       </div>
       <div class="location">
-        <span>预计时间</span>
+        <span>保洁事项</span>
         <span>0.5小时</span>
       </div>
       <div class="issue-picture">
@@ -99,7 +99,7 @@ import {} from "@/api/products.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
 export default {
-  name: "ForthwithCleaningTaskDetails",
+  name: "SpecialCleaningTaskDetails",
   components: {
     NavBar
   },
@@ -233,7 +233,7 @@ export default {
 @import "~@/common/stylus/mixin.less";
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
-  height: 0;
+    height: 0;
   .content-wrapper();
    .choose-photo-box {
     position: fixed;
@@ -354,7 +354,7 @@ export default {
         display: inline-block;
         &:first-child {
           flex: 1;
-          color: #289E8E;
+          color: #174E97;
           padding-right: 4px;
           box-sizing: border-box;
           .no-wrap()
