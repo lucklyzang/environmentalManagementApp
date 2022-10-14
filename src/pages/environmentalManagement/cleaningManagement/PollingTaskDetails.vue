@@ -79,18 +79,26 @@ export default {
 
     // 扫描二维码方法
     scanQRCode () {
-      window.android.scanQRcode()
+      // window.android.scanQRcode();
+      this.departmentClickEvent()
     },
 
     // 摄像头取消扫码后的回调
     scanQRcodeCallbackCanceled () {
-        this.$router.push({
-            path: "/cleaningTask"
-        })
+      this.$router.push({
+        path: "/cleaningTask"
+      })
     },
 
     // 摄像头扫码后的回调
-    scanQRcodeCallback(code) {}
+    scanQRcodeCallback(code) {},
+
+    // 科室点击事件
+    departmentClickEvent () {
+      this.$router.push({
+        path: "/pollingTaskDepartmentDetails"
+      })
+    }
   }
 };
 </script>

@@ -56,7 +56,7 @@
             </div>
         </div>
         <div class="cotent-bottom">
-            <van-tabs v-model="activeObjectName" color="#174E97" sticky>
+            <van-tabs v-model="activeObjectName" color="#174E97">
                 <van-tab title="出勤" name="attendance">
                    <div class="attendance-situation-list" v-for="(item,index) in attendanceSituationList" :key="index">
                     <div class="attendance-situation-left">
@@ -99,6 +99,30 @@ export default {
       statisticalTypeList: ['日统计','月统计','人员统计'],
       attendanceStatusList: ['出勤','公休','外派','事假','病假','加班','年假','工伤','迟到早退','节休'],
       attendanceSituationList: [
+          {
+            name: '张三',
+            attendanceStatistics: '上午、下午'
+          },
+          {
+            name: '李四',
+            attendanceStatistics: '上午、下午'
+          },
+          {
+            name: '王五',
+            attendanceStatistics: '上午'
+          },
+          {
+            name: '张三',
+            attendanceStatistics: '上午、下午'
+          },
+          {
+            name: '李四',
+            attendanceStatistics: '上午、下午'
+          },
+          {
+            name: '王五',
+            attendanceStatistics: '上午'
+          },
           {
             name: '张三',
             attendanceStatistics: '上午、下午'
@@ -197,6 +221,7 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 0;
     .content-top {
         width: 100%;
         margin: 0 auto;
@@ -393,7 +418,12 @@ export default {
         background: #fff;
         margin-top: 10px;
         width: 100%;
+        flex: 1;
+        overflow: auto;
         /deep/ .van-tabs {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             .van-tabs__nav {
                 .van-tab {
                     color: #d0d0cc !important
@@ -403,6 +433,8 @@ export default {
                 }
             };
             .van-tabs__content {
+                flex: 1;
+                overflow: auto;
                 .attendance-situation-list {
                     height: 40px;
                     color: #5f5f5f;

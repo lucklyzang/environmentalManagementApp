@@ -14,6 +14,10 @@ const SpecialCleaningTaskDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/SpecialCleaningTaskDetails')
 const PollingTaskDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDetails')
+const PollingTaskDepartmentDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDepartmentDetails')
+const PollingTaskDepartmentCornerDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDepartmentCornerDetails')
 const ScanQRCode = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/ScanQRCode')
 const AttendanceManagement = () =>
@@ -64,6 +68,16 @@ let baseRoute = [{
         path: '/pollingTaskDetails',
         name: 'pollingTaskDetails',
         component: PollingTaskDetails
+    },
+    {
+        path: '/pollingTaskDepartmentDetails',
+        name: 'pollingTaskDepartmentDetails',
+        component: PollingTaskDepartmentDetails
+    },
+    {
+        path: '/pollingTaskDepartmentCornerDetails',
+        name: 'pollingTaskDepartmentCornerDetails',
+        component: PollingTaskDepartmentCornerDetails
     },
     {
         path: '/scanQRCode',

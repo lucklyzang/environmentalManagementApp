@@ -1,5 +1,23 @@
 <template>
   <div class="page-box">
+    <van-dialog v-model="attendanceDialogShow" width="98%" show-cancel-button 
+            confirm-button-color="#2390fe"
+            @confirm="attendanceDialogSure"
+            @cancel="attendanceDialogCancel"
+        >
+        <div class="dialog-top">
+            <div class="select-title">选择上午考勤</div>
+            <van-radio-group v-model="forenoonAttendanceRadioValue" direction="horizontal">
+                <van-radio :name="item.value" checked-color="#174E97" v-for="(item) in attendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
+            </van-radio-group>
+        </div>
+        <div class="dialog-bottom">
+            <div class="select-title">选择下午考勤</div>
+            <van-radio-group v-model="afternoonAttendanceRadioValue" direction="horizontal">
+                <van-radio :name="item.value" checked-color="#174E97" v-for="(item) in attendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
+            </van-radio-group>
+        </div>
+    </van-dialog>
     <div class="nav">
        <van-nav-bar
         title="考勤录入"
@@ -33,41 +51,53 @@
                 </div>
             </div>
         </div>
+        <div class="content-center" v-show="isShowCheckbox">
+            <van-checkbox v-model="allChecked" icon-size="25px" @click="allCheckedChange">全选</van-checkbox>
+        </div>
         <div class="content-bottom">
-           <div class="person-attendance-status-list" v-for="(item,index) in personAttendanceStatusList" :key="index">
-               <div class="person-name">{{ `${index + 1}、${item.personName}`}}</div>
-               <div class="attendance-status">
-                   <div class="attendance-status-left">
-                       <div class="forenoon-status">
-                           <span>上午</span>
-                           <span>{{ item.forenoonStatus}}</span>
-                       </div>
-                       <div class="afternoon-status">
-                           <span>下午</span>
-                           <span>{{ item.afternoonStatus}}</span>
-                       </div>    
-                   </div>
-                   <div class="attendance-status-right">
-                       <van-icon name="arrow" size="25" />
-                   </div>
-               </div>
-               <div class="clock-time">
-                   <div class="forenoon-clock-time">
-                       <span>上午打卡时间: </span>
-                       <span>{{ item.forenoonClockTime }}</span>
-                   </div>
-                   <div class="afternoon-clock-time">
-                       <span>下午打卡时间: </span>
-                       <span>{{ item.afternoonClockTime }}</span>
-                   </div>
-               </div>
+           <div class="person-attendance-status-list" v-for="(item,index) in personAttendanceStatusList" :key="index" @click="personAttendanceClickEvent(item,index)">
+                <div class="check-box" v-show="isShowCheckbox">
+                    <van-checkbox v-model="item.checked" icon-size="30px" @click.stop.native="emptyHandle"></van-checkbox>
+                </div>
+               <div class="list-content">
+                    <div class="person-name">{{ `${index + 1}、${item.personName}`}}</div>
+                    <div class="attendance-status">
+                        <div class="attendance-status-left">
+                            <div class="forenoon-status">
+                                <span>上午</span>
+                                <span>{{ item.forenoonStatus}}</span>
+                            </div>
+                            <div class="afternoon-status">
+                                <span>下午</span>
+                                <span>{{ item.afternoonStatus}}</span>
+                            </div>    
+                        </div>
+                        <div class="attendance-status-right">
+                            <van-icon name="arrow" size="25" />
+                        </div>
+                    </div>
+                    <div class="clock-time">
+                        <div class="forenoon-clock-time">
+                            <span>上午打卡时间: </span>
+                            <span>{{ item.forenoonClockTime }}</span>
+                        </div>
+                        <div class="afternoon-clock-time">
+                            <span>下午打卡时间: </span>
+                            <span>{{ item.afternoonClockTime }}</span>
+                        </div>
+                    </div>
+                </div>    
            </div>
         </div>
     </div>
-    <div class="btn-box">
-        <div class="btn-area">
+    <div class="btn-box" v-show="!isShowCheckbox">
+        <div class="btn-area" @click="batchProcessingEvent">
             批量处理
         </div>
+    </div>
+    <div class="btn-box-two" v-show="isShowCheckbox">
+        <div class="cancel-choose" @click="cancelChooseEvent">取消选择</div>
+        <div class="sure-choose" @click="sureChooseEvent">确定选择</div>
     </div>
   </div>
 </template>
@@ -84,11 +114,59 @@ export default {
   data() {
     return {
       searchValue: '',
+      allChecked: false,
+      attendanceDialogShow: false,
+      forenoonAttendanceRadioValue: '1',
+      afternoonAttendanceRadioValue: '1',
       dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       calendarShow: false,
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
+      isShowCheckbox: false,
+      attendanceTypeList: [
+          {
+            name: '出勤',
+            value: '1'
+          },
+           {
+            name: '休假',
+            value: '2'
+          },
+          {
+            name: '请假',
+            value: '3'
+          },
+          {
+            name: '调班',
+            value: '4'
+          },
+           {
+            name: '外派',
+            value: '5'
+          },
+          {
+            name: '加班',
+            value: '6'
+          },
+          {
+            name: '工伤',
+            value: '7'
+          },
+           {
+            name: '迟到早退',
+            value: '8'
+          }
+      ],
       personAttendanceStatusList: [
-        {
+        {   
+            checked: false,
+            personName: '王五',
+            forenoonStatus: '事假',
+            afternoonStatus: '出勤',
+            forenoonClockTime: '9:20',
+            afternoonClockTime: '9:20'
+        },
+        {   
+            checked: false,
             personName: '王五',
             forenoonStatus: '事假',
             afternoonStatus: '出勤',
@@ -96,6 +174,15 @@ export default {
             afternoonClockTime: '9:20'
         },
         {
+            checked: false,
+            personName: '王五',
+            forenoonStatus: '事假',
+            afternoonStatus: '出勤',
+            forenoonClockTime: '9:20',
+            afternoonClockTime: '9:20'
+        },
+        {   
+            checked: false,
             personName: '王五',
             forenoonStatus: '事假',
             afternoonStatus: '出勤',
@@ -103,20 +190,7 @@ export default {
             afternoonClockTime: '9:20'
         },
         {
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-         {
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {
+            checked: false,
             personName: '王五',
             forenoonStatus: '事假',
             afternoonStatus: '出勤',
@@ -124,6 +198,7 @@ export default {
             afternoonClockTime: '9:20'
         },
         {
+            checked: false,
             personName: '王五',
             forenoonStatus: '事假',
             afternoonStatus: '出勤',
@@ -131,6 +206,21 @@ export default {
             afternoonClockTime: '9:20'
         }
       ]
+    }
+  },
+
+
+  watch: {
+    personAttendanceStatusList: {
+        handler: function(newVal, oldVal) {
+            let flag = newVal.every((item) => { return item.checked == true});
+            if (flag) {
+                this.allChecked = true
+            } else {
+                this.allChecked = false
+            }
+        },
+        deep: true
     }
   },
 
@@ -147,8 +237,6 @@ export default {
     }
   },
 
-  watch: {},
-
   computed: {
     ...mapGetters(["userInfo"]),
   },
@@ -158,12 +246,61 @@ export default {
     onClickLeft() {
       this.$router.push({ path: "/home"})
     },
-     formatDate(date) {
+
+    formatDate(date) {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
+
     onConfirm(date) {
       this.calendarShow = false;
       this.dateValue = this.formatDate(date);
+    },
+
+    emptyHandle () {},
+
+    // 批量处理事件
+    batchProcessingEvent () {
+        this.isShowCheckbox = true;
+        this.personAttendanceStatusList.forEach(item => { item.checked = false })
+    },
+
+    // 取消选择事件
+    cancelChooseEvent () {
+        this.isShowCheckbox = false
+    },
+
+    // 确定选择事件
+    sureChooseEvent () {
+        this.isShowCheckbox = false;
+        if (!this.personAttendanceStatusList.every((item) => { return item.checked == false})) {
+            this.attendanceDialogShow = true
+        }
+    },
+
+    // 考勤类型弹框确定事件
+    attendanceDialogSure () {
+
+    },
+
+    // 考勤类型弹框取消事件
+    attendanceDialogCancel () {
+        this.forenoonAttendanceRadioValue = '1';
+        this.afternoonAttendanceRadioValue = '1'
+    },
+
+    // 全选单选框选中值变化事件
+    allCheckedChange () {
+        if (this.allChecked) {
+            this.personAttendanceStatusList.forEach(item => { item.checked = true })
+        } else {
+            this.personAttendanceStatusList.forEach(item => { item.checked = false })
+        }
+    },
+
+    //人员列表点击事件
+    personAttendanceClickEvent(item,index) {
+        if (this.isShowCheckbox) { return };
+        this.attendanceDialogShow = true
     }
   }
 };
@@ -174,6 +311,36 @@ export default {
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
   .content-wrapper();
+  /deep/ .van-dialog {
+      .van-dialog__content {
+        padding: 20px !important;
+        .dialog-top {
+            .select-title {
+                font-size: 16px;
+                color: #174E97;
+                margin-bottom: 10px
+            };
+            /deep/ .van-radio-group {
+                .van-radio {
+                    margin-bottom: 6px;
+                }
+            }
+        };
+        .dialog-bottom {
+            margin-top: 60px;
+            .select-title {
+                font-size: 16px;
+                color: #174E97;
+                margin-bottom: 10px
+            };
+            /deep/ .van-radio-group {
+                .van-radio {
+                    margin-bottom: 6px;
+                }
+            }
+        }
+      }
+  };
   .nav {
     /deep/ .van-nav-bar {
         .van-nav-bar__left {
@@ -259,6 +426,12 @@ export default {
             }    
         }
     };
+    .content-center {
+        width: 100%;
+        margin: 0 auto;
+        padding: 10px 18px;
+        box-sizing: border-box
+    };
     .content-bottom {
         width: 100%;
         background: #F8F8F8;
@@ -272,49 +445,58 @@ export default {
             padding: 14px;
             background: #fff;
             box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
-            .person-name {
-                font-size: 16px;
-                color: #101010;
-                font-weight: bolder;
+            .check-box {
+                margin-right: 10px;
             };
-            .attendance-status {
-                width: 100%;
-                display: flex;
-                margin: 20px 0;
-                justify-content: space-between;
-                .attendance-status-left {
+            .list-content {
+                flex: 1;
+                .person-name {
+                    font-size: 16px;
+                    color: #101010;
+                    font-weight: bolder;
+                };
+                .attendance-status {
+                    width: 100%;
+                    display: flex;
+                    margin: 20px 0;
+                    justify-content: space-between;
+                    .attendance-status-left {
+                        display: flex;
+                        >div {
+                            >span {
+                                &:nth-child(1) {
+                                    font-size: 14px;
+                                    color: #9E9E9A
+                                };
+                                &:nth-child(2) {
+                                    font-size: 16px;
+                                    color: #174E97
+                                }
+                            };
+                            &:first-child {
+                                margin-right: 20px
+                            }
+                        }
+                    };
+                    .attendance-status-right {}
+                };
+                .clock-time {
                     display: flex;
                     >div {
                         >span {
-                            &:nth-child(1) {
-                                font-size: 14px;
-                                color: #9E9E9A
-                            };
-                            &:nth-child(2) {
-                                font-size: 16px;
-                                color: #174E97
-                            }
+                            font-size: 14px;
+                            color: #9E9E9A
                         };
                         &:first-child {
                             margin-right: 20px
                         }
                     }
-                };
-                .attendance-status-right {}
-            };
-            .clock-time {
-                display: flex;
-                >div {
-                    >span {
-                        font-size: 14px;
-                        color: #9E9E9A
-                    };
-                    &:first-child {
-                        margin-right: 20px
-                    }
                 }
-            }
+            }    
         }
     }
   };
@@ -335,6 +517,33 @@ export default {
             margin-bottom: 20px;
             text-align: center
         }
+ };
+ .btn-box-two {
+    height: 80px;
+    display: flex;
+    width: 90%;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    >div {
+      width: 48%;
+      height: 48px;
+      font-size: 18px;
+      line-height: 48px;
+      background: #fff;
+      text-align: center;
+      border-radius: 30px;
+      font-weight: bold;
+      &:first-child {
+        color: blue;
+        box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+      };
+       &:last-child {
+        color: #fff;
+        background: linear-gradient(to right, #6cd2f8, #2390fe);
+        box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+      }
+    }
  }
 }
 </style>
