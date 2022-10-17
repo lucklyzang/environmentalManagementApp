@@ -129,7 +129,9 @@ export default {
 
       // 返回事件
       backEvent () {
-
+        this.$router.push({
+          path: "/pollingTaskDepartmentDetails"
+        })
       },
 
       // 图片上传预览
@@ -323,6 +325,7 @@ export default {
     background: #F8F8F8;
     .forthwith-task-number {
       padding: 12px 8px;
+      line-height: 20px;
       margin-bottom: 6px;
       box-sizing: border-box;
       display: flex;
@@ -353,12 +356,18 @@ export default {
         .inspection-standard-content {
             width: 100%;
             .inspection-standard-content-list {
-                height: 40px;
+                padding: 9px 0;
+                box-sizing: border-box;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 .describe-name {
-                    color: #888888
+                  color: #888888;
+                  flex: 1;
+                  padding-right: 4px;
+                  box-sizing: border-box;
+                  word-break: break-all;
+                  line-height: 20px;
                 }
             }
         }
@@ -385,10 +394,12 @@ export default {
                 };
                 &:nth-child(2) {
                 margin-left: 8px;
+                display: flex;
+                flex-wrap: wrap;
                 flex: 1;
                 >div {
                     width: 31%;
-                    height: 80px;
+                    height: 90px;
                     display: inline-block;
                     vertical-align: top;
                     margin-right: 2%;
@@ -416,16 +427,17 @@ export default {
                     height: 100%
                     };
                     &:last-child {
-                    text-align: center;
-                    line-height: 80px;
-                    background: #f2f2f2;
-                    /deep/ .van-icon{
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      background: #f2f2f2;
+                      /deep/ .van-icon{
                         position: relative;
                         top: 0;
                         right: 0
+                      }
                     }
-                    }
-                }
+                  }
                 }
             }
         }    

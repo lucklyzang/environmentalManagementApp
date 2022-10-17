@@ -464,10 +464,11 @@ export default {
         &:nth-child(2) {
           margin-left: 8px;
           flex: 1;
+          flex-wrap: wrap;
+          display: flex;
           >div {
             width: 31%;
-            height: 80px;
-            display: inline-block;
+            height: 90px;
             vertical-align: top;
             margin-right: 2%;
             margin-top: 2%;
@@ -494,8 +495,9 @@ export default {
               height: 100%
             };
             &:last-child {
-              text-align: center;
-              line-height: 80px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
               background: #f2f2f2;
               /deep/ .van-icon{
                 position: relative;

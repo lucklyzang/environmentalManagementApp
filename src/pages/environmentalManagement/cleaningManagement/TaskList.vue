@@ -130,6 +130,9 @@
         </div>
 		  </div>
     </div>
+    <div class="add-task-png-box" @click="addTaskEvent">
+      <img :src="addTaskPng" alt="">
+    </div>
     <FooterBottom></FooterBottom>  
   </div>
 </template>
@@ -152,6 +155,7 @@ export default {
       calendarShow: false,
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       clockPng: require("@/common/images/home/clock.png"),
+      addTaskPng: require("@/common/images/home/add-task.png"),
       calendarPng: require("@/common/images/home/calendar.png"),
       arrowRightPng: require("@/common/images/home/arrow-right.png")
     }
@@ -181,6 +185,7 @@ export default {
     formatDate(date) {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
+
     onConfirm(date) {
       this.calendarShow = false;
       this.dataValue = this.formatDate(date);
@@ -190,6 +195,11 @@ export default {
     taskDetailsEvent (num) {
       this.storeCurrentCleanTaskName(num);
       this.$router.push({path: '/cleaningTask'})
+    },
+
+    // 新增任务事件
+    addTaskEvent () {
+      this.$router.push({path: '/addTask'})
     }
   }
 };
@@ -225,7 +235,19 @@ export default {
   };
   /deep/ .van-popup {
     z-index: 30000 !important
-  };  
+  };
+  .add-task-png-box {
+    position: fixed;
+    width: 63px;
+    height: 63px;
+    bottom: 60px;
+    right: 10px;
+    z-index: 1000;
+    >img {
+        width:100%;
+        height: 100%
+    }
+  }  
   .content {
     flex: 1;
     display: flex;
