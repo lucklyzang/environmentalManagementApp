@@ -12,10 +12,9 @@
         <div class="image-list">
           <div v-for="(item, index) in resultImgList" :key="index">
             <img :src="item" />
-            <div class="icon-box">
+            <div class="icon-box"  @click="issueDelete(index)">
                 <van-icon
                 name="delete"
-                @click="issueDelete(index)"
                 color="#d70000"
                 />
             </div>    
@@ -153,6 +152,11 @@
             :max-date="maxDate"
         />
     </van-popup>
+    <van-dialog v-model="deleteInfoDialogShow" title="确定删除此图片?" 
+      confirm-button-color="#218FFF" show-cancel-button
+      @confirm="sureDeleteEvent"
+      >
+    </van-dialog>
   </div>
 </template>
 <script>
@@ -168,6 +172,8 @@ export default {
   data() {
     return {
       photoBox: false,
+      imgIndex: '',
+      deleteInfoDialogShow: false,
       showDateBox: false,
       overlayShow: false,
       enterRemark: "",
@@ -207,12 +213,12 @@ export default {
         },
         {
             text: '医护反馈',
-            value: 1
+            value: 3
             
         },
         {
             text: '病患反馈',
-            value: 2
+            value: 4
             
         }
       ],
@@ -334,6 +340,8 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.photoBox = false;
+            _this.overlayShow = false
           };
         },
         false
@@ -368,6 +376,8 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.photoBox = false;
+            _this.overlayShow = false
           };
         },
         false
@@ -385,7 +395,14 @@ export default {
 
     // 结果照片删除
     issueDelete(index) {
-      this.resultImgList.splice(index, 1);
+      this.deleteInfoDialogShow = true;
+      this.imgIndex = index
+    },
+
+
+    // 确定删除提示框确定事件
+    sureDeleteEvent () {
+      this.resultImgList.splice(this.imgIndex, 1);
     },
 
     // 拍照取消
@@ -548,6 +565,7 @@ export default {
     };
     .completeDate-box {
         .select-box {
+          text-align: right;
             >span {
                 vertical-align: middle
             };

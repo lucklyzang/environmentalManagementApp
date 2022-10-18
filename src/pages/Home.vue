@@ -4,11 +4,11 @@
         <div class="hospital-select-box">
             <img :src="myLocationPng" alt="">
             <van-dropdown-menu active-color="#1965FF">
-                <van-dropdown-item v-model="currentHospitaiName" :options="hospitalOption" />
+                <van-dropdown-item v-model="currentHospitaiName" :options="hospitalOption" @change="dropdownItemChangeEvent" />
             </van-dropdown-menu>
         </div>
         <div class="tabs-box">
-            <van-tabs v-model="activeObjectName" color="#1965FF" sticky>
+            <van-tabs v-model="activeObjectName" color="#101010" sticky>
                 <van-tab title="环境管理" name="environmentalManagement">
                     <div class="banner-box"></div>
                     <div class="subproject">
@@ -40,7 +40,8 @@
         mapMutations
     } from 'vuex'
     import {
-        IsPC
+        IsPC,
+        removeExceptLoginMessageLocalStorage
     } from '@/common/js/utils'
     export default {
         name: 'Home',
@@ -64,11 +65,8 @@
                         imgUrl: require("@/common/images/home/attendance-statistics.png")
                     }
                 ],
-                currentHospitaiName: 0,
-                hospitalOption: [
-                    { text: '妇幼儿童中心医院', value: 0 },
-                    { text: '测试医院', value: 1 }
-                ],
+                currentHospitaiName: '',
+                hospitalOption: [],
                 myLocationPng: require("@/common/images/home/my-location.png"),
             }
         },
@@ -82,6 +80,15 @@
 					this.$router.push({
 						path: '/home'
 					})
+                })
+            };
+
+            // 获取医院列表
+            this.currentHospitaiName = this.userInfo.hospitalList[0]['hospitalId'];
+            for (let item of this.userInfo.hospitalList) {
+                this.hospitalOption.push({
+                    text: item.hospitalName,
+                    value: item.hospitalId
                 })
             }
         },
@@ -98,6 +105,13 @@
         methods: {
             ...mapMutations([
             ]),
+
+            // 医院下拉菜单值变化事件
+            dropdownItemChangeEvent (value) {
+                // 清空除登录信息之外的store和localStorage
+                removeExceptLoginMessageLocalStorage();
+                this.$store.dispatch('resetCleanManagementStore')
+            },
 
             // 保洁管理子项点击事件
             cleanManagementEvent (item, index) {
@@ -160,6 +174,9 @@
                         height: 40px !important;
                         .van-tabs__nav {
                             background: transparent !important;
+                            .van-tab {
+                                flex: none !important
+                            }
                         }
                     };
                     .van-tabs__content {

@@ -51,10 +51,10 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="35" :stroke-width="100" />
+                <van-circle v-model="currentRate" :rate="60" :speed="100" :text="`${currentRate}%`" layer-color="#d0d0cc" :size="55" :stroke-width="160" />
                 <div class="complete-info">
-                  <span>完成率:</span>
-                  <span>87%</span>
+                  <span>已完成:</span>
+                  <span>10</span>
                 </div>
               </div>
             </div>
@@ -85,10 +85,10 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="35" :stroke-width="100" />
+                <van-circle v-model="currentRate" :rate="50" :speed="100" :text="`${currentRate}%`" layer-color="#d0d0cc" :size="50" :stroke-width="160" />
                 <div class="complete-info">
-                  <span>完成率:</span>
-                  <span>87%</span>
+                  <span>已完成:</span>
+                  <span>8</span>
                 </div>
               </div>
             </div>
@@ -119,10 +119,10 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="35" :stroke-width="100" />
+                <van-circle v-model="currentRate" :rate="50" :text="`${currentRate}%`" :speed="100" layer-color="#d0d0cc" :size="50" :stroke-width="160" />
                 <div class="complete-info">
-                  <span>完成率:</span>
-                  <span>87%</span>
+                  <span>已完成:</span>
+                  <span>8</span>
                 </div>
               </div>
             </div>
@@ -358,14 +358,14 @@ export default {
             padding: 0 6px;
             justify-content: space-between;
             .forthwith-cleaning-task-title-left {
-              font-size: 16px;
+              font-size: 18px;
               color: #289E8E
             };
             .forthwith-cleaning-task-title-right {
               margin-right: -10px;
               >span {
                 vertical-align: middle;
-                font-size: 16px;
+                font-size: 18px;
                 color: #1864FF
               };
               /deep/ .van-icon {
@@ -393,7 +393,7 @@ export default {
               box-sizing: border-box;
               >div {
                 span {
-                  font-size: 14px;
+                  font-size: 16px;
                   &:first-child {
                     color: #9E9E9A
                   };
@@ -404,9 +404,7 @@ export default {
               }
             };
             .forthwith-cleaning-task-content-right {
-              height: 90px;
               width: 50%;
-              height: 90px;
               display: flex;
               flex-direction: column;
               justify-content: center;
@@ -416,13 +414,18 @@ export default {
               .complete-info {
                 margin-top: 20px;
                 span {
-                  font-size: 12px;
+                  font-size: 14px;
                   &:first-child {
                     color: #9E9E9A
                   };
                   &:last-child {
                     color: #1864FF
                   }
+                }
+              };
+              /deep/ .van-circle {
+                .van-circle__text {
+                  color: #1864FF
                 }
               }
             }

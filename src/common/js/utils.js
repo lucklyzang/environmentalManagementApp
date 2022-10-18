@@ -566,22 +566,27 @@ export const compareDateTime = (t1,t2) => {
 */
 
 export const removeAllLocalStorage = () => {
-  removeStore('currentTitle');
   // removeStore('userName');
   // removeStore('userPassword');
   removeStore('userInfo');
   removeStore('isLogin');
-  removeStore('userType');
-  removeStore('newTaskList');
-  removeStore('completPhotoInfo'),
-  removeStore('isFillMaterialList');
-  removeStore('isDepartmentServiceVerifySweepCode'),
-  removeStore('isCurrentDepartmentServiceVerifySweepCode'),
-  removeStore('isCompleteDepartmentServiceOfficeInfo'),
-  removeStore('isCompleteDepartmentServiceCheckedItemList'),
-  removeStore('energyRecordList'),
-  removeStore('isCurrentDeviceCopyServiceVerifySweepCode'),
-  removeStore('isCompleteDeviceEnergyRecordServiceOfficeInfo')
+  removeStore('token');
+  removeStore('isLogin');
+  removeStore('permissionInfo');
+  removeStore('roleNameList');
+  removeStore('changeOverDueWay');
+  removeStore('currentCleanTaskName')
+}
+
+/*
+ * 
+ *  清空除登录信息外的LocalStorage
+ * 
+ * 
+*/
+
+export const removeExceptLoginMessageLocalStorage = () => {
+  removeStore('currentCleanTaskName')
 }
 
 /*

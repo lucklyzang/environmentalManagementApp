@@ -48,7 +48,12 @@
         <div class="image-list">
           <div v-for="(item, index) in resultImgList" :key='index'>
 						<img :src="item" />
-            <van-icon name="cross" @click="issueDelete(index)" color="#101010" />
+            <div class="icon-box"  @click="issueDelete(index)">
+              <van-icon
+              name="delete"
+              color="#d70000"
+              />
+            </div>   
 					</div>
 					<div @click="issueClickEvent">
 						<van-icon name="plus" size="30" color="#101010" />
@@ -90,7 +95,12 @@
         </div>
         <div class="photo-cancel" @click="photoCancel">取消</div>
       </div>
-    </transition> 
+    </transition>
+    <van-dialog v-model="deleteInfoDialogShow" title="确定删除此图片?" 
+      confirm-button-color="#218FFF" show-cancel-button
+      @confirm="sureDeleteEvent"
+      >
+    </van-dialog>  
   </div>
 </template>
 <script>
@@ -106,6 +116,8 @@ export default {
   data() {
     return {
       photoBox: false,
+      imgIndex: '',
+      deleteInfoDialogShow: false,
       isTaskStart: false,
       overlayShow: false,
       enterRemark: '',
@@ -172,7 +184,9 @@ export default {
           img.src = result;
           img.onload = function () {
             let src = compress(img);
-             _this.resultImgList.push(src)
+            _this.resultImgList.push(src);
+            _this.photoBox = false;
+            _this.overlayShow = false
           }
         }, false);
         if (file) {
@@ -201,7 +215,9 @@ export default {
           img.src = result;
           img.onload = function () {
             let src = compress(img);
-            _this.resultImgList.push(src)
+            _this.resultImgList.push(src);
+            _this.photoBox = false;
+            _this.overlayShow = false
           }
         }, false);
         if (file) {
@@ -217,7 +233,13 @@ export default {
 
       // 结果照片删除
       issueDelete (index) {
-        this.resultImgList.splice(index,1)
+        this.deleteInfoDialogShow = true;
+        this.imgIndex = index
+      },
+
+      // 确定删除提示框确定事件
+      sureDeleteEvent () {
+        this.resultImgList.splice(this.imgIndex, 1);
       },
 
       // 拍照取消
@@ -486,10 +508,19 @@ export default {
             &:nth-child(3n+3) {
               margin-right: 0;
             };
-            /deep/ .van-icon {
+           .icon-box {
               position: absolute;
-              top: -12px;
-              right: 0
+              bottom: 0;
+              right: 0;
+              display: flex;
+              width: 100%;
+              padding: 2px 0;
+              box-sizing: border-box;
+              justify-content: center;
+              align-items: center;
+              background: #616161;
+              /deep/ .van-icon {
+              }  
             };
             img {
               width: 100%;

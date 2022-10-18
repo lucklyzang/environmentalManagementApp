@@ -1,17 +1,17 @@
 import request from '@/utils/request'
-// 退出登录
-export function logout(data) {
+// 用户退出登录
+export function userSignOut() {
     return request({
-        url: 'app/logout',
-        method: 'post',
-        data
+      url: 'auth/logout',
+      method: 'post'
     })
 };
 
-// 用户注销
-export function cancellatio() {
-    return request({
-        url: '/app/cancellation',
-        method: 'post'
-    })
-};
+// 账号密码登录
+export function logIn(data) {
+	return request({
+	    url: 'auth/login',
+	    method: 'post',
+	    data
+	})
+}

@@ -2,14 +2,11 @@
 export function getDefaultLoginState() {
     return {
         userInfo: null, //用户信息
-        appId: '', //appId
-        isGetCode: false, //是否获取过code
+        permissionInfo: [], //权限列表
+        roleNameList: [], //角色列表
         isLogin: false, //是否登录
-        openId: '', //微信支付相关的参数
         token: null, //请求token
-        isShowLoginHint: true, //是否展示登录提示框状态
-        isShowNameAuthHint: true, //是否展示实名认证提示框状态
-        isTokenExpired: '' // token是否过期
+        overDueWay: false // 过期方式
     }
 };
 // 产品信息store的初始值

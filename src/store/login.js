@@ -14,9 +14,25 @@ export default {
             return state.token
         },
 
+        permissionInfo: (state) => {
+            state.permissionInfo = JSON.parse(getStore('permissionInfo')) ? JSON.parse(getStore('permissionInfo')) : [];
+            return state.permissionInfo
+        },
+
+        roleNameList: (state) => {
+            state.roleNameList = JSON.parse(getStore('roleNameList')) ? JSON.parse(getStore('roleNameList')) : [];
+            return state.roleNameList
+        },
+        
+
         isLogin: (state) => {
             state.isLogin = getStore('isLogin') ? getStore('isLogin') === 'false' ? false : true : false;
             return state.isLogin
+        },
+
+        overDueWay: (state) => {
+            state.overDueWay = getStore('overDueWay') ? getStore('overDueWay') === 'false' ? false : true : false;
+            return state.overDueWay
         }
     },
 
@@ -45,6 +61,30 @@ export default {
                 state.isLogin = playLoad
             }
         },
+
+        // 保存权限列表
+		changePermissionInfo(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                setStore('permissionInfo', playLoad);
+                state.permissionInfo = playLoad
+            }
+		},
+
+        // 保存角色列表
+		changeRoleNameList(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                setStore('roleNameList', playLoad);
+                state.roleNameList = playLoad
+            }
+		},
+
+        // 保存过期方式
+		changeOverDueWay(state, playLoad) {
+            if (playLoad != 'null') {
+                setStore('overDueWay', playLoad);
+                state.overDueWay = playLoad
+            }
+		},
 
         //重置login的store
         resetState(state) {

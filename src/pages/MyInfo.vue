@@ -1,5 +1,7 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">退出中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <van-dialog v-model="quitDialogShow" title="是否退出登录?" 
         confirm-button-color="#218FFF" show-cancel-button
         @confirm="quitDialogSureEvent"
@@ -35,7 +37,7 @@
 				</div>
 				<div class="right">
 					<span>
-						2023-12-45
+						{{ userInfo.joinTime }}
 					</span>
 				</div>
 			</div>
@@ -48,7 +50,7 @@
 				</div>
 				<div class="right">
 					<span>
-						1212121212121212
+						{{ userInfo.workPhone ? userInfo.workPhone : '无' }}
 					</span>
 				</div>
 			</div>
@@ -73,7 +75,9 @@
 					<span>用户角色</span>
 				</div>
 				<div class="right">
-					<span>搬运工</span>
+					<span v-for="(item,index) in roleNameList" :key="index">
+						{{ item }}
+					</span>
 				</div>
 			</div>
 		</div>
@@ -94,6 +98,9 @@
 import FooterBottom from "@/components/FooterBottom";
 import NavBar from "@/components/NavBar";
 import {} from "@/api/products.js";
+import {
+	userSignOut
+} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, removeAllLocalStorage } from "@/common/js/utils";
 export default {
@@ -104,14 +111,16 @@ export default {
   },
   data() {
     return {
-        quitDialogShow: false,
-        versionNumber: '2.5',
-        statusBackgroundPng: require("@/common/images/home/status-background.png"),
-        accountExpirationTimePng: require("@/common/images/home/account-expiration-time.png"),
-        hiredatePng: require("@/common/images/home/hiredate.png"),
-        phoneNumberPng: require("@/common/images/home/phone-number.png"),
-        userRolePng: require("@/common/images/home/user-role.png"),
-        defaultPersonPng: require("@/common/images/home/default-person.png")
+      quitDialogShow: false,
+      loadingShow: false,
+      overlayShow: false,
+      versionNumber: '2.5',
+      statusBackgroundPng: require("@/common/images/home/status-background.png"),
+      accountExpirationTimePng: require("@/common/images/home/account-expiration-time.png"),
+      hiredatePng: require("@/common/images/home/hiredate.png"),
+      phoneNumberPng: require("@/common/images/home/phone-number.png"),
+      userRolePng: require("@/common/images/home/user-role.png"),
+      defaultPersonPng: require("@/common/images/home/default-person.png")
     }
   },
 
@@ -131,11 +140,11 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo", "isLogin"]),
+    ...mapGetters(["userInfo", "isLogin","roleNameList"])
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin"]),
+    ...mapMutations(["changeIsLogin","changeOverDueWay"]),
 
     // 退出登录事件
     isLoginOut () {
@@ -144,11 +153,32 @@ export default {
 
     //是否退出登录弹框确定事件
     quitDialogSureEvent () {
-        this.changeIsLogin(false);
-        removeAllLocalStorage();
-        this.$router.push({
-          path: "/"
-        })
+        this.loadingShow = true;
+        this.overlayShow = true;
+				this.changeOverDueWay(true);
+				userSignOut().then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+					if (res && res.data.code == 200) {
+						removeAllLocalStorage();
+            this.$router.push({path: '/'})
+					} else {
+						this.$toast({
+							message: `${res.data.msg}`,
+							type: 'fail'
+						});
+						this.changeOverDueWay(false)
+					}
+				}).
+				catch((err) => {
+					this.$toast({
+						message: `${err}`,
+						type: 'fail'
+					});
+					this.changeOverDueWay(false);
+					this.loadingShow = false;
+          this.overlayShow = false
+			})
     }
   }
 };
@@ -181,7 +211,10 @@ export default {
         font-size: 16px !important;
         }
     }
-  }  
+  };
+  /deep/ .van-loading {
+    z-index: 1000000
+  };  
   .content {
     flex: 1;
     display: flex;
