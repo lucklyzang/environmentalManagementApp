@@ -1,5 +1,8 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
+    <van-empty v-show="emptyShow" description="暂无数据" />
     <div class="nav">
        <van-nav-bar
         title="任务列表"
@@ -15,20 +18,23 @@
         @click-right="onClickRight"
     />
     </div>
-    <div class="content">
+    <div class="content" v-show="!emptyShow">
         <div class="content-top">
             <div class="filtrate-box">
                 <div class="select-box">
                     <van-dropdown-menu>
-                        <van-dropdown-item v-model="selectValue" :options="selectOption" />
+                        <van-dropdown-item v-model="selectValue" :options="selectOption" @change="selecOptionChangeEvent" />
                     </van-dropdown-menu>
                 </div>
                 <div class="search-box">
                     <van-field
                         v-model="searchValue"
-                        right-icon="search"
                         placeholder="搜索关键词"
-                    />
+                    >
+                        <template #button>
+                           <van-icon @click="searchEvent" name="search" color="#101010" size="25" />
+                        </template>
+                    </van-field>
                 </div>
             </div>
             <div class="task-item-name">
@@ -38,98 +44,115 @@
             </div>
         </div>
         <div class="content-bottom">
-            <div class="task-list" v-for="(item,index) in forthwithTaskList" @click="forthwithTaskDetailsEvent(item)" :key="index" v-show="currentCleanTaskName == 1">
-                <div class="task-list-title">
-                    <div class="task-list-title-left">
-                        即时任务编号{{ item.taskNumber }}
-                    </div>
-                    <div class="task-list-title-right" :class="{'underwayStyle' : item.status == 1, 'completeStyle' : item.status == 2}">
-                        {{ stausTransfer(item.status) }}
-                    </div>
-                </div>
-                <div class="task-list-content">
-                    <div class="one-line">
-                        <span>地点: </span>
-                        <span>{{ item.site }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>创建时间: </span>
-                        <span>{{ item.createTime }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>计划执行人: </span>
-                        <span>{{ item.planExecutor }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>问题描述: </span>
-                        <span>{{ item.problemDescription }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="task-list special-list" v-for="(item) in specialTaskList" @click="specialTaskDetailsEvent(item)" :key="item.taskNumber" v-show="currentCleanTaskName == 2">
-                <div class="task-list-title">
-                    <div class="task-list-title-left">
-                        编号{{ item.taskNumber }}
-                    </div>
-                    <div class="task-list-title-right" :class="{'underwayStyle' : item.status == 1, 'completeStyle' : item.status == 2}">
-                        {{ stausTransfer(item.status) }}
-                    </div>
-                </div>
-                <div class="task-list-content">
-                    <div class="one-line">
-                        <span>地点: </span>
-                        <span>{{ item.site }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>保洁事项: </span>
-                        <span>{{ item.cleaningItems }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>创建时间: </span>
-                        <span>{{ item.createTime }}</span>
-                    </div>
-                    <div class="one-line">
-                        <span>计划执行人: </span>
-                        <span>{{ item.planExecutor }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="task-list polling-list" v-for="(item) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName" v-show="currentCleanTaskName == 3">
-                <div class="task-list-title">
-                    <div class="task-list-title-left">
-                        {{ item.pollingTaskName }}
-                    </div>
-                    <div class="task-list-title-right" :class="{'underwayStyle' : item.status == 1, 'completeStyle' : item.status == 2}">
-                        {{ stausTransfer(item.status) }}
-                    </div>
-                </div>
-                <div class="task-list-content">
-                    <div class="list-content-left">
-                        <div>
-                            <span>开始时间:</span>
-                            <span>{{ item.startTime }}</span>
+            <div class="task-list-box" v-if="currentCleanTaskName == 1">
+                <div class="task-list" v-for="(item,index) in taskList" @click="forthwithTaskDetailsEvent(item)" :key="index">
+                    <div class="task-list-title">
+                        <div class="task-list-title-left">
+                            即时任务编号{{ generateTaskNumber('即时',index) }}
                         </div>
-                        <div>
-                            <span>巡检人:</span>
-                            <span>{{ item.checkingPeople }}</span>
+                        <div class="task-list-title-right" :class="{
+                            'underwayStyle' : item.state == 3, 
+                            'completeStyle' : item.state == 6,
+                            'reviewStyle' : item.state == 4,
+                            'haveReviewStyle' : item.state == 5
+                            }"
+                            >
+                            {{ stausTransfer(item.state) }}
                         </div>
                     </div>
-                    <div class="list-content-right">
-                        <van-circle v-model="item.complete" :rate="50" :speed="100" layer-color="#d0d0cc" :size="30" :stroke-width="100" />
-                        <div class="complete-text">
-                            <span>完成率:</span>
-                            <span>{{ `${item.complete}%` }}</span>
+                    <div class="task-list-content">
+                        <div class="one-line">
+                            <span>地点: </span>
+                            <span>{{ `${item.structureName}${item.depName}${item.areaImmediateName}${extractSpaceMessage(item.spaces)}` }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>创建时间: </span>
+                            <span>{{ item.createTime }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>计划执行人: </span>
+                            <span>{{ `${item.workerName}、${item.managerName}` }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>问题描述: </span>
+                            <span>{{ item.taskRemark }}</span>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="task-list-box" v-if="currentCleanTaskName == 2">    
+                <div class="task-list special-list" v-for="(item,index) in taskList" @click="specialTaskDetailsEvent(item)" :key="item.taskNumber">
+                    <div class="task-list-title">
+                        <div class="task-list-title-left">
+                            编号{{ generateTaskNumber('专项',index) }}
+                        </div>
+                        <div class="task-list-title-right" :class="{
+                                'underwayStyle' : item.state == 3, 
+                                'completeStyle' : item.state == 6,
+                                'reviewStyle' : item.state == 4,
+                                'haveReviewStyle' : item.state == 5
+                            }">
+                            {{ stausTransfer(item.status) }}
+                        </div>
+                    </div>
+                    <div class="task-list-content">
+                        <div class="one-line">
+                            <span>地点: </span>
+                            <span>{{ `${item.structureName}${item.depName}${item.areaSpecialName}` }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>保洁事项: </span>
+                            <span>{{ item.cleanItemName }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>创建时间: </span>
+                            <span>{{ item.createTime }}</span>
+                        </div>
+                        <div class="one-line">
+                            <span>计划执行人: </span>
+                            <span>{{ `${item.workerName}、${item.managerName}` }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="task-list-box" v-if="currentCleanTaskName == 3">  
+                <div class="task-list polling-list" v-for="(item,index) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
+                    <div class="task-list-title">
+                        <div class="task-list-title-left">
+                            {{ generateTaskNumber('巡检',index) }}
+                        </div>
+                        <div class="task-list-title-right" :class="{'underwayStyle' : item.status == 1, 'completeStyle' : item.status == 2}">
+                            {{ stausTransfer(item.status) }}
+                        </div>
+                    </div>
+                    <div class="task-list-content">
+                        <div class="list-content-left">
+                            <div>
+                                <span>开始时间:</span>
+                                <span>{{ item.startTime }}</span>
+                            </div>
+                            <div>
+                                <span>巡检人:</span>
+                                <span>{{ item.checkingPeople }}</span>
+                            </div>
+                        </div>
+                        <div class="list-content-right">
+                            <van-circle v-model="item.complete" :rate="50" :speed="100" layer-color="#d0d0cc" :size="30" :stroke-width="100" />
+                            <div class="complete-text">
+                                <span>完成率:</span>
+                                <span>{{ `${item.complete}%` }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
         </div>
     </div>
   </div>
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/products.js";
+import { queryCleaningManageTaskList } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -139,67 +162,23 @@ export default {
   },
   data() {
     return {
-      selectValue: 0,
+      loadingShow: false,
+      emptyShow: false,
+      overlayShow: false,
+      selectValue: -1,
       itemNameIndex: 1,
       searchValue: '',
+      currenDate: new Date(),
       selectOption: [
-        { text: '全部', value: 0 },
+        { text: '全部', value: -1 },
         { text: '未开始', value: 1 },
-        { text: '进行中', value: 2 },
-        { text: '已完成', value: 3 }
+        { text: '进行中', value: 3 },
+        { text: '复核中', value: 4 },
+        { text: '已完成', value: 6 },
+        { text: '已复核', value: 5 }
       ],
-      forthwithTaskList: [
-        {
-         taskNumber: '00009',
-         status: 0,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         problemDescription: '等哈大大大大大大大大大大大大大大大大大'
-        },
-        {
-         taskNumber: '00008',
-         status: 1,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         problemDescription: '等哈大大大大大大大大大大大大大大大大大'
-        },
-        {
-         taskNumber: '00007',
-         status: 2,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         problemDescription: '等哈大大大大大大大大大大大大大大大大大'
-        }
-      ],
-      specialTaskList: [
-        {
-         taskNumber: '00006',
-         status: 0,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         cleaningItems: '等哈大大大大大大大大大大大大大大大大大'
-        },
-        {
-         taskNumber: '00005',
-         status: 1,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         cleaningItems: '等哈大大大大大大大大大大大大大大大大大'
-        },
-        {
-         taskNumber: '00004',
-         status: 2,
-         createTime: '05-31 17:21',
-         site: '住院部-为行间',
-         planExecutor: '沙卡就是',
-         cleaningItems: '等哈大大大大大大大大大大大大大大大大大'
-        }
-      ],
+      taskList: [],
+      allTaskList: [],
       pollingTaskList: [
         {
             pollingTaskName: '巡检任务配置一',
@@ -223,13 +202,14 @@ export default {
         })
       })
     };
-    this.itemNameIndex = this.currentCleanTaskName
+    this.itemNameIndex = this.currentCleanTaskName;
+    this.getCleaningManageTaskList(0)
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","currentCleanTaskName"]),
+    ...mapGetters(["userInfo","currentCleanTaskName","currentCleanTaskDateVlue"]),
   },
 
   methods: {
@@ -244,22 +224,115 @@ export default {
     // 任务状态转换
     stausTransfer (num) {
         switch(num) {
-            case 0:
+            case 1:
                 return '未开始'
                 break;
-            case 1:
+            case 3:
                 return '进行中'
                 break;
-            case 2:
+            case 4:
+                return '复核中'
+                break;
+            case 6:
                 return '已完成'
                 break;
+            case 5:
+                return '已复核'
+                break
         } 
+    },
+
+    // 提取即时保洁功能区信息
+    extractSpaceMessage (spaces) {
+        if (spaces.length == 0) {
+            return ''
+        };
+        let temporaryArray = [];
+        for (let item of spaces) {
+            temporaryArray.push(item.name);
+        };
+        return temporaryArray.join("、")
+    },
+
+    // 生成任务编号
+    generateTaskNumber (type,index) {
+        let startField = '';
+        let endIndex = index+1 >= 10 ? `0${index+1}` : `00${index+1}`;
+        let month = this.currenDate.getMonth() + 1;
+        let Date = this.currenDate.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (Date >= 0 && Date <= 9) {
+            Date = "0" + Date;
+        };
+        if (type == '即时') {
+            startField = 'JS'
+        } else if (type == '专项') {
+            startField = 'ZX'
+        } else if (type == '巡检') {
+            startField = 'XJ'
+        };
+        return  `${startField}${month}${Date}${endIndex}`
+    },
+
+    // 查询任务列表
+    getCleaningManageTaskList (taskType) {
+        let data = {
+            proId : 1, // 所属项目id
+            queryDate: '2022-09-22', // 查询时间
+            managerId: 7, // 保洁主管id    
+            taskType: taskType // 0-即时，1-专项
+        };
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.taskList = [];
+        queryCleaningManageTaskList(data).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+	      if (res && res.data.code == 200) {
+                this.taskList = res.data.data.filter((item) => { return item.state != 5});
+                this.allTaskList = this.taskList;
+                if (this.taskList.length == 0) {
+                    this.emptyShow = true
+                } else {
+                    this.emptyShow = false
+                }
+            } else {
+                this.$toast({
+                    message: `${res.data.msg}`,
+                    type: 'fail'
+                })
+            }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
+    // 下拉框值改变事件
+    selecOptionChangeEvent (value) {
+        if (value == -1) {
+            this.taskList = this.allTaskList;
+            console.log(this.taskList)
+        };
+        this.taskList = this.allTaskList.filter((item) => { return item.state == value})
     },
 
     // 任务名称点击事件
     taskItemNameEvent (num) {
+        this.getCleaningManageTaskList(num - 1);
         this.itemNameIndex = num;
         this.storeCurrentCleanTaskName(num)
+    },
+
+    // 搜索事件
+    searchEvent () {
     },
 
     // 即时保洁任务点击进入任务详情事件
@@ -303,8 +376,17 @@ export default {
         }
     }
   };
+  /deep/ .van-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%)
+  };
   /deep/ .van-popup {
     z-index: 30000 !important
+  };
+  /deep/ .van-loading {
+    z-index: 1000000
   };  
   .content {
     flex: 1;
@@ -343,10 +425,12 @@ export default {
                     border-radius: 4px;
                     height: 36px;
                     padding: 0 10px !important;
-                    .van-field__right-icon {
-                        .van-icon {
-                            font-size: 25px !important;
-                            color: #101010 !important
+                    .van-cell__value {
+                        .van-field__body {
+                            .van-field__button {
+                                display: flex;
+                                align-items: center
+                            }
                         }
                     }
                 }
@@ -435,6 +519,12 @@ export default {
                 };
                 .completeStyle {
                     background: #242424 !important
+                };
+                .reviewStyle {
+                    background: #F2A15F !important
+                };
+                .haveReviewStyle {
+                    background: #9B7D31 !important
                 }
             };
             .task-list-content {

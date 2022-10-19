@@ -97,7 +97,7 @@
 <script>
 import FooterBottom from "@/components/FooterBottom";
 import NavBar from "@/components/NavBar";
-import {} from "@/api/products.js";
+import {} from "@/api/environmentalManagement.js";
 import {
 	userSignOut
 } from '@/api/login.js'

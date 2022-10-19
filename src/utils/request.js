@@ -9,7 +9,7 @@ Vue.use(Dialog);
 // 生产域名 https://blinktech.cn/nblink
 // 测试域名 https://blink.blinktech.cn/nblink
 const service = axios.create({
-    baseURL: 'https://blink.blinktech.cn/nblink', //接口基础地址
+    baseURL: 'https://blink.blinktech.cn', //接口基础地址
     retry: 2, // 网络请求异常后，重试次数
     retryDelay: 1000, // 每次重试间隔时间
     shouldRetry: (err) => true // 重试条件
@@ -19,6 +19,7 @@ const service = axios.create({
 service.interceptors.request.use(
     config => {
         config.data = qs.stringify(config.data);
+        config.headers['HTTP_REQUEST_TYPE'] = 'new';
         if (config['url'] == 'auth/login') {
             config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         };

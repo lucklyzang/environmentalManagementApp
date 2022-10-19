@@ -9,9 +9,10 @@ export function getDefaultLoginState() {
         overDueWay: false // 过期方式
     }
 };
-// 产品信息store的初始值
-export function getDefaultCleanManagementState() {
+// 环境管理信息store的初始值
+export function getDefaultEnvironmentManagementState() {
     return {
-       currentCleanTaskName: 1
+       currentCleanTaskName: 1,
+       currentCleanTaskDateVlue: ''
     }
 };

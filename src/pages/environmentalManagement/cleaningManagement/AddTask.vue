@@ -161,7 +161,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/products.js";
+import {} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
 export default {

@@ -77,7 +77,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/products.js";
+import {} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 import FooterBottom from '@/components/FooterBottom'

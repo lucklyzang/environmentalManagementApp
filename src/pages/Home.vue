@@ -34,7 +34,7 @@
 <script>
     import FooterBottom from '@/components/FooterBottom'
     import {
-    } from '@/api/products.js'
+    } from '@/api/environmentalManagement.js'
     import {
         mapGetters,
         mapMutations

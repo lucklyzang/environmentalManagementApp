@@ -2,7 +2,7 @@ import request from '@/utils/request'
 // 用户退出登录
 export function userSignOut() {
     return request({
-      url: 'auth/logout',
+      url: 'nblink/auth/logout',
       method: 'post'
     })
 };
@@ -10,7 +10,7 @@ export function userSignOut() {
 // 账号密码登录
 export function logIn(data) {
 	return request({
-	    url: 'auth/login',
+	    url: 'nblink/auth/login',
 	    method: 'post',
 	    data
 	})

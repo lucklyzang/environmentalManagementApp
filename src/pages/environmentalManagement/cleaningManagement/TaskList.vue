@@ -1,5 +1,7 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" z-index="100000" v-show="loadingShow">加载中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
       <NavBar path="/home" title="任务列表" />
     </div>
@@ -21,7 +23,7 @@
       </div>
       <div class="content-bottom-area">
         <div class="date-box" @click="calendarShow = true">
-          <span>{{ dataValue }}</span>
+          <span>{{ dateValue }}</span>
           <img :src="calendarPng" alt="">
         </div>
         <div class="task-infobox">
@@ -39,22 +41,22 @@
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
                   <span>总数: </span>
-                  <span>20</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.total }}</span>
                 </div>
                 <div class="execution">
                   <span>执行中: </span>
-                  <span>20</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.progress }}</span>
                 </div>
                 <div class="no-comolete">
                   <span>未完成: </span>
-                  <span>20</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.noFinish }}</span>
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="60" :speed="100" :text="`${currentRate}%`" layer-color="#d0d0cc" :size="55" :stroke-width="160" />
+                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${forthwithCleaningTaskGlobalStatistics.percent}%`" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
                 <div class="complete-info">
                   <span>已完成:</span>
-                  <span>10</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.finish }}</span>
                 </div>
               </div>
             </div>
@@ -73,22 +75,22 @@
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
                   <span>总数: </span>
-                  <span>20</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.total }}</span>
                 </div>
                 <div class="execution">
                   <span>执行中: </span>
-                  <span>20</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.progress }}</span>
                 </div>
                 <div class="no-comolete">
                   <span>未完成: </span>
-                  <span>20</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.noFinish }}</span>
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="50" :speed="100" :text="`${currentRate}%`" layer-color="#d0d0cc" :size="50" :stroke-width="160" />
+                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${specialCleaningTaskGlobalStatistics.percent}%`" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
                 <div class="complete-info">
                   <span>已完成:</span>
-                  <span>8</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.finish }}</span>
                 </div>
               </div>
             </div>
@@ -119,7 +121,7 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="currentRate" :rate="50" :text="`${currentRate}%`" :speed="100" layer-color="#d0d0cc" :size="50" :stroke-width="160" />
+                <van-circle v-model="pollingCurrentRate" :rate="50" :text="`${20}%`" :speed="100" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
                 <div class="complete-info">
                   <span>已完成:</span>
                   <span>8</span>
@@ -139,7 +141,7 @@
 <script>
 import FooterBottom from "@/components/FooterBottom";
 import NavBar from "@/components/NavBar";
-import {} from "@/api/products.js";
+import { queryCleaningManageTaskGlobalStatistics } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -150,9 +152,15 @@ export default {
   },
   data() {
     return {
-      dataValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
-      currentRate: 0,
+      dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
+      forthwithCurrentRate: 0,
+      specialCurrentRate: 0,
+      pollingCurrentRate: 0,
+      loadingShow: false,
+      overlayShow: false,
       calendarShow: false,
+      forthwithCleaningTaskGlobalStatistics: {},
+      specialCleaningTaskGlobalStatistics: {},
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       clockPng: require("@/common/images/home/clock.png"),
       addTaskPng: require("@/common/images/home/add-task.png"),
@@ -168,10 +176,15 @@ export default {
       this.gotoURL(() => {
         pushHistory();
         this.$router.push({
-          path: "/home",
+          path: "/home"
         })
       })
-    }
+    };
+    this.getCleaningManageTaskGlobalStatistics({
+      proId : 1, // 所属项目id
+      queryDate: '2022-09-22', // 查询时间
+      managerId: 7 // 保洁主管id
+    })
   },
 
   watch: {},
@@ -181,20 +194,53 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName"]),
+    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","storeCurrentCleanTaskDateVlue"]),
     formatDate(date) {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
 
     onConfirm(date) {
       this.calendarShow = false;
-      this.dataValue = this.formatDate(date);
+      this.dateValue = this.formatDate(date);
+      this.getCleaningManageTaskGlobalStatistics({
+        proId : 1, // 所属项目id
+        queryDate: this.dateValue, // 查询时间
+        managerId: 12 // 保洁主管id
+      })
     },
 
-    // 任务详情事件
+    // 点击任务详情事件
     taskDetailsEvent (num) {
       this.storeCurrentCleanTaskName(num);
+      this.storeCurrentCleanTaskDateVlue(this.dateValue);
       this.$router.push({path: '/cleaningTask'})
+    },
+
+    // 查询任务总体概况
+    getCleaningManageTaskGlobalStatistics (data) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      queryCleaningManageTaskGlobalStatistics(data).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+					if (res && res.data.code == 200) {
+            this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
+            this.specialCleaningTaskGlobalStatistics = res.data.data['1']
+					} else {
+						this.$toast({
+							message: `${res.data.msg}`,
+							type: 'fail'
+						})
+					}
+				}).
+				catch((err) => {
+					this.$toast({
+						message: `${err}`,
+						type: 'fail'
+					});
+					this.loadingShow = false;
+          this.overlayShow = false
+			})
     },
 
     // 新增任务事件
@@ -236,6 +282,9 @@ export default {
   /deep/ .van-popup {
     z-index: 30000 !important
   };
+  /deep/ .van-loading {
+    z-index: 1000000
+  };  
   .add-task-png-box {
     position: fixed;
     width: 63px;
@@ -358,15 +407,17 @@ export default {
             padding: 0 6px;
             justify-content: space-between;
             .forthwith-cleaning-task-title-left {
-              font-size: 18px;
-              color: #289E8E
+              font-size: 16px;
+              color: #289E8E;
+              font-weight: bold
             };
             .forthwith-cleaning-task-title-right {
               margin-right: -10px;
               >span {
                 vertical-align: middle;
-                font-size: 18px;
-                color: #1864FF
+                font-size: 16px;
+                color: #1864FF;
+                font-weight: bold;
               };
               /deep/ .van-icon {
                 vertical-align: middle
@@ -393,12 +444,13 @@ export default {
               box-sizing: border-box;
               >div {
                 span {
-                  font-size: 16px;
+                  font-size: 14px;
                   &:first-child {
                     color: #9E9E9A
                   };
                   &:last-child {
-                    color: #333
+                    color: #333;
+                    font-weight: bold;
                   }
                 }
               }
@@ -412,20 +464,22 @@ export default {
               padding: 10px 0;
               box-sizing: border-box;
               .complete-info {
-                margin-top: 20px;
+                margin-top: 10px;
                 span {
-                  font-size: 14px;
+                  font-size: 12px;
                   &:first-child {
                     color: #9E9E9A
                   };
                   &:last-child {
-                    color: #1864FF
+                    color: #1864FF;
+                    font-weight: bold
                   }
                 }
               };
               /deep/ .van-circle {
                 .van-circle__text {
-                  color: #1864FF
+                  color: #1864FF;
+                  font-size: 12px
                 }
               }
             }

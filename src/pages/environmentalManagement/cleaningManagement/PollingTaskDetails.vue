@@ -31,7 +31,7 @@
   </div>
 </template>
 <script>
-import {} from "@/api/products.js";
+import {} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
