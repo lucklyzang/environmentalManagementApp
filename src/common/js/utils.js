@@ -576,7 +576,11 @@ export const removeAllLocalStorage = () => {
   removeStore('roleNameList');
   removeStore('changeOverDueWay');
   removeStore('currentCleanTaskName');
-  removeStore(currentCleanTaskDateVlue)
+  removeStore('currentCleanTaskDateVlue');
+  removeStore('cleanTaskDetails');
+  removeStore('timeMessage');
+  removeStore('ossMessage');
+  removeStore('chooseProject')
 }
 
 /*
@@ -588,7 +592,11 @@ export const removeAllLocalStorage = () => {
 
 export const removeExceptLoginMessageLocalStorage = () => {
   removeStore('currentCleanTaskName');
-  removeStore(currentCleanTaskDateVlue)
+  removeStore('currentCleanTaskDateVlue');
+  removeStore('cleanTaskDetails');
+  removeStore('timeMessage');
+  removeStore('ossMessage');
+  removeStore('chooseProject')
 }
 
 /*

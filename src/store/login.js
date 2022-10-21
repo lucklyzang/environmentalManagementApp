@@ -19,9 +19,24 @@ export default {
             return state.permissionInfo
         },
 
+        chooseProject: (state) => {
+            state.chooseProject = JSON.parse(getStore('chooseProject')) ? JSON.parse(getStore('chooseProject')) : [];
+            return state.chooseProject
+        },
+
         roleNameList: (state) => {
             state.roleNameList = JSON.parse(getStore('roleNameList')) ? JSON.parse(getStore('roleNameList')) : [];
             return state.roleNameList
+        },
+
+        timeMessage: (state) => {
+            state.timeMessage = JSON.parse(getStore('timeMessage')) ? JSON.parse(getStore('timeMessage')) : {};
+            return state.timeMessage
+        },
+        
+        ossMessage: (state) => {
+            state.ossMessage = JSON.parse(getStore('ossMessage')) ? JSON.parse(getStore('ossMessage')) : {};
+            return state.ossMessage
         },
         
 
@@ -83,6 +98,30 @@ export default {
             if (playLoad != 'null') {
                 setStore('overDueWay', playLoad);
                 state.overDueWay = playLoad
+            }
+		},
+
+        //保存阿里云签名过期日期
+        changeTimeMessage (state, playLoad) {
+            if (playLoad != 'null') {
+                setStore('timeMessage', playLoad);
+                state.timeMessage = playLoad
+            }
+		},
+
+         //保存阿里云签名信息
+         changeOssMessage (state, playLoad) {
+            if (playLoad != 'null') {
+                setStore('ossMessage', playLoad);
+                state.ossMessage = playLoad
+            }
+		},
+
+        //保存选择的项目
+        changeChooseProject (state, playLoad) {
+            if (playLoad != 'null') {
+                setStore('chooseProject', playLoad);
+                state.chooseProject = playLoad
             }
 		},
 

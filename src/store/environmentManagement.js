@@ -12,6 +12,11 @@ export default {
         currentCleanTaskDateVlue : (state) => {
             state.currentCleanTaskDateVlue = getStore('currentCleanTaskDateVlue') ? getStore('currentCleanTaskDateVlue') : 1;
             return state.currentCleanTaskDateVlue
+        },
+
+        cleanTaskDetails : (state) => {
+            state.cleanTaskDetails = getStore('cleanTaskDetails') ? JSON.parse(getStore('cleanTaskDetails')) : {};
+            return state.cleanTaskDetails
         }
     },
 
@@ -29,6 +34,14 @@ export default {
             if (playLoad && playLoad != 'null') {
                 setStore('currentCleanTaskDateVlue', playLoad);
                 state.currentCleanTaskDateVlue = playLoad
+            }
+        },
+
+        // 保存保洁管理任务详情
+        storeCleanTaskDetails(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                setStore('cleanTaskDetails', playLoad);
+                state.cleanTaskDetails = playLoad
             }
         },
 

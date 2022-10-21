@@ -26,7 +26,8 @@
           <span>{{ dateValue }}</span>
           <img :src="calendarPng" alt="">
         </div>
-        <div class="task-infobox">
+        <van-empty v-show="emptyShow" description="暂无数据" />
+        <div class="task-infobox" v-show="!loadingShow && !emptyShow">
           <div class="forthwith-cleaning-task">
             <div class="forthwith-cleaning-task-title">
               <div class="forthwith-cleaning-task-title-left">
@@ -53,7 +54,12 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${forthwithCleaningTaskGlobalStatistics.percent}%`" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
+                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${forthwithCleaningTaskGlobalStatistics.percent}%`" 
+                  layer-color="#d0d0cc"
+                  :color="forthwithCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
+                  :size="45" 
+                  :stroke-width="140" 
+                />
                 <div class="complete-info">
                   <span>已完成:</span>
                   <span>{{ forthwithCleaningTaskGlobalStatistics.finish }}</span>
@@ -87,7 +93,12 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${specialCleaningTaskGlobalStatistics.percent}%`" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
+                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${specialCleaningTaskGlobalStatistics.percent}%`" 
+                  layer-color="#d0d0cc"
+                  :color="specialCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
+                  :size="45"
+                  :stroke-width="140"
+                 />
                 <div class="complete-info">
                   <span>已完成:</span>
                   <span>{{ specialCleaningTaskGlobalStatistics.finish }}</span>
@@ -121,7 +132,12 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="pollingCurrentRate" :rate="50" :text="`${20}%`" :speed="100" layer-color="#d0d0cc" :size="42" :stroke-width="140" />
+                <van-circle v-model="pollingCurrentRate" :rate="50" :text="`${20}%`" :speed="100" 
+                layer-color="#d0d0cc" 
+                :color="50 == 0 ? '#d0d0cc' : '#1864FF'"
+                :size="45" 
+                :stroke-width="140" 
+                />
                 <div class="complete-info">
                   <span>已完成:</span>
                   <span>8</span>
@@ -156,6 +172,7 @@ export default {
       forthwithCurrentRate: 0,
       specialCurrentRate: 0,
       pollingCurrentRate: 0,
+      emptyShow: false,
       loadingShow: false,
       overlayShow: false,
       calendarShow: false,
@@ -221,11 +238,16 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       queryCleaningManageTaskGlobalStatistics(data).then((res) => {
+        console.log(res.data.data);
           this.loadingShow = false;
           this.overlayShow = false;
 					if (res && res.data.code == 200) {
-            this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
-            this.specialCleaningTaskGlobalStatistics = res.data.data['1']
+            if (JSON.stringify(res.data.data) == '{}') {
+              this.emptyShow = true
+            } else {
+              this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
+              this.specialCleaningTaskGlobalStatistics = res.data.data['1']
+            }
 					} else {
 						this.$toast({
 							message: `${res.data.msg}`,
@@ -287,8 +309,8 @@ export default {
   };  
   .add-task-png-box {
     position: fixed;
-    width: 63px;
-    height: 63px;
+    width: 70px;
+    height: 70px;
     bottom: 60px;
     right: 10px;
     z-index: 1000;
@@ -364,8 +386,15 @@ export default {
       z-index: 1000;
       font-size: 14px;
       display: flex;
+      position: relative;
       flex-direction: column;
       width: 100%;
+      /deep/ .van-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%)
+      };
       .date-box {
         width: 90%;
         margin: 0 auto;

@@ -1,6 +1,8 @@
 <template>
   <div class="page-box" ref="wrapper">
     <van-overlay :show="overlayShow" />
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadText }}</van-loading>
+    <van-overlay :show="overlayShow" />
     <div class="nav">
       <NavBar path="/cleanTaskList" title="新增任务" />
     </div>
@@ -85,7 +87,7 @@
             <span>预计时长</span>
         </div>
         <div class="person-input-box">
-            <van-field v-model="personNumberValue" type="number"/>
+            <van-field v-model="durationValue" type="number"/>
             <span>小时</span>
         </div>
       </div>
@@ -164,6 +166,8 @@ import NavBar from "@/components/NavBar";
 import {} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
+import {getAliyunSign} from '@/api/login.js'
+import axios from 'axios'
 export default {
   name: "AddTask",
   components: {
@@ -176,8 +180,13 @@ export default {
       deleteInfoDialogShow: false,
       showDateBox: false,
       overlayShow: false,
+      loadingShow: false,
+      loadText: '提交中',
+      imgOnlinePathArr: [],
+      temporaryFileArray: [],
       enterRemark: "",
       personNumberValue: '',
+      durationValue: '',
       categoryValue: 0,
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
@@ -226,7 +235,7 @@ export default {
       locationValue: 0,
       locationOption: [
         {
-            text: '请选择',
+            text: '请选择位置',
             value: 0
             
         },
@@ -244,7 +253,7 @@ export default {
        violateStandardValue: 0,
        violateStandardOption: [
         {
-            text: '请选择',
+            text: '请选择违反标准',
             value: 0
             
         },
@@ -280,11 +289,11 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","timeMessage","ossMessage","chooseProject"]),
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin", "storeCurrentCleanTaskName"]),
+    ...mapMutations(["changeIsLogin","changeTimeMessage","changeOssMessage"]),
 
     // 时间栏点击事件
     datetimePickerClickEvent () {
@@ -313,7 +322,52 @@ export default {
     },
 
     // 任务提交事件
-    submitEvent() {},
+    async submitEvent() {
+      if (this.categoryOption.filter((item) => { return item.value == this.categoryValue })[0]['text'] == '请选择类别') {
+        this.$toast('请选择类别');
+        return
+      };
+      if (this.sourceOption.filter((item) => { return item.value == this.sourceValue })[0]['text'] == '请选择来源') {
+        this.$toast('请选择来源');
+        return
+      };
+      if (this.locationOption.filter((item) => { return item.value == this.locationValue })[0]['text'] == '请选择位置') {
+        this.$toast('请选择位置');
+        return
+      };
+      if (!this.personNumberValue) {
+        this.$toast('预计人数不能为空');
+        return
+      };
+      if (!this.durationValue) {
+        this.$toast('预计时长不能为空');
+        return
+      };
+      if (this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text'] == '请选择违反标准') {
+        this.$toast('请选择违反标准');
+        return
+      };
+      // 上传图片到阿里云服务器
+      if (this.resultImgList.length > 0) {
+        this.loadText ='提交中';
+        this.overlayShow = true;
+        this.loadingShow = true;
+        for (let imgI of this.temporaryFileArray) {
+          if (Object.keys(this.timeMessage).length > 0) {
+            // 判断签名信息是否过期
+            if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
+              await this.getSign();
+              await this.uploadImageToOss(imgI)
+            } else {
+              await this.uploadImageToOss(imgI)
+            }
+          } else {
+            await this.getSign();
+            await this.uploadImageToOss(imgI)
+          }
+        }
+      }  
+    },
 
     // 图片上传预览
     previewFileOne() {
@@ -340,6 +394,7 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           };
@@ -376,6 +431,7 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           };
@@ -386,6 +442,77 @@ export default {
         reader.readAsDataURL(file);
       }
     },
+
+    // 获取阿里云签名接口
+			getSign (filePath = '') {
+				return new Promise((resolve, reject) => {
+					getAliyunSign().then((res) => {
+						if (res && res.data.code == 200) {
+							// 存储签名信息
+							this.changeOssMessage(res.data.data);
+							let temporaryTimeInfo = {};
+							temporaryTimeInfo['expire'] = Number(res.data.data.expire);
+							// 存储过期时间信息
+							this.changeTimeMessage(temporaryTimeInfo);
+							if (this.isExpire) {
+								this.uploadImageToOss(filePath)
+							};
+							this.isExpire = false;
+							resolve()
+						} else {
+							this.$toast({
+								message: `${res.data.data.msg}`,
+								type: 'fail'
+							});
+							reject()
+						}
+					})
+					.catch((err) => {
+            this.$toast({
+              message: `${res.data.data.msg}`,
+              type: 'fail'
+            });
+						reject()
+					})
+				})	
+			},
+			
+			// 上传图片到阿里云服务器
+			uploadImageToOss (filePath) {
+				return new Promise((resolve, reject) => {
+          // OSS地址
+          const aliyunServerURL = this.ossMessage.host;
+          // 存储路径(后台固定位置+随即数+文件格式)
+          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + filePath.name;
+          // 临时AccessKeyID0
+          const OSSAccessKeyId = this.ossMessage.accessId;
+          // 加密策略
+          const policy = this.ossMessage.policy;
+          // 签名
+          const signature = this.ossMessage.signature;
+          let formData = new FormData();
+          formData.append('key',aliyunFileKey);
+          formData.append('policy',policy);
+          formData.append('OSSAccessKeyId',OSSAccessKeyId);
+          formData.append('success_action_status','200');
+          formData.append('Signature',signature);
+          formData.append('file',filePath);
+          axios({
+            url: aliyunServerURL,
+            method: 'post',
+            data: formData,
+            headers: {'Content-Type': 'multipart/form-data'}
+          }).then((res) => {
+            this.imgOnlinePathArr.push(`${aliyunServerURL}/${aliyunFileKey}`);
+            resolve();
+            console.log('阿里云图片',this.imgOnlinePathArr);
+          })
+          .catch((err) => {
+            reject()
+          })
+          })
+			},
+
 
     // 拍照点击
     issueClickEvent() {

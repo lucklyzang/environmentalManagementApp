@@ -42,6 +42,7 @@
 import { mapGetters, mapMutations } from "vuex";
 import {logIn} from '@/api/login.js'
 import { IsPC, setStore,  getStore, removeStore} from "@/common/js/utils";
+import qs from 'qs'
 export default {
   name: "Login",
   data() {
@@ -91,7 +92,7 @@ export default {
       };
       this.loadingShow = true;
       this.overlayShow = true;
-			logIn(loginMessage).then((res) => {
+			logIn(qs.stringify(loginMessage)).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
         if (res) {

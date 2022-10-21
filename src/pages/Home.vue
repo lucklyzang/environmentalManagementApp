@@ -104,13 +104,16 @@
 
         methods: {
             ...mapMutations([
+                "changeChooseProject"
             ]),
 
             // 医院下拉菜单值变化事件
             dropdownItemChangeEvent (value) {
                 // 清空除登录信息之外的store和localStorage
                 removeExceptLoginMessageLocalStorage();
-                this.$store.dispatch('resetCleanManagementStore')
+                this.$store.dispatch('resetCleanManagementStore');
+                //存储选择的项目
+                this.changeChooseProject(this.hospitalOption.filter((item) => { return item.value == value}))
             },
 
             // 保洁管理子项点击事件

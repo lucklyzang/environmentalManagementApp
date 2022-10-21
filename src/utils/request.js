@@ -3,7 +3,6 @@ import store from '@/store'
 import router from '../router'
 import Vue from 'vue';
 import { Dialog, Toast } from 'vant';
-import qs from 'qs'
 // 全局注册
 Vue.use(Dialog);
 // 生产域名 https://blinktech.cn/nblink
@@ -18,7 +17,6 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
     config => {
-        config.data = qs.stringify(config.data);
         config.headers['HTTP_REQUEST_TYPE'] = 'new';
         if (config['url'] == 'auth/login') {
             config.headers['Content-Type'] = 'application/x-www-form-urlencoded'

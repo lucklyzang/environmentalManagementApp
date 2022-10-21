@@ -2,7 +2,6 @@
   <div class="page-box" ref="wrapper">
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
-    <van-empty v-show="emptyShow" description="暂无数据" />
     <div class="nav">
        <van-nav-bar
         title="任务列表"
@@ -18,7 +17,7 @@
         @click-right="onClickRight"
     />
     </div>
-    <div class="content" v-show="!emptyShow">
+    <div class="content">
         <div class="content-top">
             <div class="filtrate-box">
                 <div class="select-box">
@@ -43,7 +42,8 @@
                 <div @click="taskItemNameEvent(3)" :class="{'pollingItemStyle':itemNameIndex == 3}">巡检6</div>
             </div>
         </div>
-        <div class="content-bottom">
+        <van-empty v-show="emptyShow" description="暂无数据" />
+        <div class="content-bottom" v-show="!emptyShow">
             <div class="task-list-box" v-if="currentCleanTaskName == 1">
                 <div class="task-list" v-for="(item,index) in taskList" @click="forthwithTaskDetailsEvent(item)" :key="index">
                     <div class="task-list-title">
@@ -80,7 +80,7 @@
                     </div>
                 </div>
             </div>
-            <div class="task-list-box" v-if="currentCleanTaskName == 2">    
+            <div class="task-list-box" v-if="currentCleanTaskName == 2">   
                 <div class="task-list special-list" v-for="(item,index) in taskList" @click="specialTaskDetailsEvent(item)" :key="item.taskNumber">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
@@ -92,7 +92,7 @@
                                 'reviewStyle' : item.state == 4,
                                 'haveReviewStyle' : item.state == 5
                             }">
-                            {{ stausTransfer(item.status) }}
+                            {{ stausTransfer(item.state) }}
                         </div>
                     </div>
                     <div class="task-list-content">
@@ -203,7 +203,7 @@ export default {
       })
     };
     this.itemNameIndex = this.currentCleanTaskName;
-    this.getCleaningManageTaskList(0)
+    this.getCleaningManageTaskList(this.currentCleanTaskName -1)
   },
 
   watch: {},
@@ -213,12 +213,15 @@ export default {
   },
 
   methods: {
-    ...mapMutations(['storeCurrentCleanTaskName']),
+    ...mapMutations(['storeCurrentCleanTaskName','storeCleanTaskDetails']),
     onClickLeft() {
       this.$router.push({ path: "/cleanTaskList"})
     },
     onClickRight () {
-        console.log('刷新了')
+        this.getCleaningManageTaskList(this.itemNameIndex - 1);
+        if (this.selectValue != -1) {
+            this.selectValue = -1
+        }
     },
     
     // 任务状态转换
@@ -319,29 +322,64 @@ export default {
     selecOptionChangeEvent (value) {
         if (value == -1) {
             this.taskList = this.allTaskList;
-            console.log(this.taskList)
+            if (this.taskList.length == 0) {
+                this.emptyShow = true
+            } else {
+                this.emptyShow = false
+            };
+            return
         };
-        this.taskList = this.allTaskList.filter((item) => { return item.state == value})
+        this.taskList = this.allTaskList.filter((item) => { return item.state == value});
+        if (this.taskList.length == 0) {
+            this.emptyShow = true
+        } else {
+            this.emptyShow = false
+        }
     },
 
     // 任务名称点击事件
     taskItemNameEvent (num) {
         this.getCleaningManageTaskList(num - 1);
         this.itemNameIndex = num;
-        this.storeCurrentCleanTaskName(num)
+        this.storeCurrentCleanTaskName(num);
+        if (this.selectValue != -1) {
+            this.selectValue = -1
+        };
+        if (this.searchValue) { this.searchValue = ''}
     },
 
     // 搜索事件
     searchEvent () {
+        if (!this.searchValue) {
+            this.$toast('搜索内容不能为空');
+            return
+        };
+        if (this.itemNameIndex == 1) {
+            this.taskList = this.taskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                item.areaImmediateName.indexOf(this.searchValue) != -1  ||  (this.extractSpaceMessage(item.spaces)).indexOf(this.searchValue) != -1 ||
+                item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
+            )
+        } else if (this.itemNameIndex == 2) {
+                this.taskList = this.taskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                    item.areaSpecialName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
+            )
+        };
+        if (this.taskList.length == 0) {
+            this.emptyShow = true
+        } else {
+            this.emptyShow = false
+        }
     },
 
     // 即时保洁任务点击进入任务详情事件
     forthwithTaskDetailsEvent(item) {
+        this.storeCleanTaskDetails(item);
         this.$router.push({path: '/forthwithCleaningTaskDetails'})
     },
 
     // 专项保洁任务点击进入任务详情事件
-    specialTaskDetailsEvent() {
+    specialTaskDetailsEvent(item) {
+        this.storeCleanTaskDetails(item);
         this.$router.push({path: '/specialCleaningTaskDetails'})
     },
 
@@ -376,12 +414,6 @@ export default {
         }
     }
   };
-  /deep/ .van-empty {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%)
-  };
   /deep/ .van-popup {
     z-index: 30000 !important
   };
@@ -392,6 +424,13 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
+    position: relative;
+    /deep/ .van-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%)
+    };
     .content-top {
         width: 92%;
         margin: 0 auto;

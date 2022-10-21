@@ -1,46 +1,51 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadText }}</van-loading>
     <van-overlay :show="overlayShow" />
     <div class="nav">
       <NavBar path="/cleaningTask" title="任务详情" />
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        <span>即时保洁编号000004</span>
-        <span>未开始</span>
+        <span>即时保洁编号{{cleanTaskDetails.taskNumber}}</span>
+        <span :class="{
+            'underwayStyle' : cleanTaskDetails.state == 3, 
+            'completeStyle' : cleanTaskDetails.state == 6,
+            'reviewStyle' : cleanTaskDetails.state == 4,
+            'haveReviewStyle' : cleanTaskDetails.state == 5
+          }">
+            {{stausTransfer(cleanTaskDetails.state)}}
+        </span>
       </div>
       <div class="location">
         <span>位置</span>
-        <span>住院一部为何是哪个键</span>
+        <span>{{ `${cleanTaskDetails.structureName}${cleanTaskDetails.depName}${cleanTaskDetails.areaImmediateName}${extractSpaceMessage(cleanTaskDetails.spaces)}` }}</span>
       </div>
       <div class="location">
         <span>创建时间</span>
-        <span>05-31 17:21</span>
+        <span>{{cleanTaskDetails.createTime }}</span>
       </div>
       <div class="location">
         <span>计划执行人</span>
-        <span>王秀芬;张三</span>
+        <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
       </div>
       <div class="location">
         <span>预计时间</span>
-        <span>0.5小时</span>
+        <span>{{ cleanTaskDetails.planUseTime ? `${(cleanTaskDetails.planUseTime/60).toFixed(2)}小时` : '无'}}</span>
       </div>
       <div class="issue-picture">
         <div>问题图片</div>
         <div class="image-list">
-          <img :src="calendarPng" alt="">
-          <img :src="calendarPng" alt="">
-          <img :src="calendarPng" alt="">
-          <img :src="calendarPng" alt="">
+          <img :src="item.path" alt="" v-for="(item,index) in cleanTaskDetails.images" :key="index">
         </div>
       </div>
       <div class="remark">
         <div>备注</div>
         <div class="remark-content">
-          沙克垃圾急急急急急急急急急急急急急急急大家奥克兰撒娇了撒娇撒刘莎莎辣椒水贷记卡零三零
+          {{ cleanTaskDetails.completeRemark }}
         </div>
       </div>
-      <div class="result-picture" v-show="isTaskStart">
+      <div class="result-picture" v-show="cleanTaskDetails.state == 3">
         <div>
           <span>*</span>
           结果图片
@@ -60,7 +65,7 @@
 					</div>
         </div>
       </div>
-      <div class="enter-remark" v-show="isTaskStart">
+      <div class="enter-remark" v-show="cleanTaskDetails.state == 3">
         <div>
           <span>*</span>
           备注
@@ -76,10 +81,10 @@
         </div>
       </div>
     </div>
-    <div class="task-start" @click="taskStartEvent" v-show="!isTaskStart">
+    <div class="task-start" @click="taskStartEvent" v-show="cleanTaskDetails.state == 1">
       任务开始
     </div>
-    <div class="task-operation-box" v-show="isTaskStart">
+    <div class="task-operation-box" v-show="cleanTaskDetails.state == 3">
       <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
@@ -105,9 +110,11 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import {updateCleaningManageTaskState, cleaningManageTaskComplete} from "@/api/environmentalManagement.js";
+import {getAliyunSign} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
-import { IsPC, compress } from "@/common/js/utils";
+import { IsPC, compress} from "@/common/js/utils";
+import axios from 'axios'
 export default {
   name: "ForthwithCleaningTaskDetails",
   components: {
@@ -118,11 +125,14 @@ export default {
       photoBox: false,
       imgIndex: '',
       deleteInfoDialogShow: false,
-      isTaskStart: false,
       overlayShow: false,
+      loadingShow: false,
+      loadText: '更新中',
       enterRemark: '',
-      calendarPng: require("@/common/images/home/calendar-attendance.png"),
-      resultImgList: []
+      resultImgList: [],
+      imgOnlinePathArr: [],
+      temporaryFileArray: [],
+      isExpire: false
     }
   },
 
@@ -136,36 +146,161 @@ export default {
           path: "/cleaningTask",
         })
       })
-    }
+    };
+    console.log('任务详情',this.cleanTaskDetails)
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","cleanTaskDetails","timeMessage","ossMessage","chooseProject"]),
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName"]),
+    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","changeTimeMessage","changeOssMessage","storeCleanTaskDetails"]),
+
+    // 提取即时保洁功能区信息
+    extractSpaceMessage (spaces) {
+      if (spaces.length == 0) {
+          return ''
+      };
+      let temporaryArray = [];
+      for (let item of spaces) {
+          temporaryArray.push(item.name);
+      };
+      return temporaryArray.join("、")
+    },
+
+    // 任务状态转换
+    stausTransfer (num) {
+      switch(num) {
+        case 1:
+            return '未开始'
+            break;
+        case 3:
+            return '进行中'
+            break;
+        case 4:
+            return '复核中'
+            break;
+        case 6:
+            return '已完成'
+            break;
+        case 5:
+            return '已复核'
+            break
+      } 
+    },
 
       // 任务开始事件
       taskStartEvent () {
-        this.isTaskStart = true
+        this.overlayShow = true;
+        this.loadingShow = true;
+        this.loadText ='更新中';
+        updateCleaningManageTaskState({
+          id : this.cleanTaskDetails.id, // 任务id
+		      state: 3 
+        })
+        .then((res) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          if (res && res.data.code == 200) {
+            // 更改store中存储的任务状态
+            let temporaryDetails = this.cleanTaskDetails;
+            temporaryDetails['state'] = 3;
+            this.storeCleanTaskDetails(temporaryDetails)
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        })
+        .catch((err) => {
+          this.$toast({
+            message: `${err}`,
+            type: 'fail'
+          })
+        })
       },
 
       // 任务未完成事件
-      taskNoCompleteEvent () {
-
+     taskNoCompleteEvent () {
+        this.$router.push({
+          path: "/cleaningTask"
+        })
       },
 
       // 任务完成事件
-      taskCompleteEvent () {
-
+      async taskCompleteEvent () {
+        if (this.resultImgList.length == 0) {
+          this.$toast('结果图片不能为空');
+          return
+        };
+        if (!this.enterRemark) {
+          this.$toast('备注不能为空');
+          return
+        };
+        // 上传图片到阿里云服务器
+        if (this.resultImgList.length > 0) {
+          this.loadText ='提交中';
+          this.overlayShow = true;
+          this.loadingShow = true;
+          for (let imgI of this.temporaryFileArray) {
+            if (Object.keys(this.timeMessage).length > 0) {
+              // 判断签名信息是否过期
+              if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
+                await this.getSign();
+                await this.uploadImageToOss(imgI)
+              } else {
+                await this.uploadImageToOss(imgI)
+              }
+            } else {
+              await this.getSign();
+              await this.uploadImageToOss(imgI)
+            }
+          };
+          cleaningManageTaskComplete({
+              id : this.cleanTaskDetails.id, // 任务id
+              taskNumber: this.cleanTaskDetails.taskNumber, // 任务编号
+              completeRemark: this.enterRemark, // 任务完成备注
+              path: this.imgOnlinePathArr,
+              proId: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalId'] : this.chooseProject['value'], // 项目id
+              proName: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalName'] : this.chooseProject['text']  // 项目名称
+            })
+            .then((res) => {
+              this.overlayShow = false;
+              this.loadingShow = false;
+              if (res && res.data.code == 200) {
+                 this.$toast({
+                  message: '任务已完成',
+                  type: 'success'
+                });
+                this.$router.push({
+                  path: "/cleaningTask"
+                })
+              } else {
+                this.$toast({
+                  message: `${res.data.msg}`,
+                  type: 'fail'
+                })
+              }
+            })
+            .catch((err) => {
+              this.overlayShow = false;
+              this.loadingShow = false;
+              this.$toast({
+                message: `${err}`,
+                type: 'fail'
+              })
+            })
+        }
       },
 
       // 图片上传预览
       previewFileOne() {
         let file = document.getElementById("demo1").files[0];
+        this.temporaryFile = file;
         let _this = this;
         let reader = new FileReader();
         let isLt2M = file.size/1024/1024 < 16;
@@ -185,6 +320,7 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           }
@@ -216,6 +352,7 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
+            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           }
@@ -237,9 +374,80 @@ export default {
         this.imgIndex = index
       },
 
+      // 获取阿里云签名接口
+			getSign (filePath = '') {
+				return new Promise((resolve, reject) => {
+					getAliyunSign().then((res) => {
+						if (res && res.data.code == 200) {
+							// 存储签名信息
+							this.changeOssMessage(res.data.data);
+							let temporaryTimeInfo = {};
+							temporaryTimeInfo['expire'] = Number(res.data.data.expire);
+							// 存储过期时间信息
+							this.changeTimeMessage(temporaryTimeInfo);
+							if (this.isExpire) {
+								this.uploadImageToOss(filePath)
+							};
+							this.isExpire = false;
+							resolve()
+						} else {
+							this.$toast({
+								message: `${res.data.data.msg}`,
+								type: 'fail'
+							});
+							reject()
+						}
+					})
+					.catch((err) => {
+            this.$toast({
+              message: `${res.data.data.msg}`,
+              type: 'fail'
+            });
+						reject()
+					})
+				})	
+			},
+			
+			// 上传图片到阿里云服务器
+			uploadImageToOss (filePath) {
+				return new Promise((resolve, reject) => {
+          // OSS地址
+          const aliyunServerURL = this.ossMessage.host;
+          // 存储路径(后台固定位置+随即数+文件格式)
+          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + filePath.name;
+          // 临时AccessKeyID0
+          const OSSAccessKeyId = this.ossMessage.accessId;
+          // 加密策略
+          const policy = this.ossMessage.policy;
+          // 签名
+          const signature = this.ossMessage.signature;
+          let formData = new FormData();
+          formData.append('key',aliyunFileKey);
+          formData.append('policy',policy);
+          formData.append('OSSAccessKeyId',OSSAccessKeyId);
+          formData.append('success_action_status','200');
+          formData.append('Signature',signature);
+          formData.append('file',filePath);
+          axios({
+            url: aliyunServerURL,
+            method: 'post',
+            data: formData,
+            headers: {'Content-Type': 'multipart/form-data'}
+          }).then((res) => {
+            this.imgOnlinePathArr.push(`${aliyunServerURL}/${aliyunFileKey}`);
+            resolve();
+            console.log(this.imgOnlinePathArr);
+          })
+          .catch((err) => {
+            reject()
+          })
+          })
+			},
+
       // 确定删除提示框确定事件
       sureDeleteEvent () {
         this.resultImgList.splice(this.imgIndex, 1);
+        this.temporaryFileArray.splice(this.imgIndex, 1)
       },
 
       // 拍照取消
@@ -392,7 +600,27 @@ export default {
           background: #f3f3f3;
           border: 1px solid #c4c4c4
         }
-      }
+      };
+       .underwayStyle {
+          background: #289E8E !important;
+          color: #fff !important;
+          border: 1px solid #289E8E !important
+        };
+        .completeStyle {
+          background: #242424 !important;
+          color: #fff !important;
+          border: 1px solid #242424 !important
+        };
+        .reviewStyle {
+          background: #F2A15F !important;
+          color: #fff !important;
+          border: 1px solid #F2A15F !important
+        };
+        .haveReviewStyle {
+          background: #9B7D31 !important;
+          color: #fff !important;
+          border: 1px solid #9B7D31 !important
+        }
     };
     .location {
       padding: 14px 8px;
@@ -412,6 +640,7 @@ export default {
           color: #101010;
           flex: 1;
           text-align: right;
+          line-height: 24px;
           padding-left: 8px;
           box-sizing: border-box;
           word-break: break-all
