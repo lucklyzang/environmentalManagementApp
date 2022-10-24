@@ -44,12 +44,12 @@
                 <div class="attendance-status-list-box">
                     <div class="attendance-status-list" v-for="(item,index) in attendanceStatusList"  @click="attendanceStatusEvent(index)"
                         :key="index"
-                        :class="{'attendanceStyle': index == 0,'generalHolidayStyle': index == 1,
-                            'expatriateStyle': index == 2,'matterStyle': index == 3, 'sickLeaveStyle': index == 4, 'overtimeStyle': index == 5,
-                            'annualLeaveStyle': index == 6,'occupationalStyle': index == 7, 'clockingStyle': index == 8, 'sectionHughStyle': index == 9,
-                            'attendanceActiveStyle': index == 0 && attendanceStatusIndex == index,'generalHolidayActiveStyle': index == 1 && attendanceStatusIndex == index,
-                            'expatriateActiveStyle': index == 2 && attendanceStatusIndex == index,'matterActiveStyle': index == 3 && attendanceStatusIndex == index, 'sickLeaveActiveStyle': index == 4 && attendanceStatusIndex == index, 'overtimeActiveStyle': index == 5 && attendanceStatusIndex == index,
-                            'annualLeaveActiveStyle': index == 6 && attendanceStatusIndex == index,'occupationalActiveStyle': index == 7 && attendanceStatusIndex == index, 'clockingActiveStyle': index == 8 && attendanceStatusIndex == index, 'sectionHughActiveStyle': index == 9 && attendanceStatusIndex == index
+                        :class="{'attendanceStyle': index == 0,'clockingStyle': index == 1,
+                            'expatriateStyle': index == 2,'occupationalInjuryStyle': index == 3, 'sickLeaveStyle': index == 4, 'vocationStyle': index == 5,
+                            'affairsStyle': index == 6,'overtimeStyle': index == 7, 'changeShiftStyle': index == 8, 'absenteeismStyle': index == 9,
+                            'attendanceActiveStyle': index == 0 && attendanceStatusIndex == index,'clockingActiveStyle': index == 1 && attendanceStatusIndex == index,
+                            'expatriateActiveStyle': index == 2 && attendanceStatusIndex == index,'occupationalInjuryActiveStyle': index == 3 && attendanceStatusIndex == index, 'sickLeaveActiveStyle': index == 4 && attendanceStatusIndex == index, 'vocationActiveStyle': index == 5 && attendanceStatusIndex == index,
+                            'affairsActiveStyle': index == 6 && attendanceStatusIndex == index,'overtimeActiveStyle': index == 7 && attendanceStatusIndex == index, 'changeShiftActiveStyle': index == 8 && attendanceStatusIndex == index, 'absenteeismActiveStyle': index == 9 && attendanceStatusIndex == index
                         }"
                     >
                         {{item}}
@@ -75,7 +75,7 @@
         </div>
         <div class="month-statistics-box" v-if="statisticalTypeIndex == 1">
             <div class="attendance-type-list-box">
-                <div class="attendance-type-list" v-for="(item,index) in attendanceTypeList" :key="index">
+                <div class="attendance-type-list" v-for="(item,index) in attendanceTypeList" :key="index" @click="attendanceTypeMonthEvent(item)">
                     <div class="attendance-type-left">
                         {{ item.attendanceType }}
                     </div>
@@ -86,7 +86,84 @@
                 </div>
             </div>
         </div>
-        <div class="personnel-statistics-box" v-if="statisticalTypeIndex == 2"></div>      
+        <div class="personnel-statistics-box" v-if="statisticalTypeIndex == 2">
+            <div class="personnel-statistics-list-box">
+                <div class="personnel-statistics-list" v-for="(item,index) in personnelStatisticsList" :key="index">
+                    <div class="personnel-statistics-title">
+                        <div class="personnel-statistics-title-left">
+                            {{ item.personName }}
+                        </div>
+                        <div class="personnel-statistics-title-right">
+                            <span>满勤天数</span>
+                            <span>{{ item.fullWorkDays }}</span>
+                            <img :src="editPng" alt="" @click="editEvent(item)">
+                        </div>
+                    </div>
+                    <div class="personnel-statistics-content">
+                        <div>
+                            <span>出勤</span>
+                            <span class="attendanceStyle">
+                                {{ `${item.attendanceDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>迟到早退</span>
+                            <span class="clockingStyle">
+                                {{ `${item.clockingDays}` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>外派</span>
+                            <span class="expatriateStyle">
+                                {{ `${item.expatriateDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>工伤</span>
+                            <span class="occupationalInjuryStyle">
+                                {{ `${item.occupationalInjuryDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>病假</span>
+                            <span class="sickLeaveStyle">
+                                {{ `${item.sickLeaveDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>休假</span>
+                            <span class="vocationStyle">
+                                {{ `${item.vocationDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>事假</span>
+                            <span class="affairsStyle">
+                                {{ `${item.affairsDays}天` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>加班</span>
+                            <span class="overtimeStyle">
+                                {{ `${item.overtimeDays}小时` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>调班</span>
+                            <span class="changeShiftStyle">
+                                {{ `${item.changeShiftDays}小时` }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>旷工</span>
+                            <span class="absenteeismStyle">
+                                {{ `${item.attendanceDays}天` }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>      
     </div>
     <FooterBottom></FooterBottom>
   </div>
@@ -112,8 +189,9 @@ export default {
       dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       calendarShow: false,
       calendarPng: require("@/common/images/home/calendar.png"),
+      editPng: require("@/common/images/home/edit.png"),
       statisticalTypeList: ['日统计','月统计','人员统计'],
-      attendanceStatusList: ['出勤','公休','外派','事假','病假','加班','年假','工伤','迟到早退','节休'],
+      attendanceStatusList: ['出勤','迟到早退','外派','工伤','病假','休假','事假','加班','调班','旷工'],
       attendanceSituationList: [
           {
             name: '张三',
@@ -154,68 +232,83 @@ export default {
       ],
       attendanceTypeList: [
         {
+            attendanceTypeName: '出勤',
             attendanceType: '出勤(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '外派',
             attendanceType: '外派(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '工伤',
             attendanceType: '工伤(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '病假',
             attendanceType: '病假(人天)',
             totalNum: 4.5
         },
-          {
+        {   
+            attendanceTypeName: '休假',
             attendanceType: '休假(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '加班',
             attendanceType: '加班(人天、共计时长)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '迟到早退',
             attendanceType: '迟到早退(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '事假',
             attendanceType: '事假(人天)',
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '调班',
             attendanceType: '调班(人天)',
             totalNum: 4.5
         },
         {
             attendanceType: '旷工(人天)',
             totalNum: 4.5
-        },
-         {
-            attendanceType: '出勤(人天)',
-            totalNum: 4.5
+        }
+      ],
+      personnelStatisticsList: [
+        {
+            personName: '张三',
+            fullWorkDays: 23,
+            attendanceDays: 45.5,
+            clockingDays: 0,
+            expatriateDays: 1,
+            occupationalInjuryDays: 2,
+            sickLeaveDays: 1,
+            vocationDays: 2,
+            affairsDays: 1,
+            overtimeDays: 2,
+            changeShiftDays: 3,
+            absenteeismDays: 4
         },
         {
-            attendanceType: '外派(人天)',
-            totalNum: 4.5
-        },
-        {
-            attendanceType: '工伤(人天)',
-            totalNum: 4.5
-        },
-        {
-            attendanceType: '病假(人天)',
-            totalNum: 4.5
-        },
-          {
-            attendanceType: '休假(人天)',
-            totalNum: 4.5
-        },
-        {
-            attendanceType: '加班(人天、共计时长)',
-            totalNum: 4.5
+            personName: '李四',
+            fullWorkDays: 23,
+            attendanceDays: 45.5,
+            clockingDays: 0,
+            expatriateDays: 1,
+            occupationalInjuryDays: 2,
+            sickLeaveDays: 4,
+            vocationDays: 2,
+            affairsDays: 1,
+            overtimeDays: 2,
+            changeShiftDays: 8,
+            absenteeismDays: 3
         }
       ]
     }
@@ -242,7 +335,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['storeAttendanceTypeDetailsMessage','storePersonnelStatisticsDetailsMessage']),
     onClickLeft() {
       this.$router.push({ path: "/home"})
     },
@@ -251,14 +344,26 @@ export default {
         this.$router.push({path: '/attendanceManagement'})
     },
 
+    // 编辑事件
+    editEvent (item) {
+        this.$router.push({path: '/personnelStatisticsDetails'});
+        this.storePersonnelStatisticsDetailsMessage(item)
+    },
+
     // 统计类型点击事件
     statisticalTypeEvent (item,index) {
         this.statisticalTypeIndex = index
     },
 
-    // 出勤类型点击事件
+    // 出勤类型日统计点击事件
     attendanceStatusEvent (index) {
         this.attendanceStatusIndex = index
+    },
+
+    // 出勤类型月统计点击事件
+    attendanceTypeMonthEvent (item) {
+        this.$router.push({path: '/attendanceTypeDetails'});
+        this.storeAttendanceTypeDetailsMessage(item)
     },
 
     formatDate(date) {
@@ -410,95 +515,97 @@ export default {
                     }
                 };
                 .attendanceStyle {
-                    border: 1px solid #aafa91;
-                    color: #aafa91
-                };
-                .generalHolidayStyle {
-                    border: 1px solid #68ddf1;
-                    color: #68ddf1
-                };
-                .expatriateStyle {
-                    border: 1px solid #f1d168;
-                    color: #f1d168
-                };
-                .matterStyle {
-                    border: 1px solid #c037f7;
-                    color: #c037f7
-                };
-                .sickLeaveStyle {
-                    border: 1px solid #ee406c;
-                    color: #ee406c
-                };
-                .overtimeStyle {
-                    border: 1px solid #40eed7;
-                    color: #40eed7
-                };
-                .annualLeaveStyle  {
-                    border: 1px solid #d612f0;
-                    color: #d612f0
-                };
-                .occupationalStyle  {
-                    border: 1px solid #12aaf0;
-                    color: #12aaf0
+                    border: 1px solid #289E8E;
+                    color: #289E8E
                 };
                 .clockingStyle {
-                    border: 1px solid #f5f828;
-                    color: #f5f828
+                    border: 1px solid #E86F50;
+                    color: #E86F50
                 };
-                .sectionHughStyle {
-                    border: 1px solid #f828d5;
-                    color: #f828d5
+                .expatriateStyle {
+                    border: 1px solid #174E97;
+                    color: #174E97
                 };
+                .occupationalInjuryStyle {
+                    border: 1px solid #E8CB51;
+                    color: #E8CB51
+                };
+                .sickLeaveStyle {
+                    border: 1px solid #101010;
+                    color: #101010
+                };
+                .vocationStyle {
+                    border: 1px solid #254550;
+                    color: #254550
+                };
+                .affairsStyle  {
+                    border: 1px solid #3B9DF9;
+                    color: #3B9DF9
+                };
+                .overtimeStyle  {
+                    border: 1px solid #F2A15F;
+                    color: #F2A15F
+                };
+                .changeShiftStyle {
+                    border: 1px solid #1864FF;
+                    color: #1864FF
+                };
+                .absenteeismStyle {
+                    border: 1px solid #666666;
+                    color: #666666
+                };
+
                 .attendanceActiveStyle {
-                    background: #aafa91 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .generalHolidayActiveStyle {
-                    background: #68ddf1 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .expatriateActiveStyle {
-                    background:#f1d168 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .matterActiveStyle {
-                    background:#c037f7 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .sickLeaveActiveStyle {
-                    background: #ee406c !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .overtimeActiveStyle {
-                    background:#40eed7 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .annualLeaveActiveStyle  {
-                    background: #d612f0 !important;
-                    color: #fff !important;
-                    border: none !important
-                };
-                .occupationalActiveStyle  {
-                    background:#12aaf0 !important;
+                    background: #289E8E !important;
                     color: #fff !important;
                     border: none !important
                 };
                 .clockingActiveStyle {
-                    background:#f5f828 !important;
+                    background:#E86F50 !important;
                     color: #fff !important;
                     border: none !important
                 };
-                .sectionHughActiveStyle {
-                    background:#f828d5 !important;
+                .expatriateActiveStyle {
+                    background: #174E97 !important;
                     color: #fff !important;
                     border: none !important
-                }
+                };
+                .occupationalInjuryActiveStyle {
+                    background:#E8CB51 !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .sickLeaveActiveStyle {
+                    background: #101010 !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .vocationActiveStyle {
+                    background: #254550 !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .affairsActiveStyle  {
+                    background: #3B9DF9 !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .overtimeActiveStyle  {
+                    background:#F2A15F !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .changeShiftActiveStyle {
+                    background:#1864FF !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+                .absenteeismActiveStyle {
+                    background:#666666 !important;
+                    color: #fff !important;
+                    border: none !important
+                };
+               
             }
         };
         .cotent-bottom {
@@ -603,7 +710,106 @@ export default {
         flex: 1;
         height: 0;
         margin-top: 20px;
-        overflow: auto
+        overflow: auto;
+        .personnel-statistics-list-box {
+            height: 100%;
+            overflow: auto;
+            .personnel-statistics-list {
+                width: 98%;
+                margin: 0 auto;
+                background: #fff;
+                border-radius: 4px;
+                box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
+                padding: 0 0 4px 0;
+                box-sizing: border-box;
+                margin-bottom: 10px;
+                .personnel-statistics-title {
+                    .bottom-border-1px(rgba(0, 0, 0, 0.23));
+                    width: 98%;
+                    box-sizing: border-box;
+                    margin: 0 auto;
+                    height: 44px;
+                    align-items: center;
+                    display: flex;
+                    padding: 0 10px;
+                    justify-content: space-between;
+                    .personnel-statistics-title-left {
+                        font-size: 16px;
+                        color: #101010;
+                        font-weight: bold
+                    };
+                    .personnel-statistics-title-right {
+                        >span {
+                            vertical-align: middle;
+                            font-size: 14px;
+                            &:nth-child(1) {
+                                color: #6d6d6d
+                            };
+                            &:nth-child(2) {
+                                color: #101010;
+                                margin: 0 8px 0 4px
+                            }
+                        };
+                        img {
+                            width: 21px;
+                            height: 21px;
+                            vertical-align: middle
+                        }
+                    }
+                };
+                .personnel-statistics-content {
+                    width: 98%;
+                    box-sizing: border-box;
+                    margin: 0 auto;
+                    display: flex;
+                    flex-flow: row wrap;
+                    padding: 10px;
+                    justify-content: space-between;
+                    >div {
+                        width: 33.3%;
+                        text-align: left;
+                        font-size: 14px;
+                        margin-bottom: 16px;
+                        >span {
+                            &:nth-child(1) {
+                                color: #101010;
+                                margin-right: 6px
+                            }
+                        };
+                        .attendanceStyle {
+                            color: #289E8E
+                        };
+                        .clockingStyle {
+                            color: #E86F50
+                        };
+                        .expatriateStyle {
+                            color: #174E97
+                        };
+                        .occupationalInjuryStyle {
+                            color: #E8CB51
+                        };
+                        .sickLeaveStyle {
+                            color: #101010
+                        };
+                        .vocationStyle {
+                            color: #254550
+                        };
+                        .affairsStyle  {
+                            color: #3B9DF9
+                        };
+                        .overtimeStyle  {
+                            color: #F2A15F
+                        };
+                        .changeShiftStyle {
+                            color: #1864FF
+                        };
+                        .absenteeismStyle {
+                            color: #666666
+                        }
+                    }
+                }
+            } 
+        }
     }    
   }
 }

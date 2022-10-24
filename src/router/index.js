@@ -25,7 +25,11 @@ const ScanQRCode = () =>
 const AttendanceManagement = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/AttendanceManagement')
 const AttendanceStatistics = () =>
-    import ('@/pages/environmentalManagement/cleaningManagement/AttendanceStatistics')    
+    import ('@/pages/environmentalManagement/cleaningManagement/AttendanceStatistics')
+const AttendanceTypeDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/AttendanceTypeDetails')
+const PersonnelStatisticsDetails = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/PersonnelStatisticsDetails')               
 const Login = () =>
     import ('@/pages/Login')
 const MyInfo = () =>
@@ -100,6 +104,16 @@ let baseRoute = [{
         path: '/attendanceStatistics',
         name: 'attendanceStatistics',
         component: AttendanceStatistics
+    },
+    {
+        path: '/attendanceTypeDetails',
+        name: 'attendanceTypeDetails',
+        component: AttendanceTypeDetails
+    },
+    {
+        path: '/personnelStatisticsDetails',
+        name: 'personnelStatisticsDetails',
+        component: PersonnelStatisticsDetails
     }
 ];
 let router = new Router({

@@ -580,7 +580,9 @@ export const removeAllLocalStorage = () => {
   removeStore('cleanTaskDetails');
   removeStore('timeMessage');
   removeStore('ossMessage');
-  removeStore('chooseProject')
+  removeStore('chooseProject');
+  removeStore('attendanceTypeDetailsMessage');
+  removeStore('personnelStatisticsDetailsMessage')
 }
 
 /*
@@ -596,7 +598,9 @@ export const removeExceptLoginMessageLocalStorage = () => {
   removeStore('cleanTaskDetails');
   removeStore('timeMessage');
   removeStore('ossMessage');
-  removeStore('chooseProject')
+  removeStore('chooseProject');
+  removeStore('attendanceTypeDetailsMessage');
+  removeStore('personnelStatisticsDetailsMessage')
 }
 
 /*
