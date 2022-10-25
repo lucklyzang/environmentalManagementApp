@@ -2,7 +2,6 @@
   <div class="page-box" ref="wrapper">
     <van-overlay :show="overlayShow" />
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadText }}</van-loading>
-    <van-overlay :show="overlayShow" />
     <div class="nav">
       <NavBar path="/cleanTaskList" title="新增任务" />
     </div>
@@ -48,15 +47,14 @@
             </van-dropdown-menu>
         </div>
       </div>
-      <div class="category-box">
+      <div class="category-box location-box">
         <div class="category-title">
             <span>*</span>
             <span>位置</span>
         </div>
-        <div class="select-box">
-            <van-dropdown-menu active-color="#174E97">
-                <van-dropdown-item v-model="locationValue" :options="locationOption" />
-            </van-dropdown-menu>
+        <div class="select-box" @click="locationEvent">
+          <span>{{ locationValue }}</span>
+          <van-icon name="arrow" color="#174E97" size="20" />
         </div>
       </div>
       <div class="category-box completeDate-box">
@@ -98,7 +96,7 @@
         </div>
         <div class="select-box">
             <van-dropdown-menu active-color="#174E97">
-                <van-dropdown-item v-model="violateStandardValue" :options="violateStandardOption" />
+                <van-dropdown-item v-model="violateStandardValue" :options="violateStandardOption" @open="standardOptionOpenEvent" />
             </van-dropdown-menu>
         </div>
       </div>
@@ -163,7 +161,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import {addForthwithCleanTask, getViolateStandardMessage} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
 import {getAliyunSign} from '@/api/login.js'
@@ -181,9 +179,7 @@ export default {
       showDateBox: false,
       overlayShow: false,
       loadingShow: false,
-      loadText: '提交中',
-      imgOnlinePathArr: [],
-      temporaryFileArray: [],
+      loadText: '创建中',
       enterRemark: "",
       personNumberValue: '',
       durationValue: '',
@@ -232,45 +228,17 @@ export default {
         }
       ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
-      locationValue: 0,
-      locationOption: [
-        {
-            text: '请选择位置',
-            value: 0
-            
-        },
-        {
-            text: '测试医院',
-            value: 1
-            
-        },
-        {
-            text: '儿童医院',
-            value: 2
-            
-        }
-      ],
-       violateStandardValue: 0,
-       violateStandardOption: [
-        {
-            text: '请选择违反标准',
-            value: 0
-            
-        },
-        {
-            text: '测试医院',
-            value: 1
-            
-        },
-        {
-            text: '儿童医院',
-            value: 2
-            
-        }
-      ],
+      locationValue: '',
+      violateStandardValue: 0,
+      violateStandardOption: [{
+        text: '请选择违反标准',
+        value: 0
+      }],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
       resultImgList: [],
-    };
+      imgOnlinePathArr: [],
+      temporaryFileArray: []
+    }
   },
 
   mounted() {
@@ -281,23 +249,73 @@ export default {
         pushHistory();
         this.$router.push({
           path: "/cleanTaskList",
-        });
-      });
+        })
+      })
     }
+  },
+
+  activated () {
+    this.echoLoactionMessage();
+    console.log('位置信息',this.locationMessage);
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","timeMessage","ossMessage","chooseProject"]),
+    ...mapGetters(["userInfo","timeMessage","ossMessage","chooseProject","locationMessage"]),
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin","changeTimeMessage","changeOssMessage"]),
+    ...mapMutations(["changeIsLogin","changeTimeMessage","changeOssMessage","storeLocationMessage"]),
 
     // 时间栏点击事件
     datetimePickerClickEvent () {
-        this.showDateBox = true
+      this.showDateBox = true
+    },
+
+    // 违反标准下拉框打开事件
+    standardOptionOpenEvent () {
+      if (this.locationMessage.length == 4) {
+        getViolateStandardMessage({id: this.locationMessage[3]['id']}).then((res) => {
+          if (res && res.data.code == 200) {
+            this.violateStandardOption = [{
+              text: '请选择违反标准',
+              value: 0
+            }];
+            if (res.data.data.length > 0) {
+              for ( let i =0, len = res.data.data.length; i< len ; i++) {
+                this.violateStandardOption.push({
+                  text: res.data.data[i],
+                  value: i+1
+                })
+              }
+            }
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        }).
+        catch((err) => {
+          this.$toast({
+            message: `${err}`,
+            type: 'fail'
+          })
+        })
+      }
+    },
+
+    // 回显位置信息
+    echoLoactionMessage () {
+      if (this.locationMessage.length == 4) {
+        this.locationValue = `${this.locationMessage[0]['structName']}-${this.locationMessage[1]['departmentName']}-${this.locationMessage[2]['itemName']}-${this.locationMessage[3]['name']}`
+      }
+    },
+
+    // 位置点击事件
+    locationEvent () {
+      this.$router.push({path: '/choosePosition'})  
     },
 
     // 格式化时间
@@ -331,7 +349,7 @@ export default {
         this.$toast('请选择来源');
         return
       };
-      if (this.locationOption.filter((item) => { return item.value == this.locationValue })[0]['text'] == '请选择位置') {
+      if (this.locationMessage.length != 4) {
         this.$toast('请选择位置');
         return
       };
@@ -347,9 +365,32 @@ export default {
         this.$toast('请选择违反标准');
         return
       };
+      let paramsData = {
+        managerId: this.userInfo.id, // 保洁主管id，当前登陆人员id
+        managerName: this.userInfo.name,// 保洁主管姓名，当前登陆人员姓名
+        assignId: this.userInfo.id, // 任务分配人员id，当前登陆人员id
+        assignName: this.userInfo.name,// 任务分配人员姓名，当前登陆人员姓名
+        path: [], // 上传的问题图片，集合,
+        taskType: 0,// 任务类型，即时保洁为 0
+        source: this.sourceOption.filter((item) => { return item.value == this.sourceValue })[0]['text'], // 任务来源
+        structureId: this.locationMessage[0]['id'], // 建筑id
+        structureName: this.locationMessage[0]['structName'], // 建筑名称
+        depId: this.locationMessage[1]['id'], // 科室id
+        depName: this.locationMessage[1]['departmentName'], // 科室名称
+        areaImmediateId: this.locationMessage[2]['id'], // 目的区域id
+        areaImmediateName: this.locationMessage[2]['itemName'], // 目的区域名称
+        spaces: [],
+        standards: [this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text']], // 检查标准，违反标准，数组
+        planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
+        planPersons: this.personNumberValue, // 任务预计所需人数
+        planUseTime: this.durationValue*60, // 任务预计用时，单位为分钟
+        taskRemark: this.enterRemark, // 任务备注信息
+        proId: this.userInfo.proIds[0], // 所属项目id
+        proName: this.userInfo.hospitalList[0]['hospitalName'] // 所属项目名称
+      };
       // 上传图片到阿里云服务器
       if (this.resultImgList.length > 0) {
-        this.loadText ='提交中';
+        this.loadText ='创建中';
         this.overlayShow = true;
         this.loadingShow = true;
         for (let imgI of this.temporaryFileArray) {
@@ -365,9 +406,63 @@ export default {
             await this.getSign();
             await this.uploadImageToOss(imgI)
           }
-        }
-      }  
+        };
+        paramsData.path = this.imgOnlinePathArr
+      };
+      paramsData.spaces.push({
+        id: this.locationMessage[3]['id'],
+        name: this.locationMessage[3]['name']
+      });
+      this.addForthwithCleanTask(paramsData) 
     },
+
+    // 添加任务
+    addForthwithCleanTask (data) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      addForthwithCleanTask(data).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+					if (res && res.data.code == 200) {
+            this.$toast({
+							message: '任务创建成功',
+							type: 'success'
+						});
+            this.resultImgList = [];
+            this.imgOnlinePathArr = [];
+            this.temporaryFileArray = [];
+            this.storeLocationMessage([]);
+            this.violateStandardOption = [{
+              text: '请选择违反标准',
+              value: 0
+            }];
+            this.enterRemark = '';
+            this.categoryValue = 0;
+            this.sourceValue = 0;
+            this.violateStandardValue = 0;
+            this.locationValue = '';
+            this.personNumberValue = '';
+            this.durationValue = '';
+            this.$router.push({
+              path: "/cleanTaskList"
+            })
+					} else {
+						this.$toast({
+							message: `${res.data.msg}`,
+							type: 'fail'
+						})
+					}
+				}).
+				catch((err) => {
+					this.$toast({
+						message: `${err}`,
+						type: 'fail'
+					});
+					this.loadingShow = false;
+          this.overlayShow = false
+			})
+    },
+
 
     // 图片上传预览
     previewFileOne() {
@@ -690,14 +785,35 @@ export default {
         }
       }
     };
+    .location-box {
+      .select-box {
+        text-align: right;
+        padding-left: 4px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        >span {
+          &:nth-child(1) {
+            flex: 1;
+            .no-wrap();
+            color: #174E97;
+            vertical-align: middle
+          }
+        };
+        /deep/ .van-icon {
+          vertical-align: middle
+        }
+      }
+    };
     .completeDate-box {
         .select-box {
           text-align: right;
             >span {
-                vertical-align: middle
+              vertical-align: middle;
+                color: #174E97
             };
             /deep/ .van-icon {
-                vertical-align: middle
+              vertical-align: middle
             }
         }
     };

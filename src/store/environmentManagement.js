@@ -14,9 +14,13 @@ export default {
             return state.currentCleanTaskDateVlue
         },
 
-        cleanTaskDetails : (state) => { 
+        cleanTaskDetails : (state) => {
             state.cleanTaskDetails = getStore('cleanTaskDetails') ? JSON.parse(getStore('cleanTaskDetails')) : {};
             return state.cleanTaskDetails
+        },
+
+        locationMessage : (state) => {
+            return state.locationMessage
         },
 
         attendanceTypeDetailsMessage : (state) => {
@@ -65,10 +69,17 @@ export default {
 
         // 保存保洁管理考勤人员统计详情
         storePersonnelStatisticsDetailsMessage(state, playLoad) {
-        if (playLoad && playLoad != 'null') {
-            setStore('personnelStatisticsDetailsMessage', playLoad);
-            state.personnelStatisticsDetailsMessage = playLoad
-        }
+            if (playLoad && playLoad != 'null') {
+                setStore('personnelStatisticsDetailsMessage', playLoad);
+                state.personnelStatisticsDetailsMessage = playLoad
+            }
+        },
+
+        // 保存保洁管理即时保洁任务添加的位置信息
+        storeLocationMessage(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                state.locationMessage = playLoad
+            }
         },
 
         //重置保洁管理状态

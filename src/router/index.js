@@ -10,6 +10,8 @@ const CleaningTask = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/CleaningTask')
 const ForthwithCleaningTaskDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/ForthwithCleaningTaskDetails')
+const ChoosePosition = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/ChoosePosition')
 const SpecialCleaningTaskDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/SpecialCleaningTaskDetails')
 const AddTask = () =>
@@ -69,6 +71,11 @@ let baseRoute = [{
         path: '/forthwithCleaningTaskDetails',
         name: 'forthwithCleaningTaskDetails',
         component: ForthwithCleaningTaskDetails
+    },
+    {
+        path: '/choosePosition',
+        name: 'choosePosition',
+        component: ChoosePosition
     },
     {
         path: '/specialCleaningTaskDetails',

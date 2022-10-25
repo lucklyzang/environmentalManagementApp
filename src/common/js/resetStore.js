@@ -19,6 +19,7 @@ export function getDefaultEnvironmentManagementState() {
        currentCleanTaskDateVlue: '',
        cleanTaskDetails: {},
        attendanceTypeDetailsMessage: {},
-       personnelStatisticsDetailsMessage: {}
+       personnelStatisticsDetailsMessage: {},
+       locationMessage: []
     }
 };
