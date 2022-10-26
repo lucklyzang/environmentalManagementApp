@@ -5,7 +5,7 @@
     <div class="nav">
       <NavBar path="/home" title="任务列表" />
     </div>
-    <van-calendar v-model="calendarShow" @confirm="onConfirm" color="#1864FF" />
+    <van-calendar v-model="calendarShow" @confirm="onConfirm" color="#1864FF" :min-date="minDate" :max-date="maxDate" />
     <div class="content">
       <div class="content-top-area">
 			  <img :src="statusBackgroundPng" />
@@ -172,6 +172,8 @@ export default {
       forthwithCurrentRate: 0,
       specialCurrentRate: 0,
       pollingCurrentRate: 0,
+      minDate: new Date(2010, 0, 1),
+      maxDate: new Date(2050, 10, 1),
       emptyShow: false,
       loadingShow: false,
       overlayShow: false,

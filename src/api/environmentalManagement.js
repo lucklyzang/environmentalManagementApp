@@ -99,10 +99,55 @@ export function cleanAttendanceDay(data) {
   })
 }
 
+// 考勤日统计详情
+export function cleanAttendanceDayInfo(data) {
+  return request({
+    url: 'clean/attendance/dayAppInfo',
+    method: 'get',
+    params: data
+  })
+}
+
 // 考勤月统计
 export function cleanAttendanceMonth(data) {
   return request({
     url: 'clean/attendance/monthApp',
+    method: 'get',
+    params: data
+  })
+}
+
+// 考勤月统计详情
+export function cleanAttendanceMonthInfo(data) {
+  return request({
+    url: 'clean/attendance/monthAppInfo',
+    method: 'get',
+    params: data
+  })
+}
+
+// 考勤月统计出勤详情
+export function cleanAttendanceMonthAttendance(data) {
+  return request({
+    url: 'clean/attendance/monthAttendanceApp',
+    method: 'get',
+    params: data
+  })
+}
+
+// 考勤人员统计
+export function cleanAttendancePeople(data) {
+  return request({
+    url: 'clean/attendance/peopleApp',
+    method: 'get',
+    params: data
+  })
+}
+
+// 考勤人员详情统计
+export function cleanAttendancePeopleInfo(data) {
+  return request({
+    url: 'clean/attendance/peopleInfoApp',
     method: 'get',
     params: data
   })

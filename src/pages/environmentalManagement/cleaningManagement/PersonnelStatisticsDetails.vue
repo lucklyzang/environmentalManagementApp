@@ -1,5 +1,7 @@
 <template>
   <div class="page-box">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
        <van-nav-bar
         title="统计详情"
@@ -18,7 +20,7 @@
        <div class="data-sources-box">
            <span>数据来源</span>
            <span>
-               {{ personnelStatisticsDetailsMessage.personName }}
+               {{ personnelStatisticsDetailsMessage.content.name }}
            </span>
        </div>
        <div class="data-content">
@@ -31,7 +33,7 @@
                     }"
                 >
                     <span>{{ `${item.attendanceType}` }}</span>
-                    <span>{{`${item.duration}天`}}</span>
+                    <span>{{`${item.duration} ${item.attendanceType == '加班' ? "小时" : "天"}`}}</span>
                 </div> 
            </div>
            <div class="data-content-bottom">
@@ -82,7 +84,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import {cleanAttendancePeopleInfo} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -93,8 +95,11 @@ export default {
   data() {
     return {
         calendarShow: true,
+        loadingShow: false,
+        overlayShow: false,
         minDate: new Date(2022, 9, 1),
         maxDate: new Date(2022, 9, 31),
+        currentMonthDate: '',
         attendanceStatusList: [
             {attendanceType:'出勤', duration: 13.4},
             {attendanceType:'迟到早退', duration: 13},
@@ -125,6 +130,8 @@ export default {
         })
       })
     };
+    this.getCleanAttendancePeopleInfo();
+    this.echoAttendanceData();
     console.log(this.personnelStatisticsDetailsMessage);
   },
 
@@ -142,9 +149,65 @@ export default {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
 
+    // 回显各种考勤类型数据
+    echoAttendanceData () {
+        for (let item of this.attendanceStatusList) {
+            if (item.attendanceType == '出勤') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.chuQin
+            } else if (item.attendanceType == '迟到早退') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.zaoTui
+            } else if (item.attendanceType == '外派') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.waiPai
+            }  else if (item.attendanceType == '工伤') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.gongShang
+            }  else if (item.attendanceType == '病假') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.bingJia
+            } else if (item.attendanceType == '休假') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.xiuJia
+            } else if (item.attendanceType == '事假') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.shiJia
+            } else if (item.attendanceType == '加班') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.jiaBan
+            } else if (item.attendanceType == '调班') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.tiaoBan
+            } else if (item.attendanceType == '旷工') {
+                item.duration = this.personnelStatisticsDetailsMessage.content.kuangGong
+            }
+        }
+    }, 
+
     // 日历选中日期事件
     selectDateEvent (date) {
         console.log(this.formatDate(date))
+    },
+
+    // 获取考勤人员统计数据
+    getCleanAttendancePeopleInfo () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.statisticsBoxShow = false;
+      cleanAttendancePeopleInfo({proId: this.userInfo.proIds[0],workerId: this.personnelStatisticsDetailsMessage.content.id, month: this.personnelStatisticsDetailsMessage.date}).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.statisticsBoxShow = true;
+		if (res && res.data.code == 200) {
+          
+        } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+        }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false;
+            this.statisticsBoxShow = true
+        })
     }
   }
 };
@@ -174,6 +237,12 @@ export default {
         }
     }
   };
+  /deep/ .van-popup {
+    z-index: 30000 !important
+  };
+  /deep/ .van-loading {
+    z-index: 1000000
+  };      
   .content {
     flex: 1;
     display: flex;

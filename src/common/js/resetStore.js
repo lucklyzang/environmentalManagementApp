@@ -20,6 +20,7 @@ export function getDefaultEnvironmentManagementState() {
        cleanTaskDetails: {},
        attendanceTypeDetailsMessage: {},
        personnelStatisticsDetailsMessage: {},
-       locationMessage: []
+       locationMessage: [],
+       attendanceStatisticsSwitchMessage: {}
     }
 };

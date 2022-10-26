@@ -2,12 +2,34 @@
   <div class="page-box" ref="wrapper">
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
-     <van-popup v-model="calendarShow" position="bottom">
+    <van-popup v-model="calendarDayShow" position="bottom">
         <van-datetime-picker
-            v-model="currentDate"
-            @confirm="onConfirm"
-            @cancel="calendarShow = false"
+            v-model="currentDayDate"
+            @confirm="onConDayFirm"
+            @cancel="calendarDayShow = false"
             type="date"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
+    <van-popup v-model="calendarMonthShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentMonthDate"
+            @confirm="onConMonthFirm"
+            @cancel="calendarMonthShow = false"
+            type="year-month"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
+    <van-popup v-model="calendarPersonShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentPersonDate"
+            @confirm="onConPersonFirm"
+            @cancel="calendarPersonShow = false"
+            type="year-month"
             title="选择日期"
             :min-date="minDate"
             :max-date="maxDate"
@@ -39,8 +61,8 @@
         <div class="day-statistics-box" v-if="statisticalTypeIndex == 0 && statisticsBoxShow">
             <div class="date-box">
                <div class="date-content">
-                    <span>{{ getNowFormatDate(currentDate) }}</span>
-                    <img :src="calendarPng" alt="" @click="calendarShow = true" />
+                    <span>{{ getNowFormatDate(currentDayDate,'day') }}</span>
+                    <img :src="calendarPng" alt="" @click="calendarDayShow = true" />
                </div>
            </div> 
             <div class="content-center">
@@ -56,7 +78,7 @@
                     实到=出勤人数+迟到早退人数
                 </div>
                 <div class="attendance-status-list-box">
-                    <div class="attendance-status-list" v-for="(item,index) in attendanceStatusList"  @click="attendanceStatusEvent(item,index)"
+                    <div class="attendance-status-list" v-for="(item,index) in attendanceStatusList"  @click="attendanceStatusEvent(item,index,'day')"
                         :key="index"
                         :class="{'attendanceStyle': index == 0,'clockingStyle': index == 1,
                             'expatriateStyle': index == 2,'occupationalInjuryStyle': index == 3, 'sickLeaveStyle': index == 4, 'vocationStyle': index == 5,
@@ -102,12 +124,12 @@
         <div class="month-statistics-box" v-if="statisticalTypeIndex == 1 && statisticsBoxShow">
             <div class="date-box">
                <div class="date-content">
-                    <span>{{ getNowFormatDate(currentDate) }}</span>
-                    <img :src="calendarPng" alt="" @click="calendarShow = true" />
+                    <span>{{ getNowFormatDate(currentMonthDate,'month') }}</span>
+                    <img :src="calendarPng" alt="" @click="calendarMonthShow = true" />
                </div>
             </div> 
             <div class="attendance-type-list-box">
-                <div class="attendance-type-list" v-for="(item,index) in attendanceTypeList" :key="index" @click="attendanceTypeMonthEvent(item)">
+                <div class="attendance-type-list" v-for="(item,index) in attendanceTypeList" :key="index" @click="attendanceTypeMonthEvent(item,'month')">
                     <div class="attendance-type-left">
                         {{ item.attendanceType }}
                     </div>
@@ -121,19 +143,20 @@
         <div class="personnel-statistics-box" v-if="statisticalTypeIndex == 2 && statisticsBoxShow">
             <div class="date-box">
                <div class="date-content">
-                    <span>{{ getNowFormatDate(currentDate) }}</span>
-                    <img :src="calendarPng" alt="" @click="calendarShow = true" />
+                    <span>{{ getNowFormatDate(currentPersonDate,'person') }}</span>
+                    <img :src="calendarPng" alt="" @click="calendarPersonShow = true" />
                </div>
-            </div> 
-            <div class="personnel-statistics-list-box">
+            </div>
+            <van-empty description="暂无数据" v-show="personStatisticalEmptyShow" /> 
+            <div class="personnel-statistics-list-box" v-show="!personStatisticalEmptyShow">
                 <div class="personnel-statistics-list" v-for="(item,index) in personnelStatisticsList" :key="index">
                     <div class="personnel-statistics-title">
                         <div class="personnel-statistics-title-left">
-                            {{ item.personName }}
+                            {{ item.name }}
                         </div>
                         <div class="personnel-statistics-title-right">
                             <span>满勤天数</span>
-                            <span>{{ item.fullWorkDays }}</span>
+                            <span>{{ item.manQin }}</span>
                             <img :src="editPng" alt="" @click="editEvent(item)">
                         </div>
                     </div>
@@ -141,61 +164,61 @@
                         <div>
                             <span>出勤</span>
                             <span class="attendanceStyle">
-                                {{ `${item.attendanceDays}天` }}
+                                {{ `${item.chuQin}天` }}
                             </span>
                         </div>
                         <div>
                             <span>迟到早退</span>
                             <span class="clockingStyle">
-                                {{ `${item.clockingDays}` }}
+                                {{ `${item.zaoTui}天` }}
                             </span>
                         </div>
                         <div>
                             <span>外派</span>
                             <span class="expatriateStyle">
-                                {{ `${item.expatriateDays}天` }}
+                                {{ `${item.waiPai}天` }}
                             </span>
                         </div>
                         <div>
                             <span>工伤</span>
                             <span class="occupationalInjuryStyle">
-                                {{ `${item.occupationalInjuryDays}天` }}
+                                {{ `${item.gongShang}天` }}
                             </span>
                         </div>
                         <div>
                             <span>病假</span>
                             <span class="sickLeaveStyle">
-                                {{ `${item.sickLeaveDays}天` }}
+                                {{ `${item.bingJia}天` }}
                             </span>
                         </div>
                         <div>
                             <span>休假</span>
                             <span class="vocationStyle">
-                                {{ `${item.vocationDays}天` }}
+                                {{ `${item.xiuJia}天` }}
                             </span>
                         </div>
                         <div>
                             <span>事假</span>
                             <span class="affairsStyle">
-                                {{ `${item.affairsDays}天` }}
+                                {{ `${item.shiJia}天` }}
                             </span>
                         </div>
                         <div>
                             <span>加班</span>
                             <span class="overtimeStyle">
-                                {{ `${item.overtimeDays}小时` }}
+                                {{ `${item.jiaBan}小时` }}
                             </span>
                         </div>
                         <div>
                             <span>调班</span>
                             <span class="changeShiftStyle">
-                                {{ `${item.changeShiftDays}小时` }}
+                                {{ `${item.tiaoBan}天` }}
                             </span>
                         </div>
                         <div>
                             <span>旷工</span>
                             <span class="absenteeismStyle">
-                                {{ `${item.attendanceDays}天` }}
+                                {{ `${item.kuangGong}天` }}
                             </span>
                         </div>
                     </div>
@@ -207,7 +230,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {cleanAttendanceDay, cleanAttendanceMonth} from "@/api/environmentalManagement.js";
+import {cleanAttendanceDay, cleanAttendanceMonth, cleanAttendancePeople} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -222,16 +245,21 @@ export default {
       expatriateEmptyShow: false,
       overlayShow: false,
       statisticsBoxShow: false,
+      personStatisticalEmptyShow: false,
       actualArrival: '',
       total: '',
       activeObjectName: 'attendance',
       currentRate: 50,
       attendanceStatusIndex: null,
       statisticalTypeIndex: 0,
-      currentDate: new Date(),
+      currentDayDate: new Date(),
+      currentMonthDate: new Date(),
+      currentPersonDate: new Date(),
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
-      calendarShow: false,
+      calendarDayShow: false,
+      calendarMonthShow: false,
+      calendarPersonShow: false,
       calendarPng: require("@/common/images/home/calendar.png"),
       editPng: require("@/common/images/home/edit.png"),
       statisticalTypeList: ['日统计','月统计','人员统计'],
@@ -296,40 +324,12 @@ export default {
             totalNum: 4.5
         },
         {
+            attendanceTypeName: '旷工',
             attendanceType: '旷工(人天)',
             totalNum: 4.5
         }
       ],
-      personnelStatisticsList: [
-        {
-            personName: '张三',
-            fullWorkDays: 23,
-            attendanceDays: 45.5,
-            clockingDays: 0,
-            expatriateDays: 1,
-            occupationalInjuryDays: 2,
-            sickLeaveDays: 1,
-            vocationDays: 2,
-            affairsDays: 1,
-            overtimeDays: 2,
-            changeShiftDays: 3,
-            absenteeismDays: 4
-        },
-        {
-            personName: '李四',
-            fullWorkDays: 23,
-            attendanceDays: 45.5,
-            clockingDays: 0,
-            expatriateDays: 1,
-            occupationalInjuryDays: 2,
-            sickLeaveDays: 4,
-            vocationDays: 2,
-            affairsDays: 1,
-            overtimeDays: 2,
-            changeShiftDays: 8,
-            absenteeismDays: 3
-        }
-      ]
+      personnelStatisticsList: []
     }
   },
 
@@ -345,17 +345,22 @@ export default {
       })
     };
     this.itemNameIndex = this.currentCleanTaskName;
-    this.getCleanAttendanceDay()
+    if (JSON.stringify(this.attendanceStatisticsSwitchMessage) == '{}') {
+        this.getCleanAttendanceDay();
+    } else {
+        this.echoStatisticsSwitchMessage()
+    };
+    console.log('切换缓存信息',this.attendanceStatisticsSwitchMessage)
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","personnelStatisticsDetailsMessage","attendanceTypeDetailsMessage","attendanceStatisticsSwitchMessage"])
   },
 
   methods: {
-    ...mapMutations(['storeAttendanceTypeDetailsMessage','storePersonnelStatisticsDetailsMessage']),
+    ...mapMutations(['storeAttendanceTypeDetailsMessage','storePersonnelStatisticsDetailsMessage', 'storeAttendanceStatisticsSwitchMessage']),
     onClickLeft() {
       this.$router.push({ path: "/home"})
     },
@@ -364,10 +369,19 @@ export default {
         this.$router.push({path: '/attendanceManagement'})
     },
 
-    // 编辑事件
-    editEvent (item) {
-        this.$router.push({path: '/personnelStatisticsDetails'});
-        this.storePersonnelStatisticsDetailsMessage(item)
+    // 回显统计类型切换和时间信息
+    echoStatisticsSwitchMessage () {
+        this.statisticalTypeIndex = this.attendanceStatisticsSwitchMessage.switchIndex;
+        if (this.attendanceStatisticsSwitchMessage.switchIndex == 0) {
+            this.currentDayDate = this.attendanceStatisticsSwitchMessage.date;
+            this.getCleanAttendanceDay();
+        } else if (this.attendanceStatisticsSwitchMessage.switchIndex == 1) {
+            this.currentMonthDate = this.attendanceStatisticsSwitchMessage.date;
+            this.getCleanAttendanceMonth()
+        } else if (this.attendanceStatisticsSwitchMessage.switchIndex == 2) {
+            this.currentPersonDate = this.attendanceStatisticsSwitchMessage.date;
+            this.getCleanAttendancePeople()
+        }
     },
 
     // vant tab切换事件
@@ -391,18 +405,51 @@ export default {
             this.getCleanAttendanceDay();
         } else if (index == 1) {
             this.getCleanAttendanceMonth()
+        } else if (index == 2) {
+            this.getCleanAttendancePeople()
         }
     },
 
     // 出勤类型日统计点击事件
-    attendanceStatusEvent (item,index) {
-        this.attendanceStatusIndex = index
+    attendanceStatusEvent (item,index,type) {
+        this.attendanceStatusIndex = index;
+        let temporaryMessage = this.attendanceTypeDetailsMessage;
+        temporaryMessage['type'] = type;
+        temporaryMessage['date'] = this.currentDayDate;
+        temporaryMessage['content'] = item;
+        this.storeAttendanceTypeDetailsMessage(temporaryMessage);
+        let temporarySwitchMessage = this.attendanceStatisticsSwitchMessage;
+        temporarySwitchMessage['switchIndex'] = this.statisticalTypeIndex;
+        temporarySwitchMessage['date'] = this.currentDayDate;
+        this.storeAttendanceStatisticsSwitchMessage(temporarySwitchMessage);
+        this.$router.push({path: '/attendanceTypeDetails'});
     },
 
     // 出勤类型月统计点击事件
-    attendanceTypeMonthEvent (item) {
-        this.$router.push({path: '/attendanceTypeDetails'});
-        this.storeAttendanceTypeDetailsMessage(item)
+    attendanceTypeMonthEvent (item,type) {
+        let temporaryMessage = this.attendanceTypeDetailsMessage;
+        temporaryMessage['type'] = type;
+        temporaryMessage['date'] = this.currentMonthDate;
+        temporaryMessage['content'] = item;
+        this.storeAttendanceTypeDetailsMessage(temporaryMessage);
+        let temporarySwitchMessage = this.attendanceStatisticsSwitchMessage;
+        temporarySwitchMessage['switchIndex'] = this.statisticalTypeIndex;
+        temporarySwitchMessage['date'] = this.currentMonthDate;
+        this.storeAttendanceStatisticsSwitchMessage(temporarySwitchMessage);
+        this.$router.push({path: '/attendanceTypeDetails'})
+    },
+
+    // 编辑事件（出勤类型人员统计详情事件）
+    editEvent (item) {
+        this.$router.push({path: '/personnelStatisticsDetails'});
+        let temporaryMessage = this.personnelStatisticsDetailsMessage;
+        temporaryMessage['date'] = this.currentPersonDate;
+        temporaryMessage['content'] = item;
+        let temporarySwitchMessage = this.attendanceStatisticsSwitchMessage;
+        temporarySwitchMessage['switchIndex'] = this.statisticalTypeIndex;
+        temporarySwitchMessage['date'] = this.currentPersonDate;
+        this.storeAttendanceStatisticsSwitchMessage(temporarySwitchMessage);
+        this.storePersonnelStatisticsDetailsMessage(temporaryMessage)
     },
 
     // 考勤类型转换
@@ -445,29 +492,43 @@ export default {
     },
 
     // 格式化时间
-    getNowFormatDate(currentDate) {
-        console.log(currentDate);
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
         let seperator1 = "-";
         let month = currentDate.getMonth() + 1;
-        let strDate = currentDate.getDate();
+        if (type == 'day') {
+            strDate = currentDate.getDate();
+        };
         if (month >= 1 && month <= 9) {
             month = "0" + month;
         };
-        if (strDate >= 0 && strDate <= 9) {
-            strDate = "0" + strDate;
+        if (type == 'day') {
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
         };
-        let currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        if (type == 'day') {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        }
         return currentdate
     },
 
-    onConfirm() {
-        console.log(this.currentDate);
-        this.calendarShow = false;
-        if (this.statisticalTypeIndex == 0) {
-            this.getCleanAttendanceDay();
-        } else if (this.statisticalTypeIndex == 1) {
-            this.getCleanAttendanceMonth()
-        }
+    onConDayFirm() {
+        this.calendarDayShow = false;
+        this.getCleanAttendanceDay();
+    },
+
+    onConMonthFirm() {
+        this.calendarMonthShow = false;
+        this.getCleanAttendanceMonth();
+    },
+
+    onConPersonFirm() {
+        this.calendarPersonShow = false;
+        this.getCleanAttendancePeople()
     },
 
     // 获取考勤日统计数据
@@ -475,7 +536,7 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.statisticsBoxShow = false;
-      cleanAttendanceDay({proId: this.userInfo.proIds[0],date: this.getNowFormatDate(this.currentDate)}).then((res) => {
+      cleanAttendanceDay({proId: this.userInfo.proIds[0],date: this.getNowFormatDate(this.currentDayDate,'day')}).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
         this.statisticsBoxShow = true;
@@ -540,12 +601,70 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.statisticsBoxShow = false;
-      cleanAttendanceMonth({proId: this.userInfo.proIds[0],date: this.getNowFormatDate(this.currentDate)}).then((res) => {
+      cleanAttendanceMonth({proId: this.userInfo.proIds[0],month: this.getNowFormatDate(this.currentMonthDate,'month')}).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
         this.statisticsBoxShow = true;
 		if (res && res.data.code == 200) {
-           
+            for (let item of this.attendanceTypeList) {
+                if (item.attendanceTypeName == '出勤') {
+                    item.totalNum = res.data.data.chuQin;
+                    item.attendanceType = `出勤(${res.data.data.standard})`
+                } else if (item.attendanceTypeName == '迟到早退') {
+                    item.totalNum = res.data.data.zaoTui
+                } else if (item.attendanceTypeName == '外派') {
+                    item.totalNum = res.data.data.waiPai
+                }  else if (item.attendanceTypeName == '工伤') {
+                    item.totalNum = res.data.data.gongShang
+                }  else if (item.attendanceTypeName == '病假') {
+                    item.totalNum = res.data.data.bingJia
+                } else if (item.attendanceTypeName == '休假') {
+                    item.totalNum = res.data.data.xiuJia
+                } else if (item.attendanceTypeName == '事假') {
+                    item.totalNum = res.data.data.shiJia
+                } else if (item.attendanceTypeName == '加班') {
+                    item.totalNum = `${res.data.data.jiaBan}(${res.data.data.jiaBanXS}小时)`
+                } else if (item.attendanceTypeName == '调班') {
+                    item.totalNum = res.data.data.tiaoBan
+                } else if (item.attendanceTypeName == '旷工') {
+                    item.totalNum = res.data.data.kuangGong
+                }
+            }
+        } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+        }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false;
+            this.statisticsBoxShow = true
+        })
+    },
+
+    // 获取考勤人员统计数据
+    getCleanAttendancePeople () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.personStatisticalEmptyShow = false;
+      this.statisticsBoxShow = false;
+      this.personnelStatisticsList = [];
+      cleanAttendancePeople({proId: this.userInfo.proIds[0],month: this.getNowFormatDate(this.currentPersonDate,'person')}).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.statisticsBoxShow = true;
+		if (res && res.data.code == 200) {
+           if (res.data.data.length > 0) {
+                this.personnelStatisticsList = res.data.data
+           } else {
+                this.personStatisticalEmptyShow = true
+           }
         } else {
             this.$toast({
                 message: `${res.data.msg}`,
@@ -594,7 +713,7 @@ export default {
   /deep/ .van-popup {
     z-index: 30000 !important
   };
-   /deep/ .van-loading {
+  /deep/ .van-loading {
     z-index: 1000000
   };      
   .content {
@@ -634,7 +753,8 @@ export default {
         height: 0;
         .date-box {
             width: 100%;
-            height: 40px;
+            padding: 5px 0;
+            box-sizing: border-box;
             background: #fff;
             display: flex;
             align-items: center;
@@ -859,7 +979,8 @@ export default {
         height: 0;
         .date-box {
             width: 100%;
-            height: 40px;
+            padding: 5px 0;
+            box-sizing: border-box;
             background: #fff;
             display: flex;
             align-items: center;
@@ -930,9 +1051,17 @@ export default {
         flex: 1;
         height: 0;
         overflow: auto;
+        position: relative;
+        /deep/ .van-empty {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%)
+        };
         .date-box {
             width: 100%;
-            height: 40px;
+            padding: 5px 0;
+            box-sizing: border-box;
             background: #fff;
             display: flex;
             align-items: center;

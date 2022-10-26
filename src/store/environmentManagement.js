@@ -19,6 +19,10 @@ export default {
             return state.cleanTaskDetails
         },
 
+        attendanceStatisticsSwitchMessage : (state) => {
+            return state.attendanceStatisticsSwitchMessage
+        },
+
         locationMessage : (state) => {
             return state.locationMessage
         },
@@ -72,6 +76,13 @@ export default {
             if (playLoad && playLoad != 'null') {
                 setStore('personnelStatisticsDetailsMessage', playLoad);
                 state.personnelStatisticsDetailsMessage = playLoad
+            }
+        },
+
+        // 保存保洁管理考勤统计切换和日期信息
+        storeAttendanceStatisticsSwitchMessage(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                state.attendanceStatisticsSwitchMessage = playLoad
             }
         },
 
