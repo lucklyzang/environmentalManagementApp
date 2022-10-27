@@ -353,6 +353,13 @@ export default {
     console.log('切换缓存信息',this.attendanceStatisticsSwitchMessage)
   },
 
+  beforeRouteLeave(to, from, next) {
+    if (to.path == '/home') {
+        this.storeAttendanceStatisticsSwitchMessage({})
+    };
+    next() 
+  },
+
   watch: {},
 
   computed: {

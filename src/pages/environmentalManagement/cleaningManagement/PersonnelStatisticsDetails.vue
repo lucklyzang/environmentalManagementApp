@@ -99,7 +99,7 @@ export default {
         overlayShow: false,
         minDate: new Date(2022, 9, 1),
         maxDate: new Date(2022, 9, 31),
-        currentMonthDate: '',
+        currentPersonDate: new Date(),
         attendanceStatusList: [
             {attendanceType:'出勤', duration: 13.4},
             {attendanceType:'迟到早退', duration: 13},
@@ -149,7 +149,32 @@ export default {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     },
 
-    // 回显各种考勤类型数据
+    // 格式化时间
+    getNowFormatDate(currentDate,type) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = currentDate.getMonth() + 1;
+      if (type == 'day') {
+          strDate = currentDate.getDate();
+      };
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (type == 'day') {
+          if (strDate >= 0 && strDate <= 9) {
+              strDate = "0" + strDate;
+          }
+      };
+      if (type == 'day') {
+          currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+      } else {
+          currentdate = currentDate.getFullYear() + seperator1 + month
+      }
+      return currentdate
+    },
+
+    // 回显各种考勤类型数据和日期
     echoAttendanceData () {
         for (let item of this.attendanceStatusList) {
             if (item.attendanceType == '出勤') {
@@ -186,7 +211,7 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.statisticsBoxShow = false;
-      cleanAttendancePeopleInfo({proId: this.userInfo.proIds[0],workerId: this.personnelStatisticsDetailsMessage.content.id, month: this.personnelStatisticsDetailsMessage.date}).then((res) => {
+      cleanAttendancePeopleInfo({proId: this.userInfo.proIds[0],workerId: this.personnelStatisticsDetailsMessage.content.id, month: this.getNowFormatDate(this.personnelStatisticsDetailsMessage.date, 'person')}).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
         this.statisticsBoxShow = true;

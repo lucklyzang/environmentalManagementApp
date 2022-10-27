@@ -37,14 +37,14 @@
                 </div>
             </div>
             <div class="task-item-name">
-                <div @click="taskItemNameEvent(1)" :class="{'forthwithItemStyle':itemNameIndex == 1}">即时20</div>
-                <div @click="taskItemNameEvent(2)" :class="{'specialItemStyle':itemNameIndex == 2}">专项12</div>
-                <div @click="taskItemNameEvent(3)" :class="{'pollingItemStyle':itemNameIndex == 3}">巡检6</div>
+                <div @click="taskItemNameEvent(1)" v-show="this.currentCleanTaskName.forthwithTaskShow" :class="{'forthwithItemStyle':itemNameIndex == 1}">{{`即时${taskList.length}`}}</div>
+                <div @click="taskItemNameEvent(2)" v-show="this.currentCleanTaskName.specialTaskShow" :class="{'specialItemStyle':itemNameIndex == 2}">{{`专项${taskList.length}`}}</div>
+                <div @click="taskItemNameEvent(3)" v-show="this.currentCleanTaskName.pollingTaskShow" :class="{'pollingItemStyle':itemNameIndex == 3}">{{`巡检${taskList.length}`}}</div>
             </div>
         </div>
         <van-empty v-show="emptyShow" description="暂无数据" />
         <div class="content-bottom" v-show="!emptyShow">
-            <div class="task-list-box" v-if="currentCleanTaskName == 1">
+            <div class="task-list-box" v-if="currentCleanTaskName.num == 1">
                 <div class="task-list" v-for="(item,index) in taskList" @click="forthwithTaskDetailsEvent(item)" :key="index">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
@@ -80,7 +80,7 @@
                     </div>
                 </div>
             </div>
-            <div class="task-list-box" v-if="currentCleanTaskName == 2">   
+            <div class="task-list-box" v-if="currentCleanTaskName.num == 2">   
                 <div class="task-list special-list" v-for="(item,index) in taskList" @click="specialTaskDetailsEvent(item)" :key="item.taskNumber">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
@@ -115,7 +115,7 @@
                     </div>
                 </div>
             </div>
-            <div class="task-list-box" v-if="currentCleanTaskName == 3">  
+            <div class="task-list-box" v-if="currentCleanTaskName.num == 3">  
                 <div class="task-list polling-list" v-for="(item,index) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
@@ -202,8 +202,8 @@ export default {
         })
       })
     };
-    this.itemNameIndex = this.currentCleanTaskName;
-    this.getCleaningManageTaskList(this.currentCleanTaskName -1)
+    this.itemNameIndex = this.currentCleanTaskName.num;
+    this.getCleaningManageTaskList(this.currentCleanTaskName.num -1)
   },
 
   watch: {},
@@ -282,9 +282,9 @@ export default {
     // 查询任务列表
     getCleaningManageTaskList (taskType) {
         let data = {
-            proId : 1, // 所属项目id
-            queryDate: '2022-09-22', // 查询时间
-            managerId: 7, // 保洁主管id    
+            proId : this.userInfo.proIds[0], // 所属项目id
+            queryDate: this.currentCleanTaskName.date, // 查询时间
+            managerId: this.userInfo.id, // 保洁主管id    
             taskType: taskType // 0-即时，1-专项
         };
         this.loadingShow = true;
@@ -341,7 +341,9 @@ export default {
     taskItemNameEvent (num) {
         this.getCleaningManageTaskList(num - 1);
         this.itemNameIndex = num;
-        this.storeCurrentCleanTaskName(num);
+        let temporaryMessage = this.currentCleanTaskName;
+        temporaryMessage['num'] = num;
+        this.storeCurrentCleanTaskName(temporaryMessage);
         if (this.selectValue != -1) {
             this.selectValue = -1
         };
@@ -495,7 +497,7 @@ export default {
                 color: #fff !important
             };
             >div {
-                flex: 1;
+                width: 32%;
                 height: 32px;
                 font-size: 14px;
                 border-radius: 4px;
@@ -509,7 +511,7 @@ export default {
                 &:nth-child(2) {
                     border: 1px solid #174E97;
                     color: #174E97;
-                    margin: 0 12px;
+                    margin: 0 2%;
                 };
                 &:nth-child(3) {
                     border: 1px solid #E86F50;

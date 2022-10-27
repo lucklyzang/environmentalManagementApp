@@ -5,7 +5,17 @@
     <div class="nav">
       <NavBar path="/home" title="任务列表" />
     </div>
-    <van-calendar v-model="calendarShow" @confirm="onConfirm" color="#1864FF" :min-date="minDate" :max-date="maxDate" />
+    <van-popup v-model="calendarShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentDayDate"
+            @confirm="onConfirm"
+            @cancel="calendarShow = false"
+            type="date"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
     <div class="content">
       <div class="content-top-area">
 			  <img :src="statusBackgroundPng" />
@@ -23,12 +33,12 @@
       </div>
       <div class="content-bottom-area">
         <div class="date-box" @click="calendarShow = true">
-          <span>{{ dateValue }}</span>
+          <span>{{ getNowFormatDate(currentDayDate,'day') }}</span>
           <img :src="calendarPng" alt="">
         </div>
         <van-empty v-show="emptyShow" description="暂无数据" />
         <div class="task-infobox" v-show="!loadingShow && !emptyShow">
-          <div class="forthwith-cleaning-task">
+          <div class="forthwith-cleaning-task" v-if="forthwithTaskShow">
             <div class="forthwith-cleaning-task-title">
               <div class="forthwith-cleaning-task-title-left">
                 即时保洁任务
@@ -67,7 +77,7 @@
               </div>
             </div>
           </div>
-          <div class="forthwith-cleaning-task special-cleaning-task">
+          <div class="forthwith-cleaning-task special-cleaning-task"  v-if="specialTaskShow">
             <div class="forthwith-cleaning-task-title">
               <div class="forthwith-cleaning-task-title-left">
                 专项保洁任务
@@ -106,7 +116,7 @@
               </div>
             </div>
           </div>
-          <div class="forthwith-cleaning-task polling-task">
+          <div class="forthwith-cleaning-task polling-task" v-if="pollingTaskShow">
             <div class="forthwith-cleaning-task-title">
               <div class="forthwith-cleaning-task-title-left">
                 巡检任务
@@ -168,10 +178,13 @@ export default {
   },
   data() {
     return {
-      dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       forthwithCurrentRate: 0,
       specialCurrentRate: 0,
       pollingCurrentRate: 0,
+      forthwithTaskShow: false,
+      specialTaskShow: false,
+      pollingTaskShow: false,
+      currentDayDate: new Date(),
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
       emptyShow: false,
@@ -200,37 +213,65 @@ export default {
       })
     };
     this.getCleaningManageTaskGlobalStatistics({
-      proId : 1, // 所属项目id
-      queryDate: '2022-09-22', // 查询时间
-      managerId: 7 // 保洁主管id
+      proId : this.userInfo.proIds[0], // 所属项目id
+      queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
+      managerId: this.userInfo.id // 保洁主管id
     })
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","currentCleanTaskName"]),
   },
 
   methods: {
     ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","storeCurrentCleanTaskDateVlue"]),
-    formatDate(date) {
-      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+
+    // 格式化时间
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "-";
+        let month = currentDate.getMonth() + 1;
+        if (type == 'day') {
+            strDate = currentDate.getDate();
+        };
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (type == 'day') {
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+        };
+        if (type == 'day') {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        }
+        return currentdate
     },
 
     onConfirm(date) {
       this.calendarShow = false;
-      this.dateValue = this.formatDate(date);
       this.getCleaningManageTaskGlobalStatistics({
-        proId : 1, // 所属项目id
-        queryDate: this.dateValue, // 查询时间
-        managerId: 12 // 保洁主管id
+        proId : this.userInfo.proIds[0], // 所属项目id
+        queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
+        managerId: this.userInfo.id // 保洁主管id
       })
     },
 
     // 点击任务详情事件
     taskDetailsEvent (num) {
-      this.storeCurrentCleanTaskName(num);
+     console.log(this.currentCleanTaskName);
+      let temporaryMessage = this.currentCleanTaskName;
+      temporaryMessage['num'] = num;
+      temporaryMessage['date'] = this.getNowFormatDate(this.currentDayDate,'day');
+      temporaryMessage['forthwithTaskShow'] = this.forthwithTaskShow;
+      temporaryMessage['specialTaskShow'] = this.specialTaskShow;
+      temporaryMessage['pollingTaskShow'] = this.pollingTaskShow;
+      this.storeCurrentCleanTaskName(temporaryMessage);
       this.storeCurrentCleanTaskDateVlue(this.dateValue);
       this.$router.push({path: '/cleaningTask'})
     },
@@ -239,6 +280,7 @@ export default {
     getCleaningManageTaskGlobalStatistics (data) {
       this.loadingShow = true;
       this.overlayShow = true;
+      this.emptyShow = false;
       queryCleaningManageTaskGlobalStatistics(data).then((res) => {
         console.log(res.data.data);
           this.loadingShow = false;
@@ -247,8 +289,18 @@ export default {
             if (JSON.stringify(res.data.data) == '{}') {
               this.emptyShow = true
             } else {
-              this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
-              this.specialCleaningTaskGlobalStatistics = res.data.data['1']
+              if (res.data.data['0']) {
+                this.forthwithTaskShow = true;
+                this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
+              } else {
+                this.forthwithTaskShow = false
+              };
+              if (res.data.data['1']) {
+                this.specialCleaningTaskGlobalStatistics = res.data.data['1'];
+                this.specialTaskShow = true
+              } else {
+                this.specialTaskShow = false
+              }
             }
 					} else {
 						this.$toast({

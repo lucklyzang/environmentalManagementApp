@@ -42,7 +42,7 @@ service.interceptors.response.use(
         };
         return response
     },
-    (err) => {
+    (error) => {
         if (Object.prototype.toString.call(error.response) === '[object Object]') {
             if (error.response.hasOwnProperty('status')) {
                 if (error.response.status === 401) {

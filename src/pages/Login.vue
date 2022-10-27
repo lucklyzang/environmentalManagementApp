@@ -95,40 +95,37 @@ export default {
 			logIn(qs.stringify(loginMessage)).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
-        if (res) {
-          if (res.data.code == 200) {
-            // 登录用户名密码及用户信息存入Locastorage
-            // 判断是否勾选记住用户名密码
-            if (this.checked) {
-              setStore('username',this.username);
-              setStore('password',this.password)
-            } else {
-              removeStore('username');
-              removeStore('password')
-            };
-            this.changeOverDueWay(false);
-            this.changeIsLogin(true);
-            this.storeUserInfo(res.data.data.worker);
-            this.changePermissionInfo(res.data.data.authorities);
-            this.changeRoleNameList(res.data.data.roleNameList);
-            if (this.userInfo.hospitalList.length > 1) {
-              this.hospitalList = [];
-              this.selectHospitalList = [];
-              for (let item of this.userInfo.hospitalList) {
-                this.hospitalList.push({
-                  value: item.hospitalName,
-                  id: item.id
-                })
-              }
-            } else {
-              this.$router.push({ path: "/home" })
-            }
+        if (res && res.data.code == 200) {
+          // 登录用户名密码及用户信息存入Locastorage
+          // 判断是否勾选记住用户名密码
+          if (this.checked) {
+            setStore('username',this.username);
+            setStore('password',this.password)
           } else {
-            this.$toast({
-              type: 'fail',
-              message: res.msg
-            })
-          }
+            removeStore('username');
+            removeStore('password')
+          };
+          this.changeOverDueWay(false);
+          this.changeIsLogin(true);
+          this.storeUserInfo(res.data.data.worker);
+          this.changePermissionInfo(res.data.data.authorities);
+          this.changeRoleNameList(res.data.data.roleNameList);
+          if (this.userInfo.hospitalList.length > 1) {
+            this.hospitalList = [];
+            this.selectHospitalList = [];
+            for (let item of this.userInfo.hospitalList) {
+              this.hospitalList.push({
+                value: item.hospitalName,
+                id: item.id
+              })
+            }
+          };
+          this.$router.push({ path: "/home" })
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.msg
+          })
         }
       })
       .catch((err) => {

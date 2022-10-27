@@ -152,3 +152,38 @@ export function cleanAttendancePeopleInfo(data) {
     params: data
   })
 }
+
+// 查询考勤列表
+export function cleanAttendanceList(data) {
+  return request({
+    url: 'clean/attendance/app',
+    method: 'get',
+    params: data
+  })
+}
+
+// 录入考勤
+export function cleanAttendanceUpdate(data) {
+  return request({
+    url: 'clean/attendance/update',
+    method: 'put',
+    data
+  })
+}
+
+// 批量录入考勤
+export function cleanAttendanceUpdateBatch(data) {
+  return request({
+    url: 'clean/attendance/updateBatch',
+    method: 'put',
+    data
+  })
+}
+
+// 查询保洁员
+export function cleanbxWorkerList(proId) {
+  return request({
+    url: `clean/bxWorker/workers/${proId}`,
+    method: 'get'
+  })
+}

@@ -15,7 +15,7 @@ export function getDefaultLoginState() {
 // 环境管理信息store的初始值
 export function getDefaultEnvironmentManagementState() {
     return {
-       currentCleanTaskName: 1,
+       currentCleanTaskName: {},
        currentCleanTaskDateVlue: '',
        cleanTaskDetails: {},
        attendanceTypeDetailsMessage: {},

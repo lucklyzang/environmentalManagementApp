@@ -2,7 +2,7 @@
    <!-- 启动页 -->
         <div class="main">
             <div class="top">
-                <img src="../../static/img/default-person.png" alt="">
+                <!-- <img src="../../static/img/default-person.png" alt=""> -->
             </div>
         </div>
 </template>

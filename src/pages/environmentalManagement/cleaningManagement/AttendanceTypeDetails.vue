@@ -64,10 +64,10 @@
                   <div class="person-name" v-show="attendanceTypeDetailsMessage.type == 'month' && attendanceTypeDetailsMessage.content.attendanceTypeName != '出勤'">
                     {{ item.workerName }}
                   </div>
-                  <div class="person-name" v-show="attendanceTypeDetailsMessage.type == 'day' && attendanceTypeDetailsMessage.content.name != '出勤'">
+                  <!-- <div class="person-name" v-show="attendanceTypeDetailsMessage.type == 'day' && attendanceTypeDetailsMessage.content.name != '出勤'">
                     {{ item.workerName }}
-                  </div>
-                  <div class="person-name" v-show="attendanceTypeDetailsMessage.type == 'day' && attendanceTypeDetailsMessage.content.name == '出勤'">
+                  </div> -->
+                  <div class="person-name" v-show="attendanceTypeDetailsMessage.type == 'day'">
                     {{ item.name }}
                   </div>
                   <div class="day-message" v-show="attendanceTypeDetailsMessage.type == 'day' ">

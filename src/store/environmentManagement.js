@@ -5,7 +5,7 @@ export default {
 
     getters: {
         currentCleanTaskName: (state) => {
-            state.currentCleanTaskName = getStore('currentCleanTaskName') ? getStore('currentCleanTaskName') : 1;
+            state.currentCleanTaskName = getStore('currentCleanTaskName') ? JSON.parse(getStore('currentCleanTaskName')) : {};
             return state.currentCleanTaskName
         },
 
@@ -95,7 +95,7 @@ export default {
 
         //重置保洁管理状态
         resetCleanManagementState(state) {
-            Object.assign(state, getDefaultCleanManagementState())
+            Object.assign(state, getDefaultEnvironmentManagementState())
         }
     },
 

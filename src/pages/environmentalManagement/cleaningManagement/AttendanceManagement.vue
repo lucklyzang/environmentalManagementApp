@@ -1,5 +1,7 @@
 <template>
   <div class="page-box">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadingText }}</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <van-dialog v-model="attendanceDialogShow" width="98%" show-cancel-button 
             confirm-button-color="#2390fe"
             @confirm="attendanceDialogSure"
@@ -18,7 +20,7 @@
                     </div>
                     <div class="change-shift-box-top-right">
                         <van-dropdown-menu z-index="40000" active-color="#1864FF">
-                            <van-dropdown-item get-container="body" v-model="substitutePersonValue" :options="substitutePersonValueOption" />
+                            <van-dropdown-item get-container="body" v-model="substitutePersonMorningValue" :options="substitutePersonMorningValueOption" />
                         </van-dropdown-menu>
                     </div>
                 </div>
@@ -27,8 +29,18 @@
                         调班日期
                     </div>
                     <div class="change-shift-box-bottom-right">
-                        <span>{{ dateValue }}</span>
-                        <img :src="calendarPng" alt="" @click="calendarShow = true" />
+                        <span>{{ getNowFormatDate(currentMorningDate,'day') }}</span>
+                        <img :src="calendarPng" alt="" />
+                    </div>
+                </div>
+            </div>
+            <div class="change-shift-box duration-box" v-show="isShowForenoonDurationBox">
+                <div class="change-shift-box-bottom">
+                    <div class="change-shift-box-bottom-left">
+                        时长(小时)
+                    </div>
+                    <div class="change-shift-box-bottom-right">
+                        <van-field v-model="currentMorningDuration" type="number"/>
                     </div>
                 </div>
             </div>
@@ -46,7 +58,7 @@
                     </div>
                     <div class="change-shift-box-top-right">
                         <van-dropdown-menu z-index="40000" active-color="#1864FF">
-                            <van-dropdown-item get-container="body" v-model="substitutePersonValue" :options="substitutePersonValueOption" />
+                            <van-dropdown-item get-container="body" v-model="substitutePersonAfternoonValue" :options="substitutePersonAfternoonValueOption" />
                         </van-dropdown-menu>
                     </div>
                 </div>
@@ -55,8 +67,18 @@
                         调班日期
                     </div>
                     <div class="change-shift-box-bottom-right">
-                        <span>{{ dateValue }}</span>
-                        <img :src="calendarPng" alt="" @click="calendarShow = true" />
+                        <span>{{ getNowFormatDate(currentAfternoonDate,'day') }}</span>
+                        <img :src="calendarPng" alt="" />
+                    </div>
+                </div>
+            </div>
+             <div class="change-shift-box duration-box" v-show="isShowAfternoonDurationBox">
+                <div class="change-shift-box-bottom">
+                    <div class="change-shift-box-bottom-left">
+                        时长(小时)
+                    </div>
+                    <div class="change-shift-box-bottom-right">
+                        <van-field v-model="currentAfternoonDuration" type="number"/>
                     </div>
                 </div>
             </div>
@@ -76,17 +98,49 @@
         @click-left="onClickLeft"
     />
     </div>
-    <van-calendar v-model="calendarShow" @confirm="onConfirm" color="#1864FF" />
+    <van-popup v-model="calendarShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentDayDate"
+            @confirm="onConfirm"
+            @cancel="calendarShow = false"
+            type="date"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
+    <van-popup v-model="calendarMorningShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentMorningDate"
+            @confirm="onConMorningFirm"
+            @cancel="calendarMorningShow = false"
+            type="date"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
+    <van-popup v-model="calendarAfternoonShow" position="bottom">
+        <van-datetime-picker
+            v-model="currentAfternoonDate"
+            @confirm="onConAfternoonFirm"
+            @cancel="calendarAfternoonShow = false"
+            type="date"
+            title="选择日期"
+            :min-date="minDate"
+            :max-date="maxDate"
+        />
+    </van-popup>
     <div class="content">
         <div class="content-top">
             <div class="filtrate-box">
                 <div class="date-box">
                     <div class="date-content">
-                        <span>{{ dateValue }}</span>
+                        <span>{{ getNowFormatDate(currentDayDate,'day') }}</span>
                         <img :src="calendarPng" alt="" @click="calendarShow = true" />
                     </div>
                 </div>
-                <div class="search-box">
+                <div class="search-box" @click="searchEvent">
                     <van-field
                         v-model="searchValue"
                         right-icon="search"
@@ -99,47 +153,48 @@
             <van-checkbox shape="square" v-model="allChecked" icon-size="25px" @click="allCheckedChange">全选</van-checkbox>
         </div>
         <div class="content-bottom">
-           <div class="person-attendance-status-list" v-for="(item,index) in personAttendanceStatusList" :key="index" @click="personAttendanceClickEvent(item,index)">
+           <van-empty description="暂无数据" v-show="emptyShow" />
+           <div class="person-attendance-status-list" v-show="!emptyShow" v-for="(item,index) in personAttendanceStatusList" :key="index" @click="personAttendanceClickEvent(item,index)">
                 <div class="check-box" v-show="isShowCheckbox">
                     <van-checkbox shape="square" v-model="item.checked" icon-size="30px" @click.stop.native="emptyHandle"></van-checkbox>
                 </div>
                <div class="list-content">
-                    <div class="person-name">{{ `${index + 1}、${item.personName}`}}</div>
+                    <div class="person-name">{{ `${index + 1}、${item.workerName}`}}</div>
                     <div class="attendance-status">
                         <div class="attendance-status-left">
                             <div class="forenoon-status">
                                 <span>上午</span>
-                                <span>{{ item.forenoonStatus}}</span>
+                                <span>{{ attendanceTypeTransition(item.morning) }}</span>
                             </div>
                             <div class="afternoon-status">
                                 <span>下午</span>
-                                <span>{{ item.afternoonStatus}}</span>
+                                <span>{{ attendanceTypeTransition(item.afternoon) }}</span>
                             </div>    
                         </div>
                         <div class="attendance-status-right">
                             <van-icon name="arrow" size="25" color="#1864FF" />
                         </div>
                     </div>
-                    <div class="clock-time">
+                    <!-- <div class="clock-time">
                         <div class="forenoon-clock-time">
                             <span>上午打卡时间: </span>
-                            <span>{{ item.forenoonClockTime }}</span>
+                            <span>{{ item.inTime }}</span>
                         </div>
                         <div class="afternoon-clock-time">
                             <span>下午打卡时间: </span>
-                            <span>{{ item.afternoonClockTime }}</span>
+                            <span>{{ item.outTime }}</span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>    
            </div>
         </div>
     </div>
-    <div class="btn-box" v-show="!isShowCheckbox">
+    <div class="btn-box" v-show="!isShowCheckbox && !emptyShow">
         <div class="btn-area" @click="batchProcessingEvent">
             批量处理
         </div>
     </div>
-    <div class="btn-box-two" v-show="isShowCheckbox">
+    <div class="btn-box-two" v-show="isShowCheckbox && !emptyShow">
         <div class="cancel-choose" @click="cancelChooseEvent">取消选择</div>
         <div class="sure-choose" @click="sureChooseEvent">确定选择</div>
     </div>
@@ -147,7 +202,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import {cleanAttendanceList,cleanAttendanceUpdate,cleanAttendanceUpdateBatch,cleanbxWorkerList} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -157,21 +212,40 @@ export default {
   },
   data() {
     return {
+      loadingShow: false,
+      overlayShow: false,
+      emptyShow: false,
+      editMessage: {},
       searchValue: '',
+      isClickSureSelectBtn: false,
+      loadingText: '加载中···',
       allChecked: false,
       isShowForenoonChangeShiftBox: false,
       isShowAfternoonChangeShiftBox: false,
+      isShowForenoonDurationBox: false,
+      isShowAfternoonDurationBox: false,
+      currentMorningDuration: '',
+      currentAfternoonDuration: '',
       attendanceDialogShow: false,
       forenoonAttendanceRadioValue: '1',
       afternoonAttendanceRadioValue: '1',
-      dateValue: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
+      currentDayDate: new Date(),
+      currentMorningDate: new Date(),
+      currentAfternoonDate: new Date(),
+      minDate: new Date(2010, 0, 1),
+      maxDate: new Date(2050, 10, 1),
       calendarShow: false,
+      calendarMorningShow: false,
+      calendarAfternoonShow: false,
       calendarPng: require("@/common/images/home/calendar.png"),
       isShowCheckbox: false,
-      substitutePersonValue: 0,
-      substitutePersonValueOption: [
-        { text: '请选择', value: 0 },
-        { text: '新款商品', value: 1 }
+      substitutePersonMorningValue: 0,
+      substitutePersonAfternoonValue: 0,
+      substitutePersonMorningValueOption: [
+        { text: '请选择', value: 0 }
+      ],
+       substitutePersonAfternoonValueOption: [
+        { text: '请选择', value: 0 }
       ],
       forenoonAttendanceTypeList: [
         {
@@ -192,7 +266,7 @@ export default {
         },
         {
         name: '迟到早退',
-        value: '5'
+        value: '8'
         },
         {
         name: '休假',
@@ -200,19 +274,19 @@ export default {
         },
         {
         name: '事假',
-        value: '7'
+        value: '10'
         },
         {
         name: '加班',
-        value: '8'
+        value: '7'
         },
         {
         name: '调班',
-        value: '9'
+        value: '5'
         },
         {
         name: '旷工',
-        value: '10'
+        value: '9'
         }
       ],
       afteroonAttendanceTypeList: [
@@ -234,7 +308,7 @@ export default {
         },
         {
         name: '迟到早退',
-        value: '5'
+        value: '8'
         },
         {
         name: '休假',
@@ -242,71 +316,22 @@ export default {
         },
         {
         name: '事假',
-        value: '7'
+        value: '10'
         },
         {
         name: '加班',
-        value: '8'
+        value: '7'
         },
         {
         name: '调班',
-        value: '9'
+        value: '5'
         },
         {
         name: '旷工',
-        value: '10'
+        value: '9'
         }
       ],
-      personAttendanceStatusList: [
-        {   
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {   
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {   
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        },
-        {
-            checked: false,
-            personName: '王五',
-            forenoonStatus: '事假',
-            afternoonStatus: '出勤',
-            forenoonClockTime: '9:20',
-            afternoonClockTime: '9:20'
-        }
-      ]
+      personAttendanceStatusList: []
     }
   },
 
@@ -335,7 +360,9 @@ export default {
           path: "/home"
         })
       })
-    }
+    };
+    this.getCleanAttendanceList();
+    this.getWorkerList()
   },
 
   computed: {
@@ -344,36 +371,225 @@ export default {
 
   methods: {
     ...mapMutations([]),
+
     onClickLeft() {
       this.$router.push({ path: "/home"})
     },
 
-    formatDate(date) {
-      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    // 查询保洁员列表
+    getWorkerList () {
+        this.substitutePersonMorningValueOption = [{ text: '请选择', value: 0 }];
+        this.substitutePersonAfternoonValueOption = [{ text: '请选择', value: 0 }];
+        cleanbxWorkerList(this.userInfo.proIds[0]).then((res) => {
+            if (res && res.data.code == 200) {
+                if (res.data.data.length > 0) {
+                    for (let item of res.data.data) {
+                        this.substitutePersonMorningValueOption.push({
+                            text: item.name,
+                            value: item.id,
+                            state: item.state
+                        });
+                        this.substitutePersonAfternoonValueOption.push({
+                            text: item.name,
+                            value: item.id,
+                            state: item.state
+                        })
+                    }
+                }
+            } else {
+                this.$toast({
+                    message: `${res.data.msg}`,
+                    type: 'fail'
+                })
+            }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            })
+        })
     },
 
+    // 考勤类型转换
+    attendanceTypeTransition (num) {
+        switch(num) {
+            case 0 :
+                return '未出勤'
+                break;
+            case 1 :
+                return '出勤'
+                break;
+            case 2 :
+                return '外派'
+                break;
+            case 3 :
+                return '工伤'
+                break;
+            case 4 :
+                return '病假'
+                break;
+            case 5 :
+                return '调班'
+                break;
+            case 6 :
+                return '休假'
+                break;
+            case 7 :
+                return '加班'
+                break;
+            case 8 :
+                return '迟到早退'
+                break;
+            case 9 :
+                return '旷工'
+                break;
+            case 10 :
+                return '事假'
+                break;
+        }
+    },
+
+    // 格式化时间
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "-";
+        let month = currentDate.getMonth() + 1;
+        if (type == 'day') {
+            strDate = currentDate.getDate();
+        };
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (type == 'day') {
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+        };
+        if (type == 'day') {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        }
+        return currentdate
+    },
+
+    // 搜索事件
+    searchEvent () {
+        this.getCleanAttendanceList(this.searchValue)
+    },
+
+    // 获取考勤列表
+    getCleanAttendanceList (searchText = '') {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.emptyShow = false;
+      this.loadingText = '加载中···';
+      cleanAttendanceList({proId: this.userInfo.proIds[0],date: this.getNowFormatDate(this.currentDayDate,'day'),name: searchText}).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+		if (res && res.data.code == 200) {
+            if (res.data.data.length == 0) {
+                this.emptyShow = true;
+            } else {
+                this.personAttendanceStatusList = res.data.data;
+                for (let item of this.personAttendanceStatusList) {
+                    this.$set(item,'checked',false)
+                }
+            }
+        } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+        }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
+    // 录入考勤
+    updateCleanAttendance (data) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.emptyShow = false;
+      this.loadingText = '提交中···';
+      cleanAttendanceUpdate(data).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+		if (res && res.data.code == 200) {
+            this.$toast({
+                message: '编辑成功',
+                type: 'success'
+            });
+            this.getCleanAttendanceList()
+        } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+        }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+   
+   // 日期选择确定事件
     onConfirm(date) {
       this.calendarShow = false;
-      this.dateValue = this.formatDate(date);
+      this.getCleanAttendanceList()
+    },
+
+    // 上午调班日期选择框确定
+    onConMorningFirm () {
+        this.calendarMorningShow = false
+    },
+
+    // 下午调班日期选择框确定
+    onConAfternoonFirm () {
+        this.calendarAfternoonShow = false
     },
 
     emptyHandle () {},
 
     // 上午考勤单选框值变化事件
     forenoonAttendanceRadioChange (value) {
-        if (value == 9) {
+        if (value == 5) {
             this.isShowForenoonChangeShiftBox = true
         } else {
             this.isShowForenoonChangeShiftBox = false
+        };
+        if (value == 4 || value == 6 || value == 10 || value == 7 || value == 9) {
+            this.isShowForenoonDurationBox = true
+        } else {
+            this.isShowForenoonDurationBox = false
         }
     },
 
     // 下午考勤单选框值变化事件
     afternoonAttendanceRadioChange (value) {
-        if (value == 9) {
+        if (value == 5) {
             this.isShowAfternoonChangeShiftBox = true
         } else {
             this.isShowAfternoonChangeShiftBox = false
+        };
+        if (value == 4 || value == 6 || value == 10 || value == 7 || value == 9) {
+            this.isShowAfternoonDurationBox = true
+        } else {
+            this.isShowAfternoonDurationBox = false
         }
     },
 
@@ -385,20 +601,110 @@ export default {
 
     // 取消选择事件
     cancelChooseEvent () {
-        this.isShowCheckbox = false
+        this.isShowCheckbox = false;
+        this.isClickSureSelectBtn = false
     },
 
     // 确定选择事件
     sureChooseEvent () {
-        this.isShowCheckbox = false;
+        this.isClickSureSelectBtn = false;
         if (!this.personAttendanceStatusList.every((item) => { return item.checked == false})) {
-            this.attendanceDialogShow = true
+            this.attendanceDialogShow = true;
+            this.currentMorningDuration = '';
+            this.currentAfternoonDuration = '';
+            this.isShowCheckbox = false;
+            this.isClickSureSelectBtn = true
+        } else {
+            this.$toast('请勾选')
+        }
+    },
+
+    //考勤人员列表点击事件
+    personAttendanceClickEvent(item,index) {
+        if (this.isShowCheckbox) { return };
+        this.editMessage = item;
+        this.attendanceDialogShow = true;
+        // 回显上午考勤类型
+        if (item.morning != 0) {
+            this.forenoonAttendanceRadioValue = item.morning.toString();
+            if (this.forenoonAttendanceRadioValue == 5) {
+                this.isShowForenoonChangeShiftBox = true
+            };
+            if (this.forenoonAttendanceRadioValue == 4 || this.forenoonAttendanceRadioValue == 6 || this.forenoonAttendanceRadioValue == 10 || this.forenoonAttendanceRadioValue == 7 || this.forenoonAttendanceRadioValue == 9) {
+                this.isShowForenoonDurationBox = true
+            };
+        };
+        // 回显下午午考勤类型
+        if (item.afternoon != 0) {
+            this.afternoonAttendanceRadioValue = item.afternoon.toString();
+            if (this.afternoonAttendanceRadioValue == 5) {
+                this.isShowAfternoonChangeShiftBox = true
+            }
+            if (this.afternoonAttendanceRadioValue == 4 || this.afternoonAttendanceRadioValue == 6 || this.afternoonAttendanceRadioValue == 10 || this.afternoonAttendanceRadioValue == 7 || this.afternoonAttendanceRadioValue == 9) {
+                this.isShowAfternoonDurationBox = true
+            }
+        };
+        // 回显上午时长
+        if (item.duration) {
+            this.currentMorningDuration = item.duration
+        } else {
+            this.currentMorningDuration = ''
+        }
+        // 回显下午时长
+        if (item.afDuration) {
+            this.currentAfternoonDuration = item.afDuration
+        } else {
+            this.currentAfternoonDuration = ''
+        }
+        // 回显上午替班人
+        if (item.substitute) {
+            this.substitutePersonMorningValue = item.substitute
+        } else {
+            this.substitutePersonMorningValue = 0
+        }
+        // 回显下午替班人
+        if (item.afSubstitute) {
+            this.substitutePersonAfternoonValue = item.afSubstitute
+        } else {
+            this.substitutePersonAfternoonValue = 0
         }
     },
 
     // 考勤类型弹框确定事件
     attendanceDialogSure () {
-
+        // 区分是否为批量提交
+        if (!this.isClickSureSelectBtn) {
+            if (this.forenoonAttendanceRadioValue == 5) {
+                // 替班人必输
+                if (this.substitutePersonMorningValue == 0 ) {
+                    this.$toast('请选择上午替班人');
+                    return
+                }
+            };
+            if (this.afternoonAttendanceRadioValue == 5) {
+                // 替班人必输
+                if (this.substitutePersonAfternoonValue == 0) {
+                    this.$toast('请选择下午替班人');
+                    return
+                }
+            };
+            let temporaryEditMessage = {
+                id: this.editMessage.id, //主键ID
+                name: this.editMessage.workerName, //保洁员姓名
+                morning: this.forenoonAttendanceRadioValue, //上午考勤类型
+                duration: this.currentMorningDuration, //上午时长 非必输
+                afDuration: this.currentAfternoonDuration, //下午时长 非必输
+                date: this.getNowFormatDate(this.currentMorningDate,'day'), //日期 yyyy-MM-dd
+                afternoon: this.afternoonAttendanceRadioValue, //下午考勤类型
+                content: '', //备注 非必输
+                proId: this.userInfo.proIds[0], //医院ID
+                modifyName: this.userInfo.name, //提交者
+                substitute: this.substitutePersonMorningValue == 0 ? '' : this.substitutePersonMorningValue, //上午调班者ID  非必输
+                afSubstitute: this.substitutePersonAfternoonValue == 0 ? '' : this.substitutePersonAfternoonValue //下午调班者ID 非必输
+            };
+            console.log('提交的编辑信息',temporaryEditMessage);
+            this.updateCleanAttendance(temporaryEditMessage)
+        }
     },
 
     // 考勤类型弹框取消事件
@@ -410,16 +716,10 @@ export default {
     // 全选单选框选中值变化事件
     allCheckedChange () {
         if (this.allChecked) {
-            this.personAttendanceStatusList.forEach(item => { item.checked = true })
+            this.personAttendanceStatusList.forEach(item => { item.checked = true });
         } else {
             this.personAttendanceStatusList.forEach(item => { item.checked = false })
         }
-    },
-
-    //人员列表点击事件
-    personAttendanceClickEvent(item,index) {
-        if (this.isShowCheckbox) { return };
-        this.attendanceDialogShow = true
     }
   }
 };
@@ -430,6 +730,12 @@ export default {
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
   .content-wrapper();
+   /deep/ .van-popup {
+    z-index: 30000 !important
+  };
+  /deep/ .van-loading {
+    z-index: 1000000
+  };      
   /deep/ .van-dialog {
       .van-dialog__content {
         padding: 20px !important;
@@ -522,6 +828,19 @@ export default {
                         }
                     }
                 }
+            };
+            .duration-box {
+                margin-top: 4px;
+                .change-shift-box-bottom-left {
+                    height: 30px !important
+                };
+                .change-shift-box-bottom-right {
+                    background: #fff !important;
+                    /deep/ .van-cell {
+                        padding: 0 4px !important;
+                        border: 1px solid #bebebe
+                    }
+                }
             }
         };
         .dialog-bottom {
@@ -612,6 +931,19 @@ export default {
                             width: 19px;
                             height: 19px
                         }
+                    }
+                }
+            };
+            .duration-box {
+                margin-top: 4px;
+                .change-shift-box-bottom-left {
+                    height: 30px !important
+                };
+                .change-shift-box-bottom-right {
+                    background: #fff !important;
+                    /deep/ .van-cell {
+                        padding: 0 4px !important;
+                        border: 1px solid #bebebe
                     }
                 }
             }
@@ -719,6 +1051,13 @@ export default {
         padding: 10px 4px 0 4px;
         overflow: auto;
         box-sizing: border-box;
+        position: relative;
+        /deep/ .van-empty {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%)
+        };
         .person-attendance-status-list {
             margin-bottom: 10px;
             border-radius: 4px;
@@ -745,7 +1084,7 @@ export default {
                 .attendance-status {
                     width: 100%;
                     display: flex;
-                    margin: 20px 0;
+                    margin-top: 20px;
                     justify-content: space-between;
                     .attendance-status-left {
                         display: flex;
