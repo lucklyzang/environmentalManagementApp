@@ -36,32 +36,55 @@
                     <span>{{`${item.duration} ${item.attendanceType == '加班' ? "小时" : "天"}`}}</span>
                 </div> 
            </div>
-           <div class="data-content-bottom">
-               <van-calendar v-model="calendarShow" 
-                    :min-date="minDate" 
-                    :max-date="maxDate" 
-                    :poppable="false"
-                    :show-confirm="false"
-                    :show-mark="false"
-                    :show-title="false" 
-                    @select="selectDateEvent"
-                />
+           <div class="data-content-bottom" v-if="loadingComplete">
+                <div class="calendar-container">
+                    <div class="calendar-container-top">
+                        <h1>{{ getNowFormatDateText(currentPersonDate,'person') }}</h1>
+                        <div class="calendar-week">
+                            <div class="cw-inner">
+                                <div
+                                    class="cw-item"
+                                    v-for="(item, index) of week"
+                                    :key="index">
+                                    {{item}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="calendar-day">
+                        <div class="cd-list" v-for="(item, index) of day" :key="index">
+                            <div class="cl-item" v-for="(child,index) of item" @click="dayClickEvent(child,index)" :key="index" :class="[{has: child},{'clItemStyle': activeDayIndex == index}]">
+                                <div class="ci-inner" v-if="child">
+                                    <span>{{child.date}}</span>
+                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.morning) == 1,'clockingStyle': attendanceTypeTransition(child.text.morning) == 2,
+                                        'expatriateStyle': attendanceTypeTransition(child.text.morning) == 3,'occupationalInjuryStyle': attendanceTypeTransition(child.text.morning) == 4, 'sickLeaveStyle': attendanceTypeTransition(child.text.morning) == 5, 'vocationStyle': attendanceTypeTransition(child.text.morning) == 6,
+                                        'affairsStyle': attendanceTypeTransition(child.text.morning) == 7,'overtimeStyle': attendanceTypeTransition(child.text.morning) == 8, 'changeShiftStyle': attendanceTypeTransition(child.text.morning) == 9, 'absenteeismStyle': attendanceTypeTransition(child.text.morning) == 10
+                                    }"></span>
+                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.afternoon) == 1,'clockingStyle': attendanceTypeTransition(child.text.afternoon) == 2,
+                                        'expatriateStyle': attendanceTypeTransition(child.text.afternoon) == 3,'occupationalInjuryStyle': attendanceTypeTransition(child.text.afternoon) == 4, 'sickLeaveStyle': attendanceTypeTransition(child.text.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(child.text.afternoon) == 6,
+                                        'affairsStyle': attendanceTypeTransition(child.text.afternoon) == 7,'overtimeStyle': attendanceTypeTransition(child.text.afternoon) == 8, 'changeShiftStyle': attendanceTypeTransition(child.text.afternoon) == 9, 'absenteeismStyle': attendanceTypeTransition(child.text.afternoon) == 10
+                                    }"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
            </div>
        </div>
-       <div class="attendance-message-box">
+       <div class="attendance-message-box" v-if="loadingComplete">
            <div class="date-box">
-               2022-09-23
+               {{ addDay(getNowFormatDate(currentPersonDate,'person'),currentDayMessage.date) }}
            </div>
            <div class="attendance-condition">
                <div class="attendance-condition-left">考勤情况</div>
                <div class="attendance-condition-right">
                    <div class="forenoon-attendance">
                        <span>上午</span>
-                       <span>出勤</span>
+                       <span>{{ currentDayMessage.text.morning }}</span>
                    </div>
                    <div class="afternoon-attendance">
                        <span>下午</span>
-                       <span>出勤</span>
+                       <span>{{ currentDayMessage.text.afternoon }}</span>
                    </div>
                </div>
            </div>
@@ -70,11 +93,11 @@
                <div class="attendance-condition-right">
                    <div class="forenoon-attendance">
                        <span>上午</span>
-                       <span>9:00</span>
+                       <span>{{ currentDayMessage.text.inTime }}</span>
                    </div>
                    <div class="afternoon-attendance">
                        <span>下午</span>
-                       <span>6:00</span>
+                       <span>{{ currentDayMessage.text.outTime }}</span>
                    </div>
                </div>
            </div>
@@ -94,11 +117,11 @@ export default {
   },
   data() {
     return {
-        calendarShow: true,
         loadingShow: false,
         overlayShow: false,
-        minDate: new Date(2022, 9, 1),
-        maxDate: new Date(2022, 9, 31),
+        activeDayIndex: 0,
+        loadingComplete: false,
+        currentDayMessage: {},
         currentPersonDate: new Date(),
         attendanceStatusList: [
             {attendanceType:'出勤', duration: 13.4},
@@ -111,12 +134,29 @@ export default {
             {attendanceType: '加班', duration: 8},
             {attendanceType: '调班', duration: 4},
             {attendanceType: '旷工', duration: 2}
-        ]
+        ],
+        kqzlData: {},
+        week: [
+        '日',
+        '一',
+        '二',
+        '三',
+        '四',
+        '五',
+        '六'
+      ],
+      day: []
     }
   },
 
 
   watch: {
+  },
+
+  computed: {
+    setItemWidth () {
+      return 100 / 7 + '%'
+    }
   },
 
   mounted() {
@@ -130,9 +170,10 @@ export default {
         })
       })
     };
-    this.getCleanAttendancePeopleInfo();
     this.echoAttendanceData();
-    console.log(this.personnelStatisticsDetailsMessage);
+    this.currentPersonDate = this.personnelStatisticsDetailsMessage.date;
+    this.getCleanAttendancePeopleInfo();
+    console.log('信息',this.personnelStatisticsDetailsMessage);
   },
 
   computed: {
@@ -141,12 +182,109 @@ export default {
 
   methods: {
     ...mapMutations([]),
+
     onClickLeft() {
       this.$router.push({ path: "/attendanceStatistics"})
     },
 
-    formatDate(date) {
-      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    setItemWidth () {
+      return 100 / 7 + '%'
+    },
+
+    /**
+     * @name: 格式化日期
+     * @param {date}
+     */
+    dateFormat (date) {
+      let dateArr = date.split('-');
+      let month = dateArr[1] >= 10 ? dateArr[1] : '0' + dateArr[1];
+      let day = dateArr[2] >= 10 ? dateArr[2] : '0' + dateArr[2];
+      return dateArr[0] + '-' + month + '-' + day
+    },
+
+    /**
+     * @name: 日期信息
+     * @param {date}
+     */
+    getDayInfo (date) {
+      let kqzl = this.kqzlData.data;
+      let formatDate = this.dateFormat(date);
+      let txt = kqzl[kqzl.findIndex(item => item.date === formatDate)];
+      return txt
+    },
+
+    /**
+     * @name: 生成日历表
+     * @param {year}
+     * @param {month}
+     */
+    createCalendar (year, month) {
+      // 某个月一共有多少天
+      let allDay = new Date(year, month, 0).getDate();
+      // 某个月1号是星期几
+      let firstDay = this.judjeFirstDay(year, month);
+      // 需要多少行来展示
+      let row = Math.ceil((allDay + firstDay) / 7);
+      let k = firstDay;
+      let result = [];
+      let count = 1;
+      // 生成日历二维数组
+      for (let i = 0; i < row; i++) {
+        result[i] = new Array(7)
+        do {
+          if (count <= allDay) {
+            result[i][k] = {
+              date: count,
+              // 根据接口匹配日期对应的信息
+              text: this.getDayInfo(year + '-' + month + '-' + count),
+            }
+            k++
+            count++
+          } else {
+            break
+          }
+        } while (k < 7)
+        k = 0
+      };
+      this.day = result
+    },
+
+    /**
+     * @name: 判断某年某月1号是星期几
+     * @param {year}
+     * @param {month}
+     */
+    judjeFirstDay (year, month) {
+      const date = new Date(year, month - 1, 1);
+      const week = date.getDay();
+      return week
+    },
+
+    // 日历上号点击事件
+    dayClickEvent (child,index) {
+        this.activeDayIndex = index;
+        if (child.text) {
+            this.currentDayMessage = child
+        } else {
+            this.currentDayMessage['text'] = {
+                afternoon: '无数据',
+                date: '',
+                inTime: null,
+                morning: '无数据',
+                outTime: null
+            };
+            this.$set(this.currentDayMessage,'date',child.date)
+        }
+        console.log('信息',this.currentDayMessage)
+    },
+
+    // 日期后面拼接号
+    addDay(date,day) {
+        if (day < 10) {
+            return date + '-0' + day
+        } else {
+            return date + '-' + day
+        }
     },
 
     // 格式化时间
@@ -170,6 +308,32 @@ export default {
           currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
       } else {
           currentdate = currentDate.getFullYear() + seperator1 + month
+      }
+      return currentdate
+    },
+
+    // 格式化时间(有汉字)
+    getNowFormatDateText(currentDate,type) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "年";
+      let seperator2 = "月";
+      let month = currentDate.getMonth() + 1;
+      if (type == 'day') {
+          strDate = currentDate.getDate();
+      };
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (type == 'day') {
+          if (strDate >= 0 && strDate <= 9) {
+              strDate = "0" + strDate;
+          }
+      };
+      if (type == 'day') {
+          currentdate = currentDate.getFullYear() + seperator1 + month + seperator2 + strDate
+      } else {
+          currentdate = currentDate.getFullYear() + seperator1 + month + seperator2
       }
       return currentdate
     },
@@ -199,11 +363,45 @@ export default {
                 item.duration = this.personnelStatisticsDetailsMessage.content.kuangGong
             }
         }
-    }, 
+    },
 
-    // 日历选中日期事件
-    selectDateEvent (date) {
-        console.log(this.formatDate(date))
+    // 考勤类型转换
+    attendanceTypeTransition (text) {
+        switch(text) {
+          case '未出勤' :
+            return 0
+            break;
+          case '出勤' :
+            return 1
+            break;
+          case '外派' :
+            return 2
+            break;
+          case '工伤' :
+            return 3
+            break;
+          case '病假' :
+            return 4
+            break;
+          case '调班' :
+            return 5
+            break;
+          case '休假' :
+            return 6
+            break;
+          case '加班' :
+            return 7
+            break;
+          case '迟到早退' :
+            return 8
+            break;
+          case '旷工' :
+            return 9
+            break;
+          case '事假' :
+            return 10
+            break;
+      }
     },
 
     // 获取考勤人员统计数据
@@ -211,12 +409,16 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.statisticsBoxShow = false;
-      cleanAttendancePeopleInfo({proId: this.userInfo.proIds[0],workerId: this.personnelStatisticsDetailsMessage.content.id, month: this.getNowFormatDate(this.personnelStatisticsDetailsMessage.date, 'person')}).then((res) => {
+      cleanAttendancePeopleInfo({proId: this.userInfo.proIds[0],workerId: this.personnelStatisticsDetailsMessage.content.id, month: this.getNowFormatDate(this.currentPersonDate, 'person')}).then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
         this.statisticsBoxShow = true;
 		if (res && res.data.code == 200) {
-          
+          this.loadingComplete = true;
+          // 根据年月生成日历表
+          this.kqzlData = res.data;
+          this.createCalendar(this.personnelStatisticsDetailsMessage.date.getFullYear(),this.personnelStatisticsDetailsMessage.date.getMonth()+1);
+          this.defaultShowAttendanceMessage()
         } else {
             this.$toast({
                 message: `${res.data.msg}`,
@@ -233,6 +435,24 @@ export default {
             this.overlayShow = false;
             this.statisticsBoxShow = true
         })
+    },
+
+    // 默认显示每月一号的考勤信息
+    defaultShowAttendanceMessage () {
+        // 当月一号的考勤信息
+        let oneDayMessage = this.day[0][Object.keys(this.day[0])];
+         if (oneDayMessage.text) {
+            this.currentDayMessage = oneDayMessage
+        } else {
+            this.currentDayMessage['text'] = {
+                afternoon: '无数据',
+                date: '',
+                inTime: null,
+                morning: '无数据',
+                outTime: null
+            };
+            this.$set(this.currentDayMessage,'date',oneDayMessage.date)
+        }
     }
   }
 };
@@ -358,23 +578,112 @@ export default {
             width: 100%;
             margin: 0 auto;
             display: flex;
+            flex-direction: column;
             flex-wrap: wrap;
-            /deep/ .van-calendar {
-                .van-calendar__header {
-                    box-shadow: none !important;
-                    background: #F4F5F7 !important
-                };
-                .van-calendar__body {
-                    .van-calendar__month {
-                        .van-calendar__days {
-                            .van-calendar__day {
-                                height: 35px !important;
-                                .van-calendar__selected-day {
-                                   height: 35px !important;
-                                   box-shadow: 0px 2px 6px 0 rgba(0, 0, 0, 0.23);
-                                   background: #289E8E !important 
+            .calendar-container {
+                text-align: center;
+                .calendar-container-top {
+                    height: 70px;
+                    background: #F4F5F7;
+                    display: flex;
+                    border-radius: 6px;
+                    flex-direction: column;
+                    justify-content: center;
+                    h1 {
+                        height: 30px;
+                        line-height: 30px;
+                        font-weight: bold
+                    };
+                    .calendar-week {
+                        .cw-inner {
+                            display: flex;
+                            overflow: hidden;
+                            color: #101010;
+                            .cw-item {
+                                flex: 1;
+                                padding: 8px 0;
+                            }
+                        }
+                    }
+                };    
+                .calendar-day {
+                    .cd-list {
+                        display: flex;
+                        overflow: hidden;
+                        margin-top: 10px;
+                        .cl-item {
+                            flex: 1;
+                            height: 20px;
+                            box-sizing: border-box;
+                            line-height: 20px;
+                            margin-right: 10px;
+                            &:last-child {
+                                margin-right: 0
+                            };
+                            .ci-inner {
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                position: relative;
+                                > span {
+                                    &:nth-child(1) {
+                                        position: absolute;
+                                        width: 30px;
+                                        height: 20px;
+                                        top: 0;
+                                        left: 50%;
+                                        transform: translateX(-50%)
+                                    };
+                                    &:nth-child(2) {
+                                        display: inline-block;
+                                        flex: 1;
+                                        border-top-left-radius: 2px;
+                                        border-bottom-left-radius: 2px
+                                    };
+                                    &:nth-child(3) {
+                                       display: inline-block;
+                                       flex: 1;
+                                       border-top-right-radius: 2px;
+                                       border-bottom-right-radius: 2px
+                                    }
+                                };
+                                 .dayStyle {
+                                    color: #fff !important
+                                };
+                                .attendanceStyle {
+                                    background: #289E8E
+                                };
+                                .clockingStyle {
+                                    background: #E86F50
+                                };
+                                .expatriateStyle {
+                                    background: #174E97
+                                };
+                                .occupationalInjuryStyle {
+                                    background: #E8CB51
+                                };
+                                .sickLeaveStyle {
+                                    background: #101010
+                                };
+                                .vocationStyle {
+                                    background: #254550
+                                };
+                                .affairsStyle  {
+                                    background: #3B9DF9
+                                };
+                                .overtimeStyle  {
+                                    background: #F2A15F
+                                };
+                                .changeShiftStyle {
+                                    background: #1864FF
+                                };
+                                .absenteeismStyle {
+                                    background: #666666
                                 }
                             }
+                        };
+                         .clItemStyle {
+                            box-shadow: 0px 2px 6px 0 rgba(102, 102, 102, 1);
                         }
                     }
                 }

@@ -2,15 +2,17 @@
   <div class="page-box">
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadingText }}</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
-    <van-dialog v-model="attendanceDialogShow" width="98%" show-cancel-button 
+    <van-dialog v-model="attendanceDialogShow" width="100%" show-cancel-button 
             confirm-button-color="#2390fe"
+            :before-close="beforeCloseDialogEvent"
             @confirm="attendanceDialogSure"
             @cancel="attendanceDialogCancel"
+            confirm-button-text="确定"
         >
         <div class="dialog-top">
             <div class="select-title">选择上午考勤</div>
             <van-radio-group @change="forenoonAttendanceRadioChange" v-model="forenoonAttendanceRadioValue" direction="horizontal">
-                <van-radio :name="item.value" checked-color="#1864FF" v-for="(item) in forenoonAttendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
+                <van-radio :name="item.value" :disabled="item.disabled" checked-color="#1864FF" v-for="(item) in forenoonAttendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
             </van-radio-group>
             <div class="change-shift-box" v-show="isShowForenoonChangeShiftBox">
                 <div class="change-shift-box-top">
@@ -48,7 +50,7 @@
         <div class="dialog-bottom">
             <div class="select-title">选择下午考勤</div>
             <van-radio-group  @change="afternoonAttendanceRadioChange" v-model="afternoonAttendanceRadioValue" direction="horizontal">
-                <van-radio :name="item.value" checked-color="#1864FF" v-for="(item) in afteroonAttendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
+                <van-radio :name="item.value" :disabled="item.disabled" checked-color="#1864FF" v-for="(item) in afteroonAttendanceTypeList" :key="item.name">{{ item.name }}</van-radio>
             </van-radio-group>
              <div class="change-shift-box" v-show="isShowAfternoonChangeShiftBox">
                 <div class="change-shift-box-top">
@@ -140,12 +142,12 @@
                         <img :src="calendarPng" alt="" @click="calendarShow = true" />
                     </div>
                 </div>
-                <div class="search-box" @click="searchEvent">
+                <div class="search-box">
                     <van-field
                         v-model="searchValue"
-                        right-icon="search"
                         placeholder="搜索关键词"
                     />
+                    <van-icon name="search" color="#1864FF" size="25" @click="searchEvent" />
                 </div>
             </div>
         </div>
@@ -157,6 +159,9 @@
            <div class="person-attendance-status-list" v-show="!emptyShow" v-for="(item,index) in personAttendanceStatusList" :key="index" @click="personAttendanceClickEvent(item,index)">
                 <div class="check-box" v-show="isShowCheckbox">
                     <van-checkbox shape="square" v-model="item.checked" icon-size="30px" @click.stop.native="emptyHandle"></van-checkbox>
+                </div>
+                <div class="attendance-status-right" v-show="!isShowCheckbox">
+                    <van-icon name="arrow" size="25" color="#1864FF" />
                 </div>
                <div class="list-content">
                     <div class="person-name">{{ `${index + 1}、${item.workerName}`}}</div>
@@ -170,9 +175,6 @@
                                 <span>下午</span>
                                 <span>{{ attendanceTypeTransition(item.afternoon) }}</span>
                             </div>    
-                        </div>
-                        <div class="attendance-status-right">
-                            <van-icon name="arrow" size="25" color="#1864FF" />
                         </div>
                     </div>
                     <!-- <div class="clock-time">
@@ -249,86 +251,106 @@ export default {
       ],
       forenoonAttendanceTypeList: [
         {
-        name: '出勤',
-        value: '1'
+            name: '出勤',
+            value: '1',
+            disabled: false
         },
         {
-        name: '外派',
-        value: '2'
+            name: '外派',
+            value: '2',
+            disabled: false
         },
         {
-        name: '工伤',
-        value: '3'
+            name: '工伤',
+            value: '3',
+            disabled: false
         },
         {
-        name: '病假',
-        value: '4'
+            name: '病假',
+            value: '4',
+            disabled: false
         },
         {
-        name: '迟到早退',
-        value: '8'
+            name: '迟到早退',
+            value: '8',
+            disabled: false
         },
         {
-        name: '休假',
-        value: '6'
+            name: '休假',
+            value: '6',
+            disabled: false
         },
         {
-        name: '事假',
-        value: '10'
+            name: '事假',
+            value: '10',
+            disabled: false
         },
         {
-        name: '加班',
-        value: '7'
+            name: '加班',
+            value: '7',
+            disabled: false
         },
         {
-        name: '调班',
-        value: '5'
+            name: '调班',
+            value: '5',
+            disabled: false
         },
         {
-        name: '旷工',
-        value: '9'
+            name: '旷工',
+            value: '9',
+            disabled: false
         }
       ],
       afteroonAttendanceTypeList: [
         {
-        name: '出勤',
-        value: '1'
+            name: '出勤',
+            value: '1',
+            disabled: false
         },
         {
-        name: '外派',
-        value: '2'
+            name: '外派',
+            value: '2',
+            disabled: false
         },
         {
-        name: '工伤',
-        value: '3'
+            name: '工伤',
+            value: '3',
+            disabled: false
         },
         {
-        name: '病假',
-        value: '4'
+            name: '病假',
+            value: '4',
+            disabled: false
         },
         {
-        name: '迟到早退',
-        value: '8'
+            name: '迟到早退',
+            value: '8',
+            disabled: false
         },
         {
-        name: '休假',
-        value: '6'
+            name: '休假',
+            value: '6',
+            disabled: false
         },
         {
-        name: '事假',
-        value: '10'
+            name: '事假',
+            value: '10',
+            disabled: false
         },
         {
-        name: '加班',
-        value: '7'
+            name: '加班',
+            value: '7',
+            disabled: false
         },
         {
-        name: '调班',
-        value: '5'
+            name: '调班',
+            value: '5',
+            disabled: false
         },
         {
-        name: '旷工',
-        value: '9'
+            name: '旷工',
+            value: '9',
+            disabled: false
         }
       ],
       personAttendanceStatusList: []
@@ -337,6 +359,7 @@ export default {
 
 
   watch: {
+    // 监听考勤人员列表是否勾选
     personAttendanceStatusList: {
         handler: function(newVal, oldVal) {
             let flag = newVal.every((item) => { return item.checked == true});
@@ -347,7 +370,42 @@ export default {
             }
         },
         deep: true
+    },
+
+    // 监听考勤类型弹出框上午选中值的变化
+    forenoonAttendanceRadioValue: {
+        handler: function(newVal, oldVal) {
+            if (newVal == 5) {
+                this.isShowForenoonChangeShiftBox = true
+            } else {
+                this.isShowForenoonChangeShiftBox = false
+            };
+            if (newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
+                this.isShowForenoonDurationBox = true
+            } else {
+                this.isShowForenoonDurationBox = false
+            }
+        },
+        deep: true
+    },
+
+    // 监听考勤类型弹出框下午选中值的变化
+    afternoonAttendanceRadioValue: {
+        handler: function(newVal, oldVal) {
+           if (newVal == 5) {
+            this.isShowAfternoonChangeShiftBox = true
+            } else {
+                this.isShowAfternoonChangeShiftBox = false
+            };
+            if (newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
+                this.isShowAfternoonDurationBox = true
+            } else {
+                this.isShowAfternoonDurationBox = false
+            }
+        },
+        deep: true
     }
+
   },
 
   mounted() {
@@ -374,6 +432,30 @@ export default {
 
     onClickLeft() {
       this.$router.push({ path: "/home"})
+    },
+
+    // 考勤类型选择弹框关闭前事件
+    beforeCloseDialogEvent (action, done) {
+        // 区分是否为批量提交
+        if (!this.isClickSureSelectBtn) {
+            if (this.forenoonAttendanceRadioValue == 5) {
+                // 替班人必输
+                if (this.substitutePersonMorningValueOption.filter((item) => { return item.value == this.substitutePersonMorningValue})[0]['text'] == '请选择') {
+                    done(false);
+                    return
+                }
+            };
+            if (this.afternoonAttendanceRadioValue == 5) {
+                // 替班人必输
+                if (this.substitutePersonAfternoonValueOption.filter((item) => { return item.value == this.substitutePersonAfternoonValue})[0]['text'] == '请选择') {
+                    done(false);
+                    return
+                }
+            };
+            done()
+        }  else {
+            done()
+        }  
     },
 
     // 查询保洁员列表
@@ -546,6 +628,38 @@ export default {
             this.overlayShow = false
         })
     },
+
+    // 录入考勤批量
+    updateCleanAttendanceBatch (data) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.emptyShow = false;
+      this.loadingText = '提交中···';
+      cleanAttendanceUpdateBatch(data).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+		if (res && res.data.code == 200) {
+            this.$toast({
+                message: '批量编辑成功',
+                type: 'success'
+            });
+            this.getCleanAttendanceList()
+        } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+        }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
    
    // 日期选择确定事件
     onConfirm(date) {
@@ -567,30 +681,10 @@ export default {
 
     // 上午考勤单选框值变化事件
     forenoonAttendanceRadioChange (value) {
-        if (value == 5) {
-            this.isShowForenoonChangeShiftBox = true
-        } else {
-            this.isShowForenoonChangeShiftBox = false
-        };
-        if (value == 4 || value == 6 || value == 10 || value == 7 || value == 9) {
-            this.isShowForenoonDurationBox = true
-        } else {
-            this.isShowForenoonDurationBox = false
-        }
     },
 
     // 下午考勤单选框值变化事件
     afternoonAttendanceRadioChange (value) {
-        if (value == 5) {
-            this.isShowAfternoonChangeShiftBox = true
-        } else {
-            this.isShowAfternoonChangeShiftBox = false
-        };
-        if (value == 4 || value == 6 || value == 10 || value == 7 || value == 9) {
-            this.isShowAfternoonDurationBox = true
-        } else {
-            this.isShowAfternoonDurationBox = false
-        }
     },
 
     // 批量处理事件
@@ -613,17 +707,40 @@ export default {
             this.currentMorningDuration = '';
             this.currentAfternoonDuration = '';
             this.isShowCheckbox = false;
-            this.isClickSureSelectBtn = true
+            this.isClickSureSelectBtn = true;
+            // 批量处理时考勤类型只能选择出勤
+            this.afteroonAttendanceTypeList.forEach((item) => { 
+                if (item.value != 1) {
+                    item.disabled = true
+                } 
+            });
+            this.forenoonAttendanceTypeList.forEach((item) => { 
+                if (item.value != 1) {
+                    item.disabled = true
+                } 
+            })
         } else {
-            this.$toast('请勾选')
+            this.$toast('请选择')
         }
     },
 
     //考勤人员列表点击事件
     personAttendanceClickEvent(item,index) {
         if (this.isShowCheckbox) { return };
+        this.isClickSureSelectBtn = false;
         this.editMessage = item;
         this.attendanceDialogShow = true;
+        // 单个处理时考勤类型可以选择所有类型
+        this.afteroonAttendanceTypeList.forEach((item) => { 
+            if (item.value != 1) {
+                item.disabled = false
+            } 
+        });
+        this.forenoonAttendanceTypeList.forEach((item) => { 
+            if (item.value != 1) {
+                item.disabled = false
+            } 
+        });
         // 回显上午考勤类型
         if (item.morning != 0) {
             this.forenoonAttendanceRadioValue = item.morning.toString();
@@ -670,20 +787,26 @@ export default {
         }
     },
 
+    // 考勤类型弹框取消事件
+    attendanceDialogCancel () {
+        this.forenoonAttendanceRadioValue = '1';
+        this.afternoonAttendanceRadioValue = '1'
+    },
+
     // 考勤类型弹框确定事件
     attendanceDialogSure () {
         // 区分是否为批量提交
         if (!this.isClickSureSelectBtn) {
             if (this.forenoonAttendanceRadioValue == 5) {
                 // 替班人必输
-                if (this.substitutePersonMorningValue == 0 ) {
+                if (this.substitutePersonMorningValueOption.filter((item) => { return item.value == this.substitutePersonMorningValue})[0]['text'] == '请选择' ) {
                     this.$toast('请选择上午替班人');
                     return
                 }
             };
             if (this.afternoonAttendanceRadioValue == 5) {
                 // 替班人必输
-                if (this.substitutePersonAfternoonValue == 0) {
+                if (this.substitutePersonAfternoonValueOption.filter((item) => { return item.value == this.substitutePersonAfternoonValue})[0]['text'] == '请选择') {
                     this.$toast('请选择下午替班人');
                     return
                 }
@@ -704,13 +827,23 @@ export default {
             };
             console.log('提交的编辑信息',temporaryEditMessage);
             this.updateCleanAttendance(temporaryEditMessage)
+        } else {
+            // 批量提交
+            let submitDataMessage = [];
+            let choosePersonList = this.personAttendanceStatusList.filter((item) => { return item.checked });
+            for (let innerItem of choosePersonList) {
+                submitDataMessage.push({
+                    id: innerItem.id,             // 考勤ID
+                    morning: this.forenoonAttendanceRadioValue,   // 上午考勤类型，
+                    afternoon: this.afternoonAttendanceRadioValue,  // 下午考勤类型
+                    signIn: this.userInfo.name,        // 提交者
+                    signOut: this.userInfo.name,   // 提交者
+                    modifyName: this.userInfo.name  // 提交者
+                })
+            };
+            console.log('选中的',choosePersonList);
+            this.updateCleanAttendanceBatch(submitDataMessage)
         }
-    },
-
-    // 考勤类型弹框取消事件
-    attendanceDialogCancel () {
-        this.forenoonAttendanceRadioValue = '1';
-        this.afternoonAttendanceRadioValue = '1'
     },
 
     // 全选单选框选中值变化事件
@@ -737,21 +870,37 @@ export default {
     z-index: 1000000
   };      
   /deep/ .van-dialog {
+      top: auto !important;
+      bottom: 0 !important;
+      border-top-left-radius: 20px !important;
+      border-top-right-radius: 20px !important;
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      transform: translate3d(-50%,0,0) !important;
       .van-dialog__content {
-        padding: 20px !important;
+        padding: 20px 20px 10px 20px !important;
         .dialog-top {
             .select-title {
                 font-size: 16px;
                 color: #1864FF;
-                margin-bottom: 20px
+                margin-bottom: 14px
             };
             /deep/ .van-radio-group {
+                justify-content: space-between;
+                >div {
+                    &:nth-child(5n) {
+                        margin-right: 0 !important
+                    }
+                };
                 .van-radio {
                     margin-bottom: 6px;
+                    margin-right: 4px !important;
                     .van-radio__label {
                         word-break: break-all;
                         font-size: 14px !important;
-                        width: 35px
+                        width: 35px;
+                        text-align: center;
+                        color: #101010 !important
                     }
                 }
             };
@@ -844,19 +993,28 @@ export default {
             }
         };
         .dialog-bottom {
-            margin-top: 60px;
+            margin-top: 30px;
             .select-title {
                 font-size: 16px;
                 color: #1864FF;
-                margin-bottom: 10px
+                margin-bottom: 14px
             };
             /deep/ .van-radio-group {
+                justify-content: space-between;
+                >div {
+                    &:nth-child(5n) {
+                        margin-right: 0 !important
+                    }
+                };
                 .van-radio {
                     margin-bottom: 6px;
+                    margin-right: 4px;
                     .van-radio__label {
                         word-break: break-all;
                         font-size: 14px !important;
-                        width: 35px
+                        width: 35px;
+                        text-align: center;
+                        color: #101010 !important
                     }
                 }
             };
@@ -948,6 +1106,30 @@ export default {
                 }
             }
         }
+      };
+      .van-dialog__footer {
+          padding: 20px !important;
+          box-sizing: border-box;
+          justify-content: space-between;
+          ::after {
+            content: none
+          };
+        .van-dialog__cancel {
+            color: #1864FF;
+            box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+            background: #fff;
+            border-radius: 30px;
+            margin-right: 20px
+        };
+        .van-dialog__confirm {
+            background: linear-gradient(to right, #6cd2f8, #2390fe);
+            box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+            color: #fff !important;
+            border-radius: 30px;
+        }
+      };
+      .van-hairline--top::after {
+        border-top-width: 0 !important
       }
   };
   .nav {
@@ -1019,18 +1201,22 @@ export default {
             .search-box {
                 height: 32px;
                 flex: 1;
+                position: relative;
                 /deep/ .van-cell {
+                    position: absolute;
+                    top: 0;
+                    left: 4px;
                     line-height: 30px !important;
                     background: #F4F5F7;
                     border-radius: 8px;
                     height: 30px;
-                    padding: 0 10px !important;
-                    .van-field__right-icon {
-                        .van-icon {
-                            font-size: 25px !important;
-                            color: #1864FF !important
-                        }
-                    }
+                    padding: 0 10px !important
+                };
+                /deep/ .van-icon {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    right: 4px
                 }
             }    
         }
@@ -1060,8 +1246,8 @@ export default {
         };
         .person-attendance-status-list {
             margin-bottom: 10px;
-            border-radius: 4px;
-            padding: 14px;
+            border-radius: 8px;
+            padding: 20px 14px;
             background: #fff;
             box-sizing: border-box;
             display: flex;
@@ -1073,6 +1259,12 @@ export default {
                 position: absolute;
                 top: 0;
                 right: 0
+            };
+            .attendance-status-right {
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%)
             };
             .list-content {
                 flex: 1;
@@ -1103,8 +1295,7 @@ export default {
                                 margin-right: 20px
                             }
                         }
-                    };
-                    .attendance-status-right {}
+                    }
                 };
                 .clock-time {
                     display: flex;
@@ -1157,7 +1348,7 @@ export default {
       border-radius: 30px;
       font-weight: bold;
       &:first-child {
-        color: blue;
+        color: #1864FF;
         box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
       };
        &:last-child {

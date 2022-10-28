@@ -19,10 +19,10 @@
 				</div>
 				<div class="user-message">
 					<div class="user-name">
-						啥叫洒汗水
+						{{ userInfo.name }}
 					</div>
 					<div class="account-name">
-						飒飒撒
+						{{ userInfo.account }}
 					</div>
 				</div>
 			</div>
