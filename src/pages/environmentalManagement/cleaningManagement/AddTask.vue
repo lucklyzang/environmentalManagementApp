@@ -25,15 +25,16 @@
           </div>
         </div>
       </div>
-      <div class="category-box">
+      <div class="category-box category-no-select-box">
         <div class="category-title">
             <span>*</span>
             <span>类别</span>
         </div>
         <div class="select-box">
-            <van-dropdown-menu active-color="#174E97">
+          即时保洁任务
+            <!-- <van-dropdown-menu active-color="#174E97">
                 <van-dropdown-item v-model="categoryValue" :options="categoryOption" />
-            </van-dropdown-menu>
+            </van-dropdown-menu> -->
         </div>
       </div>
       <div class="category-box">
@@ -55,6 +56,17 @@
         <div class="select-box" @click="locationEvent">
           <span>{{ locationValue }}</span>
           <van-icon name="arrow" color="#174E97" size="20" />
+        </div>
+      </div>
+      <div class="category-box">
+        <div class="category-title">
+            <span>*</span>
+            <span>保洁员</span>
+        </div>
+        <div class="select-box">
+            <van-dropdown-menu active-color="#174E97">
+                <van-dropdown-item v-model="workerValue" :options="workerOption" />
+            </van-dropdown-menu>
         </div>
       </div>
       <div class="category-box completeDate-box">
@@ -161,7 +173,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {addForthwithCleanTask, getViolateStandardMessage} from "@/api/environmentalManagement.js";
+import {addForthwithCleanTask, getViolateStandardMessage,cleanbxWorkerList} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
 import {getAliyunSign} from '@/api/login.js'
@@ -199,6 +211,14 @@ export default {
             
         }
       ],
+     workerValue: 0,
+     workerOption: [
+       {
+          text: '请选择保洁员',
+          value: 0
+            
+        }
+     ],
      sourceValue: 0,
      sourceOption: [
         {
@@ -251,7 +271,8 @@ export default {
           path: "/cleanTaskList",
         })
       })
-    }
+    };
+    this.getWorkerList()
   },
 
   activated () {
@@ -319,11 +340,12 @@ export default {
     },
 
     // 格式化时间
-    getNowFormatDate(currentDate) {    
+    getNowFormatDate(currentDate) {   
         let seperator1 = "-";
         let seperator2 = ":";
         let month = currentDate.getMonth() + 1;
         let strDate = currentDate.getDate();
+        let hours = currentDate.getHours();
         let strMinutes = currentDate.getMinutes();
         if (month >= 1 && month <= 9) {
             month = "0" + month;
@@ -334,23 +356,59 @@ export default {
         if (strMinutes >= 0 && strMinutes <= 9) {
             strMinutes = "0" + strMinutes;
         }
+        if (hours >= 0 && hours <= 9) {
+          hours = "0" + hours;
+        }
         let currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
-                + " " + currentDate.getHours() + seperator2 + strMinutes
+                + " " + hours + seperator2 + strMinutes
         return currentdate;
+    },
+
+     // 查询保洁员列表
+    getWorkerList () {
+      this.workerOption = [{ text: '请选择保洁员', value: 0 }];
+      cleanbxWorkerList(this.userInfo.proIds[0]).then((res) => {
+          if (res && res.data.code == 200) {
+            if (res.data.data.length > 0) {
+              for (let item of res.data.data) {
+                this.workerOption.push({
+                  text: item.name,
+                  value: item.id,
+                  state: item.state
+                })
+              }
+            }
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            })
+        })
     },
 
     // 任务提交事件
     async submitEvent() {
-      if (this.categoryOption.filter((item) => { return item.value == this.categoryValue })[0]['text'] == '请选择类别') {
-        this.$toast('请选择类别');
-        return
-      };
+      // if (this.categoryOption.filter((item) => { return item.value == this.categoryValue })[0]['text'] == '请选择类别') {
+      //   this.$toast('请选择类别');
+      //   return
+      // };
       if (this.sourceOption.filter((item) => { return item.value == this.sourceValue })[0]['text'] == '请选择来源') {
         this.$toast('请选择来源');
         return
       };
       if (this.locationMessage.length != 4) {
         this.$toast('请选择位置');
+        return
+      };
+       if (this.workerOption.filter((item) => { return item.value == this.workerValue })[0]['text'] == '请选择保洁员') {
+        this.$toast('请选择保洁员');
         return
       };
       if (!this.personNumberValue) {
@@ -370,6 +428,8 @@ export default {
         managerName: this.userInfo.name,// 保洁主管姓名，当前登陆人员姓名
         assignId: this.userInfo.id, // 任务分配人员id，当前登陆人员id
         assignName: this.userInfo.name,// 任务分配人员姓名，当前登陆人员姓名
+        workerId: this.workerValue,//保洁员id
+        workerName: this.workerOption.filter((item) => { return item.value == this.workerValue})[0]['text'],//保洁员姓名
         path: [], // 上传的问题图片，集合,
         taskType: 0,// 任务类型，即时保洁为 0
         source: this.sourceOption.filter((item) => { return item.value == this.sourceValue })[0]['text'], // 任务来源
@@ -625,6 +685,7 @@ export default {
     // 确定删除提示框确定事件
     sureDeleteEvent () {
       this.resultImgList.splice(this.imgIndex, 1);
+      this.temporaryFileArray.splice(this.imgIndex, 1)
     },
 
     // 拍照取消
@@ -775,7 +836,8 @@ export default {
                 .van-dropdown-menu__item {
                     justify-content: flex-end !important;
                     .van-dropdown-menu__title {
-                        color: #174E97 !important
+                      color: #174E97 !important;
+                      font-size: 14px !important
                     };
                     .van-dropdown-menu__title::after {
                         border-color: transparent transparent #174E97 #174E97 !important;
@@ -783,6 +845,13 @@ export default {
                 }
             }
         }
+      }
+    };
+    .category-no-select-box {
+      .select-box {
+        text-align: right;
+        color: #174E97 !important;
+        font-size: 14px !important
       }
     };
     .location-box {
@@ -793,6 +862,7 @@ export default {
         display: flex;
         align-items: center;
         >span {
+          font-size: 14px;
           &:nth-child(1) {
             flex: 1;
             .no-wrap();
@@ -809,6 +879,7 @@ export default {
         .select-box {
           text-align: right;
             >span {
+              font-size: 14px;
               vertical-align: middle;
                 color: #174E97
             };
@@ -828,11 +899,13 @@ export default {
                 box-sizing: border-box;
                 width: 30%;
                 .van-cell__value {
-                    border: 1px solid #cacaca
+                  font-size: 14px !important;
+                  border: 1px solid #cacaca
                 }
             };
             >span {
-                color:#101010 !important
+              color:#101010 !important;
+              font-size: 14px
             }
         }
     };

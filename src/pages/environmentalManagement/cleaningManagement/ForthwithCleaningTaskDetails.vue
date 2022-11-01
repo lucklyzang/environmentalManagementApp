@@ -7,7 +7,7 @@
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        <span>即时保洁编号{{cleanTaskDetails.taskNumber}}</span>
+        <span>即时保洁编号{{cleanTaskDetails.num}}</span>
         <span :class="{
             'underwayStyle' : cleanTaskDetails.state == 3, 
             'completeStyle' : cleanTaskDetails.state == 6,
@@ -30,19 +30,29 @@
         <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
       </div>
       <div class="location">
-        <span>预计时间</span>
+        <span>完成时间</span>
         <span>{{ cleanTaskDetails.planUseTime ? `${(cleanTaskDetails.planUseTime/60).toFixed(2)}小时` : '无'}}</span>
       </div>
       <div class="issue-picture">
         <div>问题图片</div>
         <div class="image-list">
-          <img :src="item.path" alt="" v-for="(item,index) in cleanTaskDetails.images" :key="index">
+          <img :src="item.path" alt="" v-for="(item,index) in problemPicturesEchoList" :key="index">
         </div>
       </div>
-      <div class="remark">
+      <div class="location problem-description">
+        <span>问题描述</span>
+        <span>{{ cleanTaskDetails.taskRemark}}</span>
+      </div>
+      <div class="remark" v-show="cleanTaskDetails.state == 6">
         <div>备注</div>
         <div class="remark-content">
           {{ cleanTaskDetails.completeRemark }}
+        </div>
+      </div>
+      <div class="issue-picture" v-show="cleanTaskDetails.state == 6">
+        <div>结果图片</div>
+        <div class="image-list">
+          <img :src="item.path" alt="" v-for="(item,index) in resultPicturesEchoList" :key="index">
         </div>
       </div>
       <div class="result-picture" v-show="cleanTaskDetails.state == 3">
@@ -132,6 +142,8 @@ export default {
       resultImgList: [],
       imgOnlinePathArr: [],
       temporaryFileArray: [],
+      problemPicturesEchoList: [],
+      resultPicturesEchoList: [],
       isExpire: false
     }
   },
@@ -147,6 +159,7 @@ export default {
         })
       })
     };
+    this.echoImage();
     console.log('任务详情',this.cleanTaskDetails)
   },
 
@@ -158,6 +171,14 @@ export default {
 
   methods: {
     ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","changeTimeMessage","changeOssMessage","storeCleanTaskDetails"]),
+
+    // 回显图片
+    echoImage () {
+      this.problemPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 0});
+      if (this.cleanTaskDetails.state == 6) {
+        this.resultPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 1})
+      }
+    },
 
     // 提取即时保洁功能区信息
     extractSpaceMessage (spaces) {
@@ -565,9 +586,8 @@ export default {
   };
   .content {
     flex: 1;
-    display: flex;
+    box-sizing: border-box;
     background: #F8F8F8;
-    flex-direction: column;
     padding: 6px 0;
     overflow: auto;
     .forthwith-task-number {
@@ -644,6 +664,13 @@ export default {
           padding-left: 8px;
           box-sizing: border-box;
           word-break: break-all
+        }
+      }
+    };
+    .problem-description {
+      >span {
+        &:last-child {
+        text-align: left !important
         }
       }
     };

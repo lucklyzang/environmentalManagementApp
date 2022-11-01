@@ -7,7 +7,7 @@
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        <span>专项保洁编号{{cleanTaskDetails.taskNumber}}</span>
+        <span>专项保洁编号{{cleanTaskDetails.num}}</span>
         <span :class="{
             'underwayStyle' : cleanTaskDetails.state == 3, 
             'completeStyle' : cleanTaskDetails.state == 6,
@@ -36,13 +36,23 @@
       <div class="issue-picture">
         <div>问题图片</div>
         <div class="image-list">
-          <img :src="item.path" alt="" v-for="(item,index) in cleanTaskDetails.images" :key="index">
+          <img :src="item.path" alt="" v-for="(item,index) in problemPicturesEchoList" :key="index">
         </div>
       </div>
-      <div class="remark">
+      <div class="location problem-description">
+        <span>问题描述</span>
+        <span>{{ cleanTaskDetails.taskRemark}}</span>
+      </div>
+      <div class="remark" v-show="cleanTaskDetails.state == 6">
         <div>备注</div>
         <div class="remark-content">
           {{ cleanTaskDetails.completeRemark }}
+        </div>
+      </div>
+      <div class="issue-picture" v-show="cleanTaskDetails.state == 6">
+        <div>结果图片</div>
+        <div class="image-list">
+          <img :src="item.path" alt="" v-for="(item,index) in resultPicturesEchoList" :key="index">
         </div>
       </div>
       <div class="result-picture" v-show="cleanTaskDetails.state == 3">
@@ -133,6 +143,8 @@ export default {
       isTaskStart: false,
       overlayShow: false,
       enterRemark: '',
+      problemPicturesEchoList: [],
+      resultPicturesEchoList: [],
       resultImgList: []
     }
   },
@@ -148,6 +160,7 @@ export default {
         })
       })
     };
+    this.echoImage();
     console.log(this.cleanTaskDetails)
   },
 
@@ -159,6 +172,14 @@ export default {
 
   methods: {
     ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","changeTimeMessage","changeOssMessage","storeCleanTaskDetails"]),
+
+    // 回显图片
+    echoImage () {
+      this.problemPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 0});
+      if (this.cleanTaskDetails.state == 6) {
+        this.resultPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 1})
+      }
+    },
 
     // 任务状态转换
     stausTransfer (num) {
@@ -553,9 +574,8 @@ export default {
   };
   .content {
     flex: 1;
-    display: flex;
     background: #F8F8F8;
-    flex-direction: column;
+    box-sizing: border-box;
     padding: 6px 0;
     overflow: auto;
     .forthwith-task-number {
@@ -631,6 +651,13 @@ export default {
           padding-left: 8px;
           box-sizing: border-box;
           word-break: break-all
+        }
+      }
+    };
+    .problem-description {
+      >span {
+        &:last-child {
+        text-align: left !important
         }
       }
     };
