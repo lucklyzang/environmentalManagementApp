@@ -21,8 +21,8 @@
         <div class="content-top">
             <div class="filtrate-box">
                 <div class="select-box">
-                    <van-dropdown-menu>
-                        <van-dropdown-item v-model="selectValue" :options="selectOption" @change="selecOptionChangeEvent" />
+                    <van-dropdown-menu active-color="#1989fa">
+                        <van-dropdown-item v-model="selectValue"  :options="selectOption" @change="selecOptionChangeEvent" />
                     </van-dropdown-menu>
                 </div>
                 <div class="search-box">
@@ -37,15 +37,15 @@
                 </div>
             </div>
             <div class="task-item-name">
-                <div @click="taskItemNameEvent(1)" v-show="this.currentCleanTaskName.forthwithTaskShow" :class="{'forthwithItemStyle':itemNameIndex == 1}">{{`即时${taskList.length}`}}</div>
-                <div @click="taskItemNameEvent(2)" v-show="this.currentCleanTaskName.specialTaskShow" :class="{'specialItemStyle':itemNameIndex == 2}">{{`专项${taskList.length}`}}</div>
-                <div @click="taskItemNameEvent(3)" v-show="this.currentCleanTaskName.pollingTaskShow" :class="{'pollingItemStyle':itemNameIndex == 3}">{{`巡检${taskList.length}`}}</div>
+                <div @click="taskItemNameEvent(1)" v-show="currentCleanTaskName.forthwithTaskShow" :class="{'forthwithItemStyle':itemNameIndex == 1}">{{`即时${forthwithTaskList.length}`}}</div>
+                <div @click="taskItemNameEvent(2)" v-show="currentCleanTaskName.specialTaskShow" :class="{'specialItemStyle':itemNameIndex == 2}">{{`专项${specialTaskList.length}`}}</div>
+                <div @click="taskItemNameEvent(3)" v-show="currentCleanTaskName.pollingTaskShow" :class="{'pollingItemStyle':itemNameIndex == 3}">{{`巡检${pollingTaskList.length}`}}</div>
             </div>
         </div>
-        <van-empty v-show="emptyShow" description="暂无数据" />
-        <div class="content-bottom" v-show="!emptyShow">
+        <div class="content-bottom">
             <div class="task-list-box" v-if="currentCleanTaskName.num == 1">
-                <div class="task-list" v-for="(item,index) in taskList" @click="forthwithTaskDetailsEvent(item,generateTaskNumber('即时',index))" :key="index">
+                <van-empty v-show="forthwithEmptyShow" description="暂无数据" />
+                <div class="task-list" v-show="!forthwithEmptyShow" v-for="(item,index) in forthwithTaskList" @click="forthwithTaskDetailsEvent(item,generateTaskNumber('即时',index))" :key="index">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
                             即时任务编号{{ generateTaskNumber('即时',index) }}
@@ -69,6 +69,14 @@
                             <span>创建时间: </span>
                             <span>{{ item.createTime }}</span>
                         </div>
+                        <div class="one-line" v-show="item.state != 1">
+                            <span>开始时间: </span>
+                            <span>{{ item.startTime }}</span>
+                        </div>
+                        <div class="one-line" v-show="item.state == 6">
+                            <span>完成时间: </span>
+                            <span>{{ item.finishTime }}</span>
+                        </div>
                         <div class="one-line">
                             <span>计划执行人: </span>
                             <span>{{ `${item.workerName}、${item.managerName}` }}</span>
@@ -80,8 +88,9 @@
                     </div>
                 </div>
             </div>
-            <div class="task-list-box" v-if="currentCleanTaskName.num == 2">   
-                <div class="task-list special-list" v-for="(item,index) in taskList" @click="specialTaskDetailsEvent(item,generateTaskNumber('专项',index))" :key="item.taskNumber">
+            <div class="task-list-box" v-if="currentCleanTaskName.num == 2">
+                <van-empty v-show="specialEmptyShow" description="暂无数据" />   
+                <div class="task-list special-list" v-show="!specialEmptyShow" v-for="(item,index) in specialTaskList" @click="specialTaskDetailsEvent(item,generateTaskNumber('专项',index))" :key="item.taskNumber">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
                             编号{{ generateTaskNumber('专项',index) }}
@@ -108,6 +117,14 @@
                             <span>创建时间: </span>
                             <span>{{ item.createTime }}</span>
                         </div>
+                        <div class="one-line" v-show="item.state != 1">
+                            <span>开始时间: </span>
+                            <span>{{ item.startTime }}</span>
+                        </div>
+                        <div class="one-line" v-show="item.state == 6">
+                            <span>完成时间: </span>
+                            <span>{{ item.finishTime }}</span>
+                        </div>
                         <div class="one-line">
                             <span>计划执行人: </span>
                             <span>{{ `${item.workerName}、${item.managerName}` }}</span>
@@ -115,8 +132,9 @@
                     </div>
                 </div>
             </div>
-            <div class="task-list-box" v-if="currentCleanTaskName.num == 3">  
-                <div class="task-list polling-list" v-for="(item,index) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
+            <div class="task-list-box" v-if="currentCleanTaskName.num == 3">
+                <van-empty v-show="pollingEmptyShow" description="暂无数据" />  
+                <div class="task-list polling-list" v-show="!pollingEmptyShow" v-for="(item,index) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
                             {{ generateTaskNumber('巡检',index) }}
@@ -163,8 +181,11 @@ export default {
   data() {
     return {
       loadingShow: false,
-      emptyShow: false,
+      forthwithEmptyShow: false,
+      specialEmptyShow: false,
+      pollingEmptyShow: false,
       overlayShow: false,
+      currentSelectValue: -1,
       selectValue: -1,
       itemNameIndex: 1,
       searchValue: '',
@@ -177,8 +198,10 @@ export default {
         { text: '已完成', value: 6 },
         { text: '已复核', value: 5 }
       ],
-      taskList: [],
-      allTaskList: [],
+      forthwithTaskList: [],
+      specialTaskList: [],
+      allForthwithTaskList: [],
+      allSpecialTaskList: [],
       pollingTaskList: [
         {
             pollingTaskName: '巡检任务配置一',
@@ -203,10 +226,85 @@ export default {
       })
     };
     this.itemNameIndex = this.currentCleanTaskName.num;
-    this.getCleaningManageTaskList(this.currentCleanTaskName.num -1)
+    if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+        this.getForthwithTaskList(0);
+        this.getSpecialTaskList(1)
+    } else if (this.currentCleanTaskName.forthwithTaskShow) {
+        this.getForthwithTaskList(0);
+    } else if (this.currentCleanTaskName.specialTaskShow) {
+        this.getSpecialTaskList(1)
+    }
   },
 
-  watch: {},
+  watch: {
+        selectValue: {
+            handler(newName, oldName) {  
+                this.currentSelectValue = newName;
+                if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+                    if (newName == -1) {
+                        this.forthwithTaskList = this.allForthwithTaskList;
+                        if (this.forthwithTaskList.length == 0) {
+                            this.forthwithEmptyShow = true
+                        } else {
+                            this.forthwithEmptyShow = false
+                        };
+                        this.specialTaskList = this.allSpecialTaskList;
+                        if (this.specialTaskList.length == 0) {
+                            this.specialEmptyShow = true
+                        } else {
+                            this.specialEmptyShow = false
+                        };
+                        return
+                    };
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == newName});
+                    if (this.forthwithTaskList.length == 0) {
+                        this.forthwithEmptyShow = true
+                    } else {
+                        this.forthwithEmptyShow = false
+                    };
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == newName});
+                    if (this.specialTaskList.length == 0) {
+                        this.specialEmptyShow = true
+                    } else {
+                        this.specialEmptyShow = false
+                    }
+                } else if (this.currentCleanTaskName.forthwithTaskShow) {
+                    if (newName == -1) {
+                        this.forthwithTaskList = this.allForthwithTaskList;
+                        if (this.forthwithTaskList.length == 0) {
+                            this.forthwithEmptyShow = true
+                        } else {
+                            this.forthwithEmptyShow = false
+                        };
+                        return
+                    };
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == newName});
+                    if (this.forthwithTaskList.length == 0) {
+                        this.forthwithEmptyShow = true
+                    } else {
+                        this.forthwithEmptyShow = false
+                    }
+                } else if (this.currentCleanTaskName.specialTaskShow) {
+                    if (newName == -1) {
+                        this.specialTaskList = this.allSpecialTaskList;
+                        if (this.specialTaskList.length == 0) {
+                            this.specialEmptyShow = true
+                        } else {
+                            this.specialEmptyShow = false
+                        };
+                        return
+                    };
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == newName});
+                    if (this.specialTaskList.length == 0) {
+                        this.specialEmptyShow = true
+                    } else {
+                        this.specialEmptyShow = false
+                    }
+                }
+            },
+            deep: true
+        }
+  },
 
   computed: {
     ...mapGetters(["userInfo","currentCleanTaskName","currentCleanTaskDateVlue","cleanTaskDetails"]),
@@ -219,9 +317,17 @@ export default {
     },
     onClickRight () {
         this.searchValue = '';
-        this.getCleaningManageTaskList(this.itemNameIndex - 1);
         if (this.selectValue != -1) {
-            this.selectValue = -1
+            this.selectValue = -1;
+            this.currentSelectValue = -1
+        };
+        if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+            this.getForthwithTaskList(0);
+            this.getSpecialTaskList(1)
+        } else if (this.currentCleanTaskName.forthwithTaskShow) {
+            this.getForthwithTaskList(0);
+        } else if (this.currentCleanTaskName.specialTaskShow) {
+            this.getSpecialTaskList(1)
         }
     },
     
@@ -280,8 +386,8 @@ export default {
         return  `${startField}${month}${Date}${endIndex}`
     },
 
-    // 查询任务列表
-    getCleaningManageTaskList (taskType) {
+    // 查询即时保洁任务列表
+    getForthwithTaskList (taskType) {
         let data = {
             proId : this.userInfo.proIds[0], // 所属项目id
             queryDate: this.currentCleanTaskName.date, // 查询时间
@@ -290,17 +396,56 @@ export default {
         };
         this.loadingShow = true;
         this.overlayShow = true;
-        this.taskList = [];
+        this.forthwithTaskList = [];
         queryCleaningManageTaskList(data).then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.taskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
-                this.allTaskList = this.taskList;
-                if (this.taskList.length == 0) {
-                    this.emptyShow = true
+                this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
+                this.allForthwithTaskList = this.forthwithTaskList;
+                if (this.forthwithTaskList.length == 0) {
+                    this.forthwithEmptyShow = true
                 } else {
-                    this.emptyShow = false
+                    this.forthwithEmptyShow = false
+                }
+            } else {
+                this.$toast({
+                    message: `${res.data.msg}`,
+                    type: 'fail'
+                })
+            }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
+    // 查询专项保洁任务列表
+    getSpecialTaskList (taskType) {
+        let data = {
+            proId : this.userInfo.proIds[0], // 所属项目id
+            queryDate: this.currentCleanTaskName.date, // 查询时间
+            managerId: this.userInfo.id, // 保洁主管id    
+            taskType: taskType // 0-即时，1-专项
+        };
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.specialTaskList = [];
+        queryCleaningManageTaskList(data).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+	      if (res && res.data.code == 200) {
+                this.specialTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
+                this.allSpecialTaskList = this.specialTaskList;
+                if (this.specialTaskList.length == 0) {
+                    this.specialEmptyShow = true
+                } else {
+                    this.specialEmptyShow = false
                 }
             } else {
                 this.$toast({
@@ -321,60 +466,77 @@ export default {
 
     // 下拉框值改变事件
     selecOptionChangeEvent (value) {
-        if (value == -1) {
-            this.taskList = this.allTaskList;
-            if (this.taskList.length == 0) {
-                this.emptyShow = true
-            } else {
-                this.emptyShow = false
-            };
-            return
-        };
-        this.taskList = this.allTaskList.filter((item) => { return item.state == value});
-        if (this.taskList.length == 0) {
-            this.emptyShow = true
-        } else {
-            this.emptyShow = false
-        }
     },
 
     // 任务名称点击事件
     taskItemNameEvent (num) {
-        this.getCleaningManageTaskList(num - 1);
-        this.itemNameIndex = num;
         let temporaryMessage = this.currentCleanTaskName;
         temporaryMessage['num'] = num;
         this.storeCurrentCleanTaskName(temporaryMessage);
-        if (this.selectValue != -1) {
-            this.selectValue = -1
-        };
         if (this.searchValue) { this.searchValue = ''}
+        this.itemNameIndex = num;
+        if (this.currentSelectValue == -1) {
+            this.forthwithTaskList = this.allForthwithTaskList;
+            if (this.forthwithTaskList.length == 0) {
+                this.forthwithEmptyShow = true
+            } else {
+                this.forthwithEmptyShow = false
+            };
+            this.specialTaskList = this.allSpecialTaskList;
+            if (this.specialTaskList.length == 0) {
+                this.specialEmptyShow = true
+            } else {
+                this.specialEmptyShow = false
+            };
+            return 
+        };
+        this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue});
+        if (this.forthwithTaskList.length == 0) {
+            this.forthwithEmptyShow = true
+        } else {
+            this.forthwithEmptyShow = false
+        };
+        this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue});
+        if (this.specialTaskList.length == 0) {
+            this.specialEmptyShow = true
+        } else {
+            this.specialEmptyShow = false
+        }
     },
 
     // 搜索事件
     searchEvent () {
         if (this.itemNameIndex == 1) {
             if (!this.searchValue) {
-                this.taskList = this.allTaskList;
+                this.forthwithTaskList = this.allForthwithTaskList;
+                this.currentSelectValue = -1;
+                this.selectValue = -1
             } else {
-                this.taskList = this.taskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                this.forthwithTaskList = this.forthwithTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
                 item.areaImmediateName.indexOf(this.searchValue) != -1  ||  (this.extractSpaceMessage(item.spaces)).indexOf(this.searchValue) != -1 ||
                 item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
                 )
+            };
+            if (this.forthwithTaskList.length == 0) {
+                this.forthwithEmptyShow = true
+            } else {
+                this.forthwithEmptyShow = false
             }
         } else if (this.itemNameIndex == 2) {
             if (!this.searchValue) {
-                this.taskList = this.allTaskList;
+                this.specialTaskList = this.allSpecialTaskList;
+                this.currentSelectValue = -1;
+                this.selectValue = -1
             } else {
-                this.taskList = this.taskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                this.specialTaskList = this.specialTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
                 item.areaSpecialName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
                 )
+            };
+            if (this.specialTaskList.length == 0) {
+                this.specialEmptyShow = true
+            } else {
+                this.specialEmptyShow = false
             }
-        };
-        if (this.taskList.length == 0) {
-            this.emptyShow = true
-        } else {
-            this.emptyShow = false
         }
     },
 
@@ -439,12 +601,6 @@ export default {
     flex-direction: column;
     position: relative;
     height: 0;
-    /deep/ .van-empty {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%)
-    };
     .content-top {
         width: 92%;
         margin: 0 auto;
@@ -540,66 +696,77 @@ export default {
         padding: 6px;
         box-sizing: border-box;
         overflow: auto;
-        .task-list {
-            margin-bottom: 12px;
-            border-radius: 4px;
-            padding: 0 6px 6px  6px;
-            background: #fff;
-            box-sizing: border-box;
-            box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
-            .task-list-title {
-                width: 100%;
-                .bottom-border-1px(rgba(0, 0, 0, 0.23));
-                padding: 10px 6px;
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                .task-list-title-left {
-                    font-size: 16px;
-                    color: #289E8E
-                };
-                .task-list-title-right {
-                    width: 61px;
-                    height: 27px;
-                    text-align: center;
-                    line-height: 27px;
-                    background: #BBBBBB;
-                    color: #fff;
-                    border-radius: 4px
-                };
-                .underwayStyle {
-                    background: #289E8E !important
-                };
-                .completeStyle {
-                    background: #242424 !important
-                };
-                .reviewStyle {
-                    background: #F2A15F !important
-                };
-                .haveReviewStyle {
-                    background: #9B7D31 !important
-                }
+        .task-list-box {
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            /deep/ .van-empty {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%)
             };
-            .task-list-content {
-                width: 100%;
-                padding: 10px 6px;
+            .task-list {
+                margin-bottom: 12px;
+                border-radius: 4px;
+                padding: 0 6px 6px  6px;
+                background: #fff;
                 box-sizing: border-box;
-                .one-line {
-                    line-height: 28px;
-                    word-break: break-all;
-                    span {
-                       font-size: 14px;
-                       &:first-child  {
-                            color: #9E9E9A
-                       };
-                       &:last-child  {
-                            color: #101010
-                       }
+                box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
+                .task-list-title {
+                    width: 100%;
+                    .bottom-border-1px(rgba(0, 0, 0, 0.23));
+                    padding: 10px 6px;
+                    box-sizing: border-box;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    .task-list-title-left {
+                        font-size: 16px;
+                        color: #289E8E
+                    };
+                    .task-list-title-right {
+                        width: 61px;
+                        height: 27px;
+                        text-align: center;
+                        line-height: 27px;
+                        background: #BBBBBB;
+                        color: #fff;
+                        border-radius: 4px
+                    };
+                    .underwayStyle {
+                        background: #289E8E !important
+                    };
+                    .completeStyle {
+                        background: #242424 !important
+                    };
+                    .reviewStyle {
+                        background: #F2A15F !important
+                    };
+                    .haveReviewStyle {
+                        background: #9B7D31 !important
+                    }
+                };
+                .task-list-content {
+                    width: 100%;
+                    padding: 10px 6px;
+                    box-sizing: border-box;
+                    .one-line {
+                        line-height: 28px;
+                        word-break: break-all;
+                        span {
+                        font-size: 14px;
+                        &:first-child  {
+                                color: #9E9E9A
+                        };
+                        &:last-child  {
+                                color: #101010
+                        }
+                        }
                     }
                 }
             }
-        };
+        };    
         .special-list {
             .task-list-title {
                 .task-list-title-left {

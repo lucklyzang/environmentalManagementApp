@@ -64,7 +64,7 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${forthwithCleaningTaskGlobalStatistics.percent}%`" 
+                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${Math.ceil(forthwithCleaningTaskGlobalStatistics.percent)}%`" 
                   layer-color="#d0d0cc"
                   :color="forthwithCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
                   :size="45" 
@@ -103,7 +103,7 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${specialCleaningTaskGlobalStatistics.percent}%`" 
+                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${Math.ceil(specialCleaningTaskGlobalStatistics.percent)}%`" 
                   layer-color="#d0d0cc"
                   :color="specialCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
                   :size="45"

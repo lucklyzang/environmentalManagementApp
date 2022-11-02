@@ -25,34 +25,42 @@
         <span>创建时间</span>
         <span>{{cleanTaskDetails.createTime}}</span>
       </div>
+      <div class="location" v-show="cleanTaskDetails.state != 1">
+        <span>开始时间</span>
+        <span>{{cleanTaskDetails.startTime }}</span>
+      </div>
       <div class="location">
         <span>计划执行人</span>
         <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
+      </div>
+      <div class="location" v-show="cleanTaskDetails.state == 6">
+        <span>完成时间</span>
+        <span>{{cleanTaskDetails.finishTime }}</span>
       </div>
       <div class="location">
         <span>保洁事项</span>
         <span>{{ cleanTaskDetails.cleanItemName }}</span>
       </div>
-      <div class="issue-picture">
+      <!-- <div class="issue-picture">
         <div>问题图片</div>
         <div class="image-list">
           <img :src="item.path" alt="" v-for="(item,index) in problemPicturesEchoList" :key="index">
         </div>
-      </div>
+      </div> -->
       <div class="location problem-description">
         <span>问题描述</span>
         <span>{{ cleanTaskDetails.taskRemark}}</span>
-      </div>
-      <div class="remark" v-show="cleanTaskDetails.state == 6">
-        <div>备注</div>
-        <div class="remark-content">
-          {{ cleanTaskDetails.completeRemark }}
-        </div>
       </div>
       <div class="issue-picture" v-show="cleanTaskDetails.state == 6">
         <div>结果图片</div>
         <div class="image-list">
           <img :src="item.path" alt="" v-for="(item,index) in resultPicturesEchoList" :key="index">
+        </div>
+      </div>
+      <div class="remark" v-show="cleanTaskDetails.state == 6">
+        <div>备注</div>
+        <div class="remark-content">
+          {{ cleanTaskDetails.completeRemark }}
         </div>
       </div>
       <div class="result-picture" v-show="cleanTaskDetails.state == 3">
@@ -202,6 +210,31 @@ export default {
       } 
     },
 
+    // 格式化时间
+    getNowFormatDate(currentDate) {   
+      let seperator1 = "-";
+      let seperator2 = ":";
+      let month = currentDate.getMonth() + 1;
+      let strDate = currentDate.getDate();
+      let hours = currentDate.getHours();
+      let strMinutes = currentDate.getMinutes();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      }
+      if (strDate >= 0 && strDate <= 9) {
+          strDate = "0" + strDate;
+      }
+      if (strMinutes >= 0 && strMinutes <= 9) {
+          strMinutes = "0" + strMinutes;
+      }
+      if (hours >= 0 && hours <= 9) {
+        hours = "0" + hours;
+      }
+      let currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+              + " " + hours + seperator2 + strMinutes
+      return currentdate;
+    },
+
       // 任务开始事件
       taskStartEvent () {
         this.overlayShow = true;
@@ -218,6 +251,7 @@ export default {
             // 更改store中存储的任务状态
             let temporaryDetails = this.cleanTaskDetails;
             temporaryDetails['state'] = 3;
+            temporaryDetails['startTime'] = this.getNowFormatDate(new Date());
             this.storeCleanTaskDetails(temporaryDetails)
           } else {
             this.$toast({

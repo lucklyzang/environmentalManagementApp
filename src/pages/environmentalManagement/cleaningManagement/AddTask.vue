@@ -27,14 +27,25 @@
       </div>
       <div class="category-box category-no-select-box">
         <div class="category-title">
-            <span>*</span>
-            <span>类别</span>
+          <span>*</span>
+          <span>类别</span>
         </div>
         <div class="select-box">
           即时保洁任务
             <!-- <van-dropdown-menu active-color="#174E97">
                 <van-dropdown-item v-model="categoryValue" :options="categoryOption" />
             </van-dropdown-menu> -->
+        </div>
+      </div>
+      <div class="category-box">
+        <div class="category-title">
+            <span>*</span>
+            <span>优先级</span>
+        </div>
+        <div class="select-box">
+            <van-dropdown-menu active-color="#174E97">
+                <van-dropdown-item v-model="priorityValue" :options="priorityOption" />
+            </van-dropdown-menu>
         </div>
       </div>
       <div class="category-box">
@@ -98,7 +109,7 @@
         </div>
         <div class="person-input-box">
             <van-field v-model="durationValue" type="number"/>
-            <span>小时</span>
+            <span>分钟</span>
         </div>
       </div>
       <div class="category-box">
@@ -254,6 +265,25 @@ export default {
         text: '请选择违反标准',
         value: 0
       }],
+      priorityValue: 1,
+      priorityOption: [
+        {
+          text: '正常',
+          value: 1
+        },
+        {
+          text: '重要',
+          value: 2
+        },
+        {
+          text: '紧急',
+          value: 3
+        },
+        {
+          text: '紧急重要',
+          value: 4
+        }
+      ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
       resultImgList: [],
       imgOnlinePathArr: [],
@@ -429,6 +459,7 @@ export default {
         assignId: this.userInfo.id, // 任务分配人员id，当前登陆人员id
         assignName: this.userInfo.name,// 任务分配人员姓名，当前登陆人员姓名
         workerId: this.workerValue,//保洁员id
+        priority: this.priorityValue, //优先级
         workerName: this.workerOption.filter((item) => { return item.value == this.workerValue})[0]['text'],//保洁员姓名
         path: [], // 上传的问题图片，集合,
         taskType: 0,// 任务类型，即时保洁为 0
@@ -443,7 +474,7 @@ export default {
         standards: [this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text']], // 检查标准，违反标准，数组
         planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
         planPersons: this.personNumberValue, // 任务预计所需人数
-        planUseTime: this.durationValue*60, // 任务预计用时，单位为分钟
+        planUseTime: this.durationValue, // 任务预计用时，单位为分钟
         taskRemark: this.enterRemark, // 任务备注信息
         proId: this.userInfo.proIds[0], // 所属项目id
         proName: this.userInfo.hospitalList[0]['hospitalName'] // 所属项目名称
@@ -499,6 +530,9 @@ export default {
             this.enterRemark = '';
             this.categoryValue = 0;
             this.sourceValue = 0;
+            this.workerValue = 0;
+            this.priorityValue = 0;
+            this.currentDate = new Date();
             this.violateStandardValue = 0;
             this.locationValue = '';
             this.personNumberValue = '';
