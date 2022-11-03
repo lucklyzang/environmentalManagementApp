@@ -285,13 +285,11 @@ export default {
 
     onConDayFirm() {
       this.calendarDayShow = false;
-      this.currentDayDate = this.getNowFormatDate(this.currentDayDate,'day');
       this.getCleanAttendanceDayInfo()
     },
 
     onConMonthFirm() {
       this.calendarMonthShow = false;
-      this.currentMonthDate = this.getNowFormatDate(this.currentMonthDate,'month');
       // 月统计详情出勤类型单独一个接口
       if (this.attendanceTypeDetailsMessage.content.attendanceTypeName == '出勤') {
         this.getCleanAttendanceMonthAttendance();
