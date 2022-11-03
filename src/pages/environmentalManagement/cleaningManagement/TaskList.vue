@@ -334,6 +334,10 @@ export default {
 
     // 新增任务事件
     addTaskEvent () {
+      let temporaryMessage = this.currentCleanTaskName;
+      temporaryMessage['date'] = this.getNowFormatDate(this.currentDayDate,'day');
+      this.storeCurrentCleanTaskName(temporaryMessage);
+      this.storeCurrentCleanTaskDateVlue(this.dateValue);
       this.$router.push({path: '/addTask'})
     }
   }

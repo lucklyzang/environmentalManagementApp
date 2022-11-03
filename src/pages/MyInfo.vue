@@ -273,7 +273,7 @@ export default {
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
       background: #fff;
-      margin-top: -100px;
+      margin-top: -94px;
       padding-top: 10px;
       box-sizing: border-box;
       z-index: 1000;
