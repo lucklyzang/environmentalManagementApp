@@ -219,6 +219,18 @@ export default {
     })
   },
 
+  beforeRouteEnter(to, from, next) {
+    next(vm=>{
+      if (from.path == '/home') {
+        vm.currentDayDate = new Date()
+      } else {
+        vm.currentDayDate = vm.currentCleanTaskName.originalDate
+      }
+	  });
+    next() 
+  },
+  
+
   watch: {},
 
   computed: {
@@ -268,6 +280,7 @@ export default {
       let temporaryMessage = this.currentCleanTaskName;
       temporaryMessage['num'] = num;
       temporaryMessage['date'] = this.getNowFormatDate(this.currentDayDate,'day');
+      temporaryMessage['originalDate'] = this.currentDayDate;
       temporaryMessage['forthwithTaskShow'] = this.forthwithTaskShow;
       temporaryMessage['specialTaskShow'] = this.specialTaskShow;
       temporaryMessage['pollingTaskShow'] = this.pollingTaskShow;

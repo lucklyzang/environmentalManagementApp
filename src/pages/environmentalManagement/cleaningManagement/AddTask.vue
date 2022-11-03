@@ -125,7 +125,7 @@
       </div>
       <div class="enter-remark">
         <div>
-          备注
+          问题描述
         </div>
         <div class="remark-box">
           <van-field
@@ -133,7 +133,7 @@
             rows="3"
             autosize
             type="textarea"
-            placeholder="请输入备注"
+            placeholder="请输入问题描述"
           />
         </div>
       </div>
@@ -531,7 +531,7 @@ export default {
             this.categoryValue = 0;
             this.sourceValue = 0;
             this.workerValue = 0;
-            this.priorityValue = 0;
+            this.priorityValue = 1;
             this.currentDate = new Date();
             this.violateStandardValue = 0;
             this.locationValue = '';

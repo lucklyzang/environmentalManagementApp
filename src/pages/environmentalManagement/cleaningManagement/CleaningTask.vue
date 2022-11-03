@@ -317,10 +317,10 @@ export default {
     },
     onClickRight () {
         this.searchValue = '';
-        if (this.selectValue != -1) {
-            this.selectValue = -1;
-            this.currentSelectValue = -1
-        };
+        // if (this.selectValue != -1) {
+        //     this.selectValue = -1;
+        //     this.currentSelectValue = -1
+        // };
         if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
             this.getForthwithTaskList(0);
             this.getSpecialTaskList(1)
@@ -403,6 +403,21 @@ export default {
 	      if (res && res.data.code == 200) {
                 this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
                 this.allForthwithTaskList = this.forthwithTaskList;
+                if (this.currentSelectValue == -1) {
+                    this.forthwithTaskList = this.allForthwithTaskList;
+                    if (this.forthwithTaskList.length == 0) {
+                        this.forthwithEmptyShow = true
+                    } else {
+                        this.forthwithEmptyShow = false
+                    };
+                    return
+                };
+                this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue});
+                if (this.forthwithTaskList.length == 0) {
+                    this.forthwithEmptyShow = true
+                } else {
+                    this.forthwithEmptyShow = false
+                }
                 if (this.forthwithTaskList.length == 0) {
                     this.forthwithEmptyShow = true
                 } else {
@@ -442,6 +457,16 @@ export default {
 	      if (res && res.data.code == 200) {
                 this.specialTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
                 this.allSpecialTaskList = this.specialTaskList;
+                if (this.currentSelectValue == -1) {
+                    this.specialTaskList = this.allSpecialTaskList;
+                    if (this.specialTaskList.length == 0) {
+                        this.specialEmptyShow = true
+                    } else {
+                        this.specialEmptyShow = false
+                    };
+                    return
+                };
+                this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue});
                 if (this.specialTaskList.length == 0) {
                     this.specialEmptyShow = true
                 } else {
