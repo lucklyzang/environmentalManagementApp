@@ -9,9 +9,9 @@
       <div class="forthwith-task-number">
         <span>专项保洁编号{{cleanTaskDetails.num}}</span>
         <span :class="{
-            'underwayStyle' : cleanTaskDetails.state == 3, 
-            'completeStyle' : cleanTaskDetails.state == 6,
-            'reviewStyle' : cleanTaskDetails.state == 4,
+            'underwayStyle' : cleanTaskDetails.state == 2, 
+            'completeStyle' : cleanTaskDetails.state == 4,
+            'reviewStyle' : cleanTaskDetails.state == 3,
             'haveReviewStyle' : cleanTaskDetails.state == 5
           }">
             {{stausTransfer(cleanTaskDetails.state)}}
@@ -33,7 +33,7 @@
         <span>计划执行人</span>
         <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
       </div>
-      <div class="location" v-show="cleanTaskDetails.state == 6">
+      <div class="location" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
         <span>完成时间</span>
         <span>{{cleanTaskDetails.finishTime }}</span>
       </div>
@@ -51,19 +51,19 @@
         <span>问题描述</span>
         <span>{{ cleanTaskDetails.taskRemark}}</span>
       </div>
-      <div class="issue-picture" v-show="cleanTaskDetails.state == 6">
+      <div class="issue-picture" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
         <div>结果图片</div>
         <div class="image-list">
           <img :src="item.path" alt="" v-for="(item,index) in resultPicturesEchoList" :key="index">
         </div>
       </div>
-      <div class="remark" v-show="cleanTaskDetails.state == 6">
+      <div class="remark" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
         <div>备注</div>
         <div class="remark-content">
           {{ cleanTaskDetails.completeRemark }}
         </div>
       </div>
-      <div class="result-picture" v-show="cleanTaskDetails.state == 3">
+      <div class="result-picture" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
         <div>
           <span>*</span>
           结果图片
@@ -83,7 +83,7 @@
 					</div>
         </div>
       </div>
-      <div class="enter-remark" v-show="cleanTaskDetails.state == 3">
+      <div class="enter-remark" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
         <div>
           <span>*</span>
           备注
@@ -102,9 +102,12 @@
     <div class="task-start" @click="taskStartEvent" v-show="cleanTaskDetails.state == 1">
       任务开始
     </div>
-    <div class="task-operation-box" v-show="cleanTaskDetails.state == 3">
+    <div class="task-operation-box" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
       <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
+    </div>
+    <div class="task-start" @click="reCheckEvent" v-show="(cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5) && cleanTaskDetails.reviewFlag == 0">
+      复核质疑
     </div>
     <transition name="van-slide-up">
       <div class="choose-photo-box" v-show="photoBox">
@@ -128,7 +131,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {updateCleaningManageTaskState, cleaningManageTaskComplete} from "@/api/environmentalManagement.js";
+import {updateCleaningManageTaskState, cleaningManageTaskComplete,reviewTask} from "@/api/environmentalManagement.js";
 import {getAliyunSign} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
@@ -184,7 +187,7 @@ export default {
     // 回显图片
     echoImage () {
       this.problemPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 0});
-      if (this.cleanTaskDetails.state == 6) {
+      if (this.cleanTaskDetails.state == 4 || this.cleanTaskDetails.state == 5) {
         this.resultPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 1})
       }
     },
@@ -195,13 +198,13 @@ export default {
         case 1:
             return '未开始'
             break;
-        case 3:
+        case 2:
             return '进行中'
             break;
-        case 4:
+        case 3:
             return '复核中'
             break;
-        case 6:
+        case 4:
             return '已完成'
             break;
         case 5:
@@ -242,7 +245,7 @@ export default {
         this.loadText ='更新中';
         updateCleaningManageTaskState({
           id : this.cleanTaskDetails.id, // 任务id
-		      state: 3 
+		      state: 2 
         })
         .then((res) => {
           this.overlayShow = false;
@@ -250,7 +253,7 @@ export default {
           if (res && res.data.code == 200) {
             // 更改store中存储的任务状态
             let temporaryDetails = this.cleanTaskDetails;
-            temporaryDetails['state'] = 3;
+            temporaryDetails['state'] = 2;
             temporaryDetails['startTime'] = this.getNowFormatDate(new Date());
             this.storeCleanTaskDetails(temporaryDetails)
           } else {
@@ -267,6 +270,35 @@ export default {
           })
         })
       },
+
+    // 复核质疑事件
+    reCheckEvent () {
+       reviewTask(this.cleanTaskDetails.id)
+        .then((res) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          if (res && res.data.code == 200) {
+            this.$toast({
+              message: '复核质疑成功',
+              type: 'success'
+            });
+            this.$router.push({
+              path: "/cleaningTask"
+            })
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        })
+        .catch((err) => {
+          this.$toast({
+            message: `${err}`,
+            type: 'fail'
+          })
+        })
+    },
 
       // 任务未完成事件
      taskNoCompleteEvent () {
@@ -306,6 +338,7 @@ export default {
           };
           cleaningManageTaskComplete({
             id : this.cleanTaskDetails.id, // 任务id
+            state: this.cleanTaskDetails.state,
             taskNumber: this.cleanTaskDetails.taskNumber, // 任务编号
             completeRemark: this.enterRemark, // 任务完成备注
             path: this.imgOnlinePathArr,

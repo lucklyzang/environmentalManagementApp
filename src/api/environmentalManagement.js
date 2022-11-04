@@ -12,7 +12,7 @@ export function queryCleaningManageTaskGlobalStatistics(data) {
 // 查询保洁管理任务列表
 export function queryCleaningManageTaskList(data) {
     return request({
-      url: 'clean/cleanTask/listAllByParam',
+      url: 'clean/cleanTask/app/listAll',
       method: 'get',
       params: data
     })
@@ -33,6 +33,14 @@ export function cleaningManageTaskComplete(data) {
     url: 'clean/cleanTask/complete',
     method: 'put',
     data
+  })
+}
+
+//复核质疑流历史任务
+export function reviewTask(id) {
+  return request({
+    url: `clean/cleanTask/app/review/${id}`,
+    method: 'post'
   })
 }
 

@@ -51,9 +51,9 @@
                             即时任务编号{{ generateTaskNumber('即时',index) }}
                         </div>
                         <div class="task-list-title-right" :class="{
-                            'underwayStyle' : item.state == 3, 
-                            'completeStyle' : item.state == 6,
-                            'reviewStyle' : item.state == 4,
+                            'underwayStyle' : item.state == 2, 
+                            'completeStyle' : item.state == 4,
+                            'reviewStyle' : item.state == 3,
                             'haveReviewStyle' : item.state == 5
                             }"
                             >
@@ -73,7 +73,7 @@
                             <span>开始时间: </span>
                             <span>{{ item.startTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state == 6">
+                        <div class="one-line" v-show="item.state == 4 || item.state == 5">
                             <span>完成时间: </span>
                             <span>{{ item.finishTime }}</span>
                         </div>
@@ -96,9 +96,9 @@
                             编号{{ generateTaskNumber('专项',index) }}
                         </div>
                         <div class="task-list-title-right" :class="{
-                                'underwayStyle' : item.state == 3, 
-                                'completeStyle' : item.state == 6,
-                                'reviewStyle' : item.state == 4,
+                                'underwayStyle' : item.state == 2, 
+                                'completeStyle' : item.state == 4,
+                                'reviewStyle' : item.state == 3,
                                 'haveReviewStyle' : item.state == 5
                             }">
                             {{ stausTransfer(item.state) }}
@@ -121,7 +121,7 @@
                             <span>开始时间: </span>
                             <span>{{ item.startTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state == 6">
+                        <div class="one-line" v-show="item.state == 4 || item.state == 5">
                             <span>完成时间: </span>
                             <span>{{ item.finishTime }}</span>
                         </div>
@@ -193,9 +193,9 @@ export default {
       selectOption: [
         { text: '全部', value: -1 },
         { text: '未开始', value: 1 },
-        { text: '进行中', value: 3 },
-        { text: '复核中', value: 4 },
-        { text: '已完成', value: 6 },
+        { text: '进行中', value: 2 },
+        { text: '复核中', value: 3 },
+        { text: '已完成', value: 4 },
         { text: '已复核', value: 5 }
       ],
       forthwithTaskList: [],
@@ -240,6 +240,9 @@ export default {
         selectValue: {
             handler(newName, oldName) {  
                 this.currentSelectValue = newName;
+                if (this.searchValue) {
+                    this.searchValue = ''
+                };
                 if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
                     if (newName == -1) {
                         this.forthwithTaskList = this.allForthwithTaskList;
@@ -337,13 +340,13 @@ export default {
             case 1:
                 return '未开始'
                 break;
-            case 3:
+            case 2:
                 return '进行中'
                 break;
-            case 4:
+            case 3:
                 return '复核中'
                 break;
-            case 6:
+            case 4:
                 return '已完成'
                 break;
             case 5:
@@ -368,8 +371,8 @@ export default {
     generateTaskNumber (type,index) {
         let startField = '';
         let endIndex = index+1 >= 10 ? `0${index+1}` : `00${index+1}`;
-        let month = this.currenDate.getMonth() + 1;
-        let Date = this.currenDate.getDate();
+        let month = this.currentCleanTaskName.originalDate.getMonth() + 1;
+        let Date = this.currentCleanTaskName.originalDate.getDate();
         if (month >= 1 && month <= 9) {
             month = "0" + month;
         };
@@ -401,7 +404,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
+                this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
                 this.allForthwithTaskList = this.forthwithTaskList;
                 if (this.currentSelectValue == -1) {
                     this.forthwithTaskList = this.allForthwithTaskList;
@@ -455,7 +458,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.specialTaskList = res.data.data.filter((item) => { return item.state != 5 && item.state != 2});
+                this.specialTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
                 this.allSpecialTaskList = this.specialTaskList;
                 if (this.currentSelectValue == -1) {
                     this.specialTaskList = this.allSpecialTaskList;

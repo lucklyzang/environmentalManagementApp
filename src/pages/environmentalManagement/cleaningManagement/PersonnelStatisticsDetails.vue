@@ -56,13 +56,13 @@
                             <div class="cl-item" v-for="(child,innerIndex) of item" @click="dayClickEvent(child,innerIndex,index)" :key="innerIndex" :class="[{has: child},{'clItemStyle': activeDayIndex == index && activeInnerDayIndex == innerIndex && child}]">
                                 <div class="ci-inner" v-if="child" :class="{'ciInnerStyle' : child && child.text && child.text.morning != '未签到' && child.text.afternoon != '未签到'}">
                                     <span>{{child.date}}</span>
-                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.morning) == 1,'clockingStyle': attendanceTypeTransition(child.text.morning) == 2,
-                                        'expatriateStyle': attendanceTypeTransition(child.text.morning) == 3,'occupationalInjuryStyle': attendanceTypeTransition(child.text.morning) == 4, 'sickLeaveStyle': attendanceTypeTransition(child.text.morning) == 5, 'vocationStyle': attendanceTypeTransition(child.text.morning) == 6,
-                                        'affairsStyle': attendanceTypeTransition(child.text.morning) == 7,'overtimeStyle': attendanceTypeTransition(child.text.morning) == 8, 'changeShiftStyle': attendanceTypeTransition(child.text.morning) == 9, 'absenteeismStyle': attendanceTypeTransition(child.text.morning) == 10
+                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.morning) == 1,'expatriateStyle': attendanceTypeTransition(child.text.morning) == 2,
+                                        'occupationalInjuryStyle': attendanceTypeTransition(child.text.morning) == 3,'sickLeaveStyle': attendanceTypeTransition(child.text.morning) == 4, 'changeShiftStyle': attendanceTypeTransition(child.text.morning) == 5, 'vocationStyle': attendanceTypeTransition(child.text.morning) == 6,
+                                        'overtimeStyle': attendanceTypeTransition(child.text.morning) == 7,'clockingStyle': attendanceTypeTransition(child.text.morning) == 8, 'absenteeismStyle': attendanceTypeTransition(child.text.morning) == 9, 'affairsStyle': attendanceTypeTransition(child.text.morning) == 10
                                     }"></span>
-                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.afternoon) == 1,'clockingStyle': attendanceTypeTransition(child.text.afternoon) == 2,
-                                        'expatriateStyle': attendanceTypeTransition(child.text.afternoon) == 3,'occupationalInjuryStyle': attendanceTypeTransition(child.text.afternoon) == 4, 'sickLeaveStyle': attendanceTypeTransition(child.text.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(child.text.afternoon) == 6,
-                                        'affairsStyle': attendanceTypeTransition(child.text.afternoon) == 7,'overtimeStyle': attendanceTypeTransition(child.text.afternoon) == 8, 'changeShiftStyle': attendanceTypeTransition(child.text.afternoon) == 9, 'absenteeismStyle': attendanceTypeTransition(child.text.afternoon) == 10
+                                    <span  v-if="child.text" :class="{'attendanceStyle': attendanceTypeTransition(child.text.afternoon) == 1,'expatriateStyle': attendanceTypeTransition(child.text.afternoon) == 2,
+                                        'occupationalInjuryStyle': attendanceTypeTransition(child.text.afternoon) == 3,'sickLeaveStyle': attendanceTypeTransition(child.text.afternoon) == 4, 'changeShiftStyle': attendanceTypeTransition(child.text.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(child.text.afternoon) == 6,
+                                        'overtimeStyle': attendanceTypeTransition(child.text.afternoon) == 7,'clockingStyle': attendanceTypeTransition(child.text.afternoon) == 8, 'absenteeismStyle': attendanceTypeTransition(child.text.afternoon) == 9, 'affairsStyle': attendanceTypeTransition(child.text.afternoon) == 10
                                     }"></span>
                                 </div>
                             </div>
@@ -80,16 +80,16 @@
                <div class="attendance-condition-right">
                    <div class="forenoon-attendance">
                        <span>上午</span>
-                       <span :class="{'attendanceStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 1,'clockingStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 2,
-                            'expatriateStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 3,'occupationalInjuryStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 4, 'sickLeaveStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 5, 'vocationStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 6,
-                            'affairsStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 7,'overtimeStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 8, 'changeShiftStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 9, 'absenteeismStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 10
+                       <span :class="{'attendanceStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 1,'expatriateStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 2,
+                            'occupationalInjuryStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 3,'sickLeaveStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 4, 'changeShiftStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 5, 'vocationStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 6,
+                            'overtimeStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 7,'clockingStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 8, 'absenteeismStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 9, 'affairsStyle': attendanceTypeTransition(currentDayMessage.text.morning) == 10
                         }">{{ currentDayMessage.text.morning }}</span>
                    </div>
                    <div class="afternoon-attendance">
                        <span>下午</span>
-                       <span  :class="{'attendanceStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 1,'clockingStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 2,
-                            'expatriateStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 3,'occupationalInjuryStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 4, 'sickLeaveStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 6,
-                            'affairsStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 7,'overtimeStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 8, 'changeShiftStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 9, 'absenteeismStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 10
+                       <span :class="{'attendanceStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 1,'expatriateStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 2,
+                            'occupationalInjuryStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 3,'sickLeaveStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 4, 'changeShiftStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 6,
+                            'overtimeStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 7,'clockingStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 8, 'absenteeismStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 9, 'affairsStyle': attendanceTypeTransition(currentDayMessage.text.afternoon) == 10
                         }">{{ currentDayMessage.text.afternoon }}</span>
                    </div>
                </div>
@@ -99,11 +99,11 @@
                <div class="attendance-condition-right">
                    <div class="forenoon-attendance">
                        <span>上午</span>
-                       <span>{{ currentDayMessage.text.inTime ? currentDayMessage.text.inTime : '无' }}</span>
+                       <span>{{ !currentDayMessage.text.inTime ? '-' : currentDayMessage.text.inTime }}</span>
                    </div>
                    <div class="afternoon-attendance">
                        <span>下午</span>
-                       <span>{{ currentDayMessage.text.outTime ?  currentDayMessage.text.outTime : '无'}}</span>
+                       <span>{{ !currentDayMessage.text.outTime ?  '-' : currentDayMessage.text.outTime }}</span>
                    </div>
                </div>
            </div>
@@ -282,12 +282,18 @@ export default {
         this.activeInnerDayIndex = innerIndex;
         if (child.text) {
             this.currentDayMessage = deepClone(child);
+            if (JSON.stringify(this.currentDayMessage['text']['inTime']) == '{}' ) {
+                this.currentDayMessage['text']['inTime'] = null
+            };
+            if (JSON.stringify(this.currentDayMessage['text']['outTime']) == '{}' ) {
+                this.currentDayMessage['text']['outTime'] = null
+            }
         } else {
             this.currentDayMessage['text'] = {
-                afternoon: '无数据',
+                afternoon: '-',
                 date: '',
                 inTime: null,
-                morning: '无数据',
+                morning: '-',
                 outTime: null
             };
             this.currentDayMessage['date'] = child.date
@@ -457,15 +463,21 @@ export default {
     // 默认显示每月一号的考勤信息
     defaultShowAttendanceMessage () {
         // 当月一号的考勤信息
-        let oneDayMessage = deepClone(this.day[0][Object.keys(this.day[0])]);
+        let oneDayMessage = deepClone(this.day[0][Object.keys(this.day[0])[0]]);
         if (oneDayMessage.text) {
-            this.currentDayMessage = oneDayMessage
+            this.currentDayMessage = oneDayMessage;
+            if (JSON.stringify(this.currentDayMessage['text']['inTime']) == '{}' ) {
+                this.currentDayMessage['text']['inTime'] = null
+            };
+            if (JSON.stringify(this.currentDayMessage['text']['outTime']) == '{}' ) {
+                this.currentDayMessage['text']['outTime'] = null
+            }
         } else {
             this.currentDayMessage['text'] = {
-                afternoon: '无数据',
+                afternoon: '-',
                 date: '',
                 inTime: null,
-                morning: '无数据',
+                morning: '-',
                 outTime: null
             };
             this.currentDayMessage['date'] = 1
@@ -783,15 +795,45 @@ export default {
                     padding-left: 16px;
                     box-sizing: border-box;
                     >span {
-                    font-size: 14px;
-                    &:nth-child(1) {
-                        color: #101010;
-                        margin-right: 6px;
+                        font-size: 14px;
+                        &:nth-child(1) {
+                            color: #101010;
+                            margin-right: 6px;
+                        };
+                        &:nth-child(2) {
+                            color: #101010
+                        }
                     };
-                    &:nth-child(2) {
-                        color: #101010
+                    .attendanceStyle {
+                        color: #289E8E !important
+                    };
+                    .clockingStyle {
+                        color: #E86F50 !important
+                    };
+                    .expatriateStyle {
+                        color: #174E97 !important
+                    };
+                    .occupationalInjuryStyle {
+                        color: #E8CB51 !important
+                    };
+                    .sickLeaveStyle {
+                        color: #101010 !important
+                    };
+                    .vocationStyle {
+                        color: #254550 !important
+                    };
+                    .affairsStyle  {
+                        color: #3B9DF9 !important
+                    };
+                    .overtimeStyle  {
+                        color: #F2A15F !important
+                    };
+                    .changeShiftStyle {
+                        color: #1864FF !important
+                    };
+                    .absenteeismStyle {
+                        color: #666666 !important
                     }
-                }
                 }
             };
             position: relative;

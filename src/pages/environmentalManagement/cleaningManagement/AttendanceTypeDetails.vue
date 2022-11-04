@@ -75,7 +75,10 @@
                       <span>
                         上午
                       </span>
-                      <span>
+                      <span :class="{'attendanceStyle': attendanceTypeTransition(item.morning) == 1,'expatriateStyle': attendanceTypeTransition(item.morning) == 2,
+                          'occupationalInjuryStyle': attendanceTypeTransition(item.morning) == 3,'sickLeaveStyle': attendanceTypeTransition(item.morning) == 4, 'changeShiftStyle': attendanceTypeTransition(item.morning) == 5, 'vocationStyle': attendanceTypeTransition(item.morning) == 6,
+                          'overtimeStyle': attendanceTypeTransition(item.morning) == 7,'clockingStyle': attendanceTypeTransition(item.morning) == 8, 'absenteeismStyle': attendanceTypeTransition(item.morning) == 9, 'affairsStyle': attendanceTypeTransition(item.morning) == 10
+                        }">
                         {{ item.morning }}
                       </span>
                     </div>
@@ -83,7 +86,10 @@
                       <span>
                         下午
                       </span>
-                      <span>
+                      <span :class="{'attendanceStyle': attendanceTypeTransition(item.afternoon) == 1,'expatriateStyle': attendanceTypeTransition(item.afternoon) == 2,
+                          'occupationalInjuryStyle': attendanceTypeTransition(item.afternoon) == 3,'sickLeaveStyle': attendanceTypeTransition(item.afternoon) == 4, 'changeShiftStyle': attendanceTypeTransition(item.afternoon) == 5, 'vocationStyle': attendanceTypeTransition(item.afternoon) == 6,
+                          'overtimeStyle': attendanceTypeTransition(item.afternoon) == 7,'clockingStyle': attendanceTypeTransition(item.afternoon) == 8, 'absenteeismStyle': attendanceTypeTransition(item.afternoon) == 9, 'affairsStyle': attendanceTypeTransition(item.afternoon) == 10
+                        }">
                         {{ item.afternoon }}
                       </span>
                     </div>
@@ -515,6 +521,36 @@ export default {
                     &:nth-child(2) {
                       color: #101010
                     }
+                  };
+                  .attendanceStyle {
+                    color: #289E8E !important
+                  };
+                  .clockingStyle {
+                      color: #E86F50 !important
+                  };
+                  .expatriateStyle {
+                      color: #174E97 !important
+                  };
+                  .occupationalInjuryStyle {
+                      color: #E8CB51 !important
+                  };
+                  .sickLeaveStyle {
+                      color: #101010 !important
+                  };
+                  .vocationStyle {
+                      color: #254550 !important
+                  };
+                  .affairsStyle  {
+                      color: #3B9DF9 !important
+                  };
+                  .overtimeStyle  {
+                      color: #F2A15F !important
+                  };
+                  .changeShiftStyle {
+                      color: #1864FF !important
+                  };
+                  .absenteeismStyle {
+                      color: #666666 !important
                   }
                 };
                 .day-message-right {
@@ -528,6 +564,36 @@ export default {
                     &:nth-child(2) {
                       color: #101010
                     }
+                  };
+                  .attendanceStyle {
+                    color: #289E8E !important
+                  };
+                  .clockingStyle {
+                      color: #E86F50 !important
+                  };
+                  .expatriateStyle {
+                      color: #174E97 !important
+                  };
+                  .occupationalInjuryStyle {
+                      color: #E8CB51 !important
+                  };
+                  .sickLeaveStyle {
+                      color: #101010 !important
+                  };
+                  .vocationStyle {
+                      color: #254550 !important
+                  };
+                  .affairsStyle  {
+                      color: #3B9DF9 !important
+                  };
+                  .overtimeStyle  {
+                      color: #F2A15F !important
+                  };
+                  .changeShiftStyle {
+                      color: #1864FF !important
+                  };
+                  .absenteeismStyle {
+                      color: #666666 !important
                   }
                 }
               };

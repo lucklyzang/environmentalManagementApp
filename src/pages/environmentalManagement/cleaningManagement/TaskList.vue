@@ -221,7 +221,7 @@ export default {
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
-      if (from.path == '/home') {
+      if (from.path == '/home' || from.path == '/addTask') {
         vm.currentDayDate = new Date()
       } else {
         vm.currentDayDate = vm.currentCleanTaskName.originalDate
@@ -334,10 +334,6 @@ export default {
 
     // 新增任务事件
     addTaskEvent () {
-      let temporaryMessage = this.currentCleanTaskName;
-      temporaryMessage['date'] = this.getNowFormatDate(this.currentDayDate,'day');
-      this.storeCurrentCleanTaskName(temporaryMessage);
-      this.storeCurrentCleanTaskDateVlue(this.dateValue);
       this.$router.push({path: '/addTask'})
     }
   }

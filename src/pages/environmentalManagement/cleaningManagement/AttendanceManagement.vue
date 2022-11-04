@@ -32,7 +32,7 @@
                     </div>
                     <div class="change-shift-box-bottom-right">
                         <span>{{ getNowFormatDate(currentMorningDate,'day') }}</span>
-                        <img :src="calendarPng" alt="" />
+                        <!-- <img :src="calendarPng" alt="" /> -->
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     </div>
                     <div class="change-shift-box-bottom-right">
                         <span>{{ getNowFormatDate(currentAfternoonDate,'day') }}</span>
-                        <img :src="calendarPng" alt="" />
+                        <!-- <img :src="calendarPng" alt="" /> -->
                     </div>
                 </div>
             </div>
@@ -912,11 +912,15 @@ export default {
                 .change-shift-box-top {
                     display: flex;
                     flex-flow: row nowrap;
+                    align-items: center;
+                    margin-top: 2px;
                     .change-shift-box-top-left {
                         height: 40px;
                         display: flex;
                         margin-right: 10px;
                         align-items: center;
+                        width: 18%;
+                        text-align: center;
                         >span {
                             &:first-child {
                                 color: red
@@ -927,19 +931,22 @@ export default {
                         display: flex;
                         margin-right: 10px;
                         align-items: center;
-                        height: 40px;
+                        height: 30px;
                         width: 50%;
+                        border: 1px solid #cdcdcd;
+                        box-sizing: border-box;
                         /deep/ .van-dropdown-menu {
                             .van-dropdown-menu__bar {
                                 box-shadow: none !important;
-                                height: 40px !important;
+                                height: 30px !important;
+                                background: transparent !important;
                                 .van-dropdown-menu__item {
                                     justify-content: flex-end !important;
                                     .van-dropdown-menu__title {
-                                        color: #1864FF !important
+                                        color: #939393 !important
                                     };
                                     .van-dropdown-menu__title::after {
-                                        border-color: transparent transparent #174E97 #174E97 !important;
+                                        border-color: transparent transparent #101010 #101010 !important;
                                     }
                                 }
                             }
@@ -950,11 +957,14 @@ export default {
                 .change-shift-box-bottom {
                     display: flex;
                     flex-flow: row nowrap;
+                    align-items: center;
                     .change-shift-box-bottom-left {
                         height: 40px;
                         display: flex;
                         margin-right: 10px;
                         align-items: center;
+                        width: 18%;
+                        text-align: center;
                     };
                     .change-shift-box-bottom-right {
                         width: 50%;
@@ -962,13 +972,13 @@ export default {
                         justify-content: space-between;
                         align-items: center;
                         height: 30px;
-                        background: #F4F5F7;
                         padding: 0 10px;
                         box-sizing: border-box;
-                        border-radius: 8px;
+                        border-radius: 2px;
+                        border: 1px solid #cdcdcd;
                         > span {
                             font-size: 14px;
-                            color: #101010;
+                            color: #939393;
                             margin-right: 10px
                         };
                         img {
@@ -981,10 +991,12 @@ export default {
             .duration-box {
                 margin-top: 4px;
                 .change-shift-box-bottom-left {
+                    width: auto !important;
                     height: 30px !important
                 };
                 .change-shift-box-bottom-right {
                     background: #fff !important;
+                    border: none !important;
                     /deep/ .van-cell {
                         padding: 0 4px !important;
                         border: 1px solid #bebebe
@@ -1026,11 +1038,15 @@ export default {
                 .change-shift-box-top {
                     display: flex;
                     flex-flow: row nowrap;
+                    align-items: center;
+                    margin-top: 2px;
                     .change-shift-box-top-left {
                         height: 40px;
                         display: flex;
                         margin-right: 10px;
                         align-items: center;
+                        width: 18%;
+                        text-align: center;
                         >span {
                             &:first-child {
                                 color: red
@@ -1041,19 +1057,22 @@ export default {
                         display: flex;
                         margin-right: 10px;
                         align-items: center;
-                        height: 40px;
+                        height: 30px;
                         width: 50%;
+                        border: 1px solid #cdcdcd;
+                        box-sizing: border-box;
                         /deep/ .van-dropdown-menu {
                             .van-dropdown-menu__bar {
                                 box-shadow: none !important;
-                                height: 40px !important;
+                                height: 30px !important;
+                                background: transparent !important;
                                 .van-dropdown-menu__item {
                                     justify-content: flex-end !important;
                                     .van-dropdown-menu__title {
-                                        color: #1864FF !important
+                                        color: #939393 !important
                                     };
                                     .van-dropdown-menu__title::after {
-                                        border-color: transparent transparent #174E97 #174E97 !important;
+                                        border-color: transparent transparent #101010 #101010 !important;
                                     }
                                 }
                             }
@@ -1064,9 +1083,12 @@ export default {
                 .change-shift-box-bottom {
                     display: flex;
                     flex-flow: row nowrap;
+                    align-items: center;
                     .change-shift-box-bottom-left {
                         height: 40px;
                         display: flex;
+                        width: 18%;
+                        text-align: center;
                         margin-right: 10px;
                         align-items: center;
                     };
@@ -1076,13 +1098,13 @@ export default {
                         justify-content: space-between;
                         align-items: center;
                         height: 30px;
-                        background: #F4F5F7;
+                        border-radius: 2px;
+                        border: 1px solid #cdcdcd;
                         padding: 0 10px;
                         box-sizing: border-box;
-                        border-radius: 8px;
                         > span {
                             font-size: 14px;
-                            color: #101010;
+                            color: #939393;
                             margin-right: 10px
                         };
                         img {
@@ -1095,10 +1117,12 @@ export default {
             .duration-box {
                 margin-top: 4px;
                 .change-shift-box-bottom-left {
-                    height: 30px !important
+                    height: 30px !important;
+                    width: auto !important
                 };
                 .change-shift-box-bottom-right {
                     background: #fff !important;
+                    border: none !important;
                     /deep/ .van-cell {
                         padding: 0 4px !important;
                         border: 1px solid #bebebe
