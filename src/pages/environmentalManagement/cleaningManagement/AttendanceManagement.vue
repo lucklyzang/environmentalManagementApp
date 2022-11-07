@@ -750,6 +750,8 @@ export default {
             if (this.forenoonAttendanceRadioValue == 4 || this.forenoonAttendanceRadioValue == 6 || this.forenoonAttendanceRadioValue == 10 || this.forenoonAttendanceRadioValue == 7 || this.forenoonAttendanceRadioValue == 9) {
                 this.isShowForenoonDurationBox = true
             };
+        } else {
+            this.forenoonAttendanceRadioValue = ''
         };
         // 回显下午午考勤类型
         if (item.afternoon) {
@@ -760,6 +762,8 @@ export default {
             if (this.afternoonAttendanceRadioValue == 4 || this.afternoonAttendanceRadioValue == 6 || this.afternoonAttendanceRadioValue == 10 || this.afternoonAttendanceRadioValue == 7 || this.afternoonAttendanceRadioValue == 9) {
                 this.isShowAfternoonDurationBox = true
             }
+        } else {
+           this.afternoonAttendanceRadioValue = '' 
         };
         // 回显上午时长
         if (item.duration) {
