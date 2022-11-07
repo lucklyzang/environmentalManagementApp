@@ -529,6 +529,8 @@ export default {
             case 10 :
                 return '事假'
                 break;
+            default:
+                return '-'    
         }
     },
 
@@ -889,7 +891,7 @@ export default {
                 color: #1864FF;
                 margin-bottom: 14px
             };
-            /deep/ .van-radio-group {
+            .van-radio-group {
                 justify-content: space-between;
                 >div {
                     &:nth-child(5n) {
@@ -939,13 +941,14 @@ export default {
                         width: 50%;
                         border: 1px solid #cdcdcd;
                         box-sizing: border-box;
-                        /deep/ .van-dropdown-menu {
+                        .van-dropdown-menu {
+                            width: 94%;
                             .van-dropdown-menu__bar {
                                 box-shadow: none !important;
                                 height: 30px !important;
                                 background: transparent !important;
                                 .van-dropdown-menu__item {
-                                    justify-content: flex-end !important;
+                                    justify-content: flex-start !important;
                                     .van-dropdown-menu__title {
                                         color: #939393 !important
                                     };
@@ -1001,7 +1004,7 @@ export default {
                 .change-shift-box-bottom-right {
                     background: #fff !important;
                     border: none !important;
-                    /deep/ .van-cell {
+                    .van-cell {
                         padding: 0 4px !important;
                         border: 1px solid #bebebe
                     }
@@ -1015,7 +1018,7 @@ export default {
                 color: #1864FF;
                 margin-bottom: 14px
             };
-            /deep/ .van-radio-group {
+            .van-radio-group {
                 justify-content: space-between;
                 >div {
                     &:nth-child(5n) {
@@ -1065,13 +1068,14 @@ export default {
                         width: 50%;
                         border: 1px solid #cdcdcd;
                         box-sizing: border-box;
-                        /deep/ .van-dropdown-menu {
+                        .van-dropdown-menu {
+                            width: 94%;
                             .van-dropdown-menu__bar {
                                 box-shadow: none !important;
                                 height: 30px !important;
                                 background: transparent !important;
                                 .van-dropdown-menu__item {
-                                    justify-content: flex-end !important;
+                                    justify-content: flex-start !important;
                                     .van-dropdown-menu__title {
                                         color: #939393 !important
                                     };
@@ -1127,7 +1131,7 @@ export default {
                 .change-shift-box-bottom-right {
                     background: #fff !important;
                     border: none !important;
-                    /deep/ .van-cell {
+                    .van-cell {
                         padding: 0 4px !important;
                         border: 1px solid #bebebe
                     }
