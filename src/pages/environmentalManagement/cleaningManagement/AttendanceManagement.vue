@@ -742,7 +742,7 @@ export default {
             } 
         });
         // 回显上午考勤类型
-        if (item.morning != 0) {
+        if (item.morning) {
             this.forenoonAttendanceRadioValue = item.morning.toString();
             if (this.forenoonAttendanceRadioValue == 5) {
                 this.isShowForenoonChangeShiftBox = true
@@ -752,7 +752,7 @@ export default {
             };
         };
         // 回显下午午考勤类型
-        if (item.afternoon != 0) {
+        if (item.afternoon) {
             this.afternoonAttendanceRadioValue = item.afternoon.toString();
             if (this.afternoonAttendanceRadioValue == 5) {
                 this.isShowAfternoonChangeShiftBox = true
