@@ -233,6 +233,10 @@ export default {
         this.getForthwithTaskList(0);
     } else if (this.currentCleanTaskName.specialTaskShow) {
         this.getSpecialTaskList(1)
+    };
+    if (JSON.stringify(this.cleanTaskDetails) != "{}" && this.cleanTaskDetails.selectValue) {
+        this.currentSelectValue = this.cleanTaskDetails.selectValue;
+        this.selectValue = this.cleanTaskDetails.selectValue
     }
   },
 
@@ -573,6 +577,7 @@ export default {
         this.storeCleanTaskDetails(item);
         let temporaryMessage = this.cleanTaskDetails;
         temporaryMessage['num'] = number;
+        temporaryMessage['selectValue'] = this.selectValue;
         this.storeCleanTaskDetails(temporaryMessage);
         this.$router.push({path: '/forthwithCleaningTaskDetails'})
     },
@@ -582,6 +587,7 @@ export default {
         this.storeCleanTaskDetails(item);
         let temporaryMessage = this.cleanTaskDetails;
         temporaryMessage['num'] = number;
+        temporaryMessage['selectValue'] = this.selectValue;
         this.storeCleanTaskDetails(temporaryMessage);
         this.$router.push({path: '/specialCleaningTaskDetails'})
     },

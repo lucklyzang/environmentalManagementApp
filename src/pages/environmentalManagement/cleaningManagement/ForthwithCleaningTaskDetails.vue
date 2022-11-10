@@ -106,7 +106,7 @@
       <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
-    <div class="task-start" @click="reCheckEvent" v-show="(cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5) && cleanTaskDetails.reviewFlag == 0">
+    <div class="task-start" @click="reCheckDialogEvent" v-show="(cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5) && cleanTaskDetails.reviewFlag == 0">
       复核质疑
     </div>
     <transition name="van-slide-up">
@@ -126,7 +126,12 @@
       confirm-button-color="#218FFF" show-cancel-button
       @confirm="sureDeleteEvent"
       >
-    </van-dialog> 
+    </van-dialog>
+    <van-dialog v-model="queryDialogShow" title="是否复合质疑并生成新的任务?" 
+      confirm-button-color="#218FFF" show-cancel-button
+      @confirm="sureQueryEvent"
+      >
+    </van-dialog>  
   </div>
 </template>
 <script>
@@ -144,6 +149,7 @@ export default {
   data() {
     return {
       photoBox: false,
+      queryDialogShow: false,
       imgIndex: '',
       deleteInfoDialogShow: false,
       overlayShow: false,
@@ -222,6 +228,16 @@ export default {
             return '已复核'
             break
       } 
+    },
+
+    // 复合质疑弹框事件
+    reCheckDialogEvent () {
+      this.queryDialogShow = true
+    },
+
+    // 复合质疑确定事件
+    sureQueryEvent () {
+      this.reCheckEvent()
     },
 
     // 复核质疑事件

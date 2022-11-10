@@ -126,7 +126,12 @@
       confirm-button-color="#218FFF" show-cancel-button
       @confirm="sureDeleteEvent"
       >
-    </van-dialog>  
+    </van-dialog>
+    <van-dialog v-model="queryDialogShow" title="是否复合质疑并生成新的任务?" 
+      confirm-button-color="#218FFF" show-cancel-button
+      @confirm="sureQueryEvent"
+      >
+    </van-dialog>   
   </div>
 </template>
 <script>
@@ -144,6 +149,7 @@ export default {
   data() {
     return {
       photoBox: false,
+      queryDialogShow: false,
       temporaryFileArray: [],
       imgOnlinePathArr: [],
       isExpire: false,
@@ -270,6 +276,16 @@ export default {
           })
         })
       },
+
+    // 复合质疑弹框事件
+    reCheckDialogEvent () {
+      this.queryDialogShow = true
+    },
+
+    // 复合质疑确定事件
+    sureQueryEvent () {
+      this.reCheckEvent()
+    },
 
     // 复核质疑事件
     reCheckEvent () {
