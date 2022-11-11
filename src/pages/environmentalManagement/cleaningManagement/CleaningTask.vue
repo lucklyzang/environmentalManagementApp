@@ -214,6 +214,19 @@ export default {
     }
   },
 
+  beforeRouteEnter(to, from, next) {
+    next(vm=>{
+      if (from.path != '/cleanTaskList') {
+        //非此页面进入时,回显筛选状态
+        if (JSON.stringify(vm.cleanTaskDetails) != "{}" && vm.cleanTaskDetails.selectValue) {
+            vm.currentSelectValue = vm.cleanTaskDetails.selectValue;
+            vm.selectValue = vm.cleanTaskDetails.selectValue
+        }
+      }
+	});
+    next() 
+  },
+
   mounted() {
     // 控制设备物理返回按键
     if (!IsPC()) {
@@ -233,10 +246,6 @@ export default {
         this.getForthwithTaskList(0);
     } else if (this.currentCleanTaskName.specialTaskShow) {
         this.getSpecialTaskList(1)
-    };
-    if (JSON.stringify(this.cleanTaskDetails) != "{}" && this.cleanTaskDetails.selectValue) {
-        this.currentSelectValue = this.cleanTaskDetails.selectValue;
-        this.selectValue = this.cleanTaskDetails.selectValue
     }
   },
 
