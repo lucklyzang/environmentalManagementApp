@@ -184,7 +184,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {addForthwithCleanTask, getViolateStandardMessage,cleanbxWorkerList} from "@/api/environmentalManagement.js";
+import {addForthwithCleanTask, getViolateStandardMessage,attendanceWorkerList} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress } from "@/common/js/utils";
 import {getAliyunSign} from '@/api/login.js'
@@ -227,7 +227,6 @@ export default {
        {
           text: '请选择保洁员',
           value: 0
-            
         }
      ],
      sourceValue: 0,
@@ -301,12 +300,21 @@ export default {
           path: "/cleanTaskList",
         })
       })
-    };
-    this.getWorkerList()
+    }
   },
 
   activated () {
+    if (!IsPC()) {
+      pushHistory();
+      this.gotoURL(() => {
+        pushHistory();
+        this.$router.push({
+          path: "/cleanTaskList",
+        })
+      })
+    };
     this.echoLoactionMessage();
+    this.getWorkerList();
     console.log('位置信息',this.locationMessage);
   },
 
@@ -397,15 +405,17 @@ export default {
      // 查询保洁员列表
     getWorkerList () {
       this.workerOption = [{ text: '请选择保洁员', value: 0 }];
-      cleanbxWorkerList(this.userInfo.proIds[0]).then((res) => {
+      attendanceWorkerList(this.userInfo.proIds[0]).then((res) => {
           if (res && res.data.code == 200) {
             if (res.data.data.length > 0) {
+              console.log('保洁员',res.data.data);
               for (let item of res.data.data) {
-                this.workerOption.push({
-                  text: item.name,
-                  value: item.id,
-                  state: item.state
-                })
+                if (this.workerOption.filter((innerItem) => {return innerItem.value == item.workerId}).length == 0) {
+                  this.workerOption.push({
+                    text: item.workerName,
+                    value: item.workerId
+                  })
+                }  
               }
             }
           } else {
