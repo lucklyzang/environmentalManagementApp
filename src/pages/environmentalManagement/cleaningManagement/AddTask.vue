@@ -198,6 +198,7 @@ export default {
     return {
       photoBox: false,
       imgIndex: '',
+      isExpire: false,
       deleteInfoDialogShow: false,
       showDateBox: false,
       overlayShow: false,
