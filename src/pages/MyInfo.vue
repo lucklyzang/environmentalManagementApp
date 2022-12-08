@@ -114,7 +114,7 @@ export default {
       quitDialogShow: false,
       loadingShow: false,
       overlayShow: false,
-      versionNumber: '2.5',
+      versionNumber: '2.6',
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       accountExpirationTimePng: require("@/common/images/home/account-expiration-time.png"),
       hiredatePng: require("@/common/images/home/hiredate.png"),

@@ -159,6 +159,7 @@
             @change="previewFileTwo"
             type="file"
             accept="image/camera"
+            apture="camera"
           />拍照
         </div>
         <div class="photo-cancel" @click="photoCancel">取消</div>
