@@ -20,6 +20,7 @@
             @change="previewFileTwo"
             type="file"
             accept="image/camera"
+            capture="camera"
           />拍照
         </div>
       </template>
