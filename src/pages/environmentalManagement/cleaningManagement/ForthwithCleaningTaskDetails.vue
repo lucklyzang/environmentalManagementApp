@@ -496,16 +496,20 @@ export default {
 							this.isExpire = false;
 							resolve()
 						} else {
+              this.overlayShow = false;
+              this.loadingShow = false;
 							this.$toast({
-								message: `${res.data.data.msg}`,
+								message: `${res.data.msg}`,
 								type: 'fail'
 							});
 							reject()
 						}
 					})
 					.catch((err) => {
+            this.overlayShow = false;
+            this.loadingShow = false;
             this.$toast({
-              message: `${res.data.data.msg}`,
+              message: `${err}`,
               type: 'fail'
             });
 						reject()
@@ -544,6 +548,8 @@ export default {
             console.log(this.imgOnlinePathArr);
           })
           .catch((err) => {
+            this.overlayShow = false;
+            this.loadingShow = false;
             reject()
           })
           })
