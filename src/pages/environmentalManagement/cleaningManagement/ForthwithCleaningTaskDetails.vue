@@ -550,6 +550,10 @@ export default {
           .catch((err) => {
             this.overlayShow = false;
             this.loadingShow = false;
+            this.$toast({
+              message: `${err}`,
+              type: 'fail'
+            });
             reject()
           })
           })
