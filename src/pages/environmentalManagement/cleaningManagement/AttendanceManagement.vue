@@ -222,6 +222,7 @@ export default {
       isClickSureSelectBtn: false,
       loadingText: '加载中···',
       allChecked: false,
+      sourcePath: '',
       isShowForenoonChangeShiftBox: false,
       isShowAfternoonChangeShiftBox: false,
       isShowForenoonDurationBox: false,
@@ -414,6 +415,13 @@ export default {
 
   },
 
+  beforeRouteEnter(to, from, next) {
+    next(vm=>{
+        vm.sourcePath = from.path
+    });
+    next() 
+  },
+
   mounted() {
     // 控制设备物理返回按键
     if (!IsPC()) {
@@ -421,7 +429,7 @@ export default {
       this.gotoURL(() => {
         pushHistory();
         this.$router.push({
-          path: "/home"
+          path: this.sourcePath
         })
       })
     };
@@ -437,7 +445,7 @@ export default {
     ...mapMutations([]),
 
     onClickLeft() {
-      this.$router.push({ path: "/home"})
+      this.$router.push({ path: this.sourcePath})
     },
 
     // 考勤类型选择弹框关闭前事件

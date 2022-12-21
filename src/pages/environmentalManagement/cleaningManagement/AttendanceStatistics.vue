@@ -373,6 +373,16 @@ export default {
     },
 
     onClickRight () {
+        let temporarySwitchMessage = this.attendanceStatisticsSwitchMessage;
+        temporarySwitchMessage['switchIndex'] = this.statisticalTypeIndex;
+        if (this.statisticalTypeIndex == 0) {
+            temporarySwitchMessage['date'] = this.currentDayDate
+        } else if (this.statisticalTypeIndex == 1) {
+            temporarySwitchMessage['date'] = this.currentMonthDate
+        } else if (this.statisticalTypeIndex == 2) {
+            temporarySwitchMessage['date'] = this.currentPersonDate
+        };
+        this.storeAttendanceStatisticsSwitchMessage(temporarySwitchMessage);
         this.$router.push({path: '/attendanceManagement'})
     },
 
@@ -706,7 +716,12 @@ export default {
             color: black !important;
             margin-left: 8px !important;
         }
-        }
+        };
+        .van-nav-bar__right {
+            .van-nav-bar__text {
+                font-weight: bold !important
+            }
+        };
         .van-icon {
         color: black !important;
         font-size: 22px !important;
@@ -749,7 +764,8 @@ export default {
             .statisticalTypeListStyle {
                 background: #fff !important;
                 border-radius: 8px !important;
-                color: #1864FF !important
+                color: #1864FF !important;
+                font-weight: bold !important
             }
         }
     };
