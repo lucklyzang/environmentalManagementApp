@@ -383,7 +383,7 @@ export default {
             } else {
                 this.isShowForenoonChangeShiftBox = false
             };
-            if (newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
+            if (newVal == 2 || newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
                 this.isShowForenoonDurationBox = true;
                 this.currentMorningDuration = ''
             } else {
@@ -403,7 +403,7 @@ export default {
             } else {
                 this.isShowAfternoonChangeShiftBox = false
             };
-            if (newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
+            if (newVal == 2 || newVal == 4 || newVal == 6 || newVal == 10 || newVal == 7 || newVal == 9) {
                 this.isShowAfternoonDurationBox = true;
                 this.currentAfternoonDuration = ''
             } else {
