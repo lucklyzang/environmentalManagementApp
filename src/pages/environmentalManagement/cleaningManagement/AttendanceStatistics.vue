@@ -976,10 +976,12 @@ export default {
                         box-sizing: border-box;
                         .attendance-situation-left {
                             width: 50%;
+                            .no-wrap()
                         };
                         .attendance-situation-right {
                             width: 50%;
                             text-align: right;
+                            .no-wrap();
                             >span {
                                 &:first-child {
                                     color: #101010;
