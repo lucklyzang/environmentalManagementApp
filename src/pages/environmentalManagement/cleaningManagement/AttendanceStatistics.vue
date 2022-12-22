@@ -66,7 +66,7 @@
                </div>
            </div> 
             <div class="content-center">
-                <van-circle v-model="currentRate" :rate="50" :speed="100" layer-color="#d0d0cc" :size="130" :stroke-width="50">
+                <van-circle v-model="currentRate" :rate="currentRate" :speed="100" :color="currentRate > 0 ? '#1989fa' : '#d0d0cc'" layer-color="#d0d0cc" :size="130" :stroke-width="50">
                 <template #default>
                         <div>
                             {{`${actualArrival}/${total}`}}
@@ -249,7 +249,7 @@ export default {
       actualArrival: '',
       total: '',
       activeObjectName: 'attendance',
-      currentRate: 50,
+      currentRate: 0,
       attendanceStatusIndex: null,
       statisticalTypeIndex: 0,
       currentDayDate: new Date(),
@@ -560,6 +560,7 @@ export default {
 		if (res && res.data.code == 200) {
             this.actualArrival = res.data.data.arrive;
             this.total = res.data.data.total;
+            this.currentRate = Math.ceil((this.actualArrival/this.total)*100);
             for (let item of this.attendanceStatusList) {
                 if (item.name == '出勤') {
                     item.num = res.data.data.chuQin
