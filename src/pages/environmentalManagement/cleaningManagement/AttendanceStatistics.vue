@@ -1138,7 +1138,11 @@ export default {
                     .personnel-statistics-title-left {
                         font-size: 16px;
                         color: #101010;
-                        font-weight: bold
+                        font-weight: bold;
+                        flex: 1;
+                        padding-right: 8px;
+                        box-sizing: border-box;
+                        .no-wrap()
                     };
                     .personnel-statistics-title-right {
                         >span {
