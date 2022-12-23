@@ -894,7 +894,7 @@ export default {
   /deep/ .van-dialog {
       top: auto !important;
       left: 0 !important;
-      border: 1px solid #fff;
+      border-right: 1px solid #fff;
       bottom: 0 !important;
       border-top-left-radius: 20px !important;
       border-top-right-radius: 20px !important;
