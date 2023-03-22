@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <div class="btn-box">全部检查合格</div>
+        <div class="btn-box" @click="allExamineQualifiedEvent">全部检查合格</div>
     </div>
   </div>
 </template>
@@ -89,7 +89,10 @@ export default {
     // 角落列表点击事件
     cornerClickEvent (item,index) {
         this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
-    }
+    },
+
+    // 全部检查合格事件
+    allExamineQualifiedEvent () {}
   }
 };
 </script>
