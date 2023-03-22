@@ -18,15 +18,18 @@
     </van-nav-bar>
     </div>
     <div class="content">
-        <div class="departments-name-list" v-for="(item,index) in departmentsNameList" :key="index">
-            <div class="departments-name-left">
-                {{ item }}
-            </div>
-            <div class="departments-name-right" @click="scanQRCode">
-                <span>未扫码</span>
-                <van-icon name="arrow" color="red" size="24" />
-            </div>
-        </div>
+      <div class="time-tab">
+        <span v-for="(item,index) in timeTabList" :key="index" :class="{'tabStyle': currentTabIndex == index}" @click="tabEvent(index)">{{ item }}</span>
+      </div>
+      <div class="departments-name-list" v-for="(item,index) in departmentsNameList" :key="index">
+          <div class="departments-name-left">
+              {{ item }}
+          </div>
+          <div class="departments-name-right" @click="scanQRCode">
+              <span>未扫码</span>
+              <van-icon name="arrow" color="red" size="24" />
+          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -40,7 +43,9 @@ export default {
   },
   data() {
     return {
-        departmentsNameList: ['科室一','科室二','科室三','科室四','科室五','科室六']
+      currentTabIndex: 0,
+      timeTabList: ['06:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'],
+      departmentsNameList: ['科室一','科室二','科室三','科室四','科室五','科室六']
     }
   },
 
@@ -75,6 +80,11 @@ export default {
     ...mapMutations([]),
     onClickLeft() {
       this.$router.push({ path: "/cleaningTask"})
+    },
+
+    // 时间tab点击事件
+    tabEvent (index) {
+      this.currentTabIndex = index
     },
 
     // 扫描二维码方法
@@ -169,6 +179,26 @@ export default {
         .departmentsNameRightStyle {
             color: green !important
         }
+    };
+    .time-tab {
+      width: 100%;
+      padding: 6px 0;
+      height: 40px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      overflow-x: scroll;
+      white-space: nowrap;
+      >span {
+        flex: none;
+        display: inline-block;
+        width: 70px;
+        font-size: 14px;
+        color: #101010
+      };
+      .tabStyle {
+        color: #289E8E !important
+      }
     }
   }
 }

@@ -177,6 +177,8 @@ export default {
             align-items: center;
             padding: 0 10px;
             box-sizing: border-box;
+            width: 98%;
+            margin: 0 auto;
             margin-bottom: 10px;
             font-size: 14px;
             .corner-name {
@@ -192,6 +194,9 @@ export default {
                     vertical-align: middle
                 }
             }
+        };
+        .cornerListStyle {
+            background: #F7CABE !important
         }
     };
     .btn-box {
