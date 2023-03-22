@@ -22,6 +22,8 @@ const PollingTaskDepartmentDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDepartmentDetails')
 const PollingTaskDepartmentCornerDetails = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskDepartmentCornerDetails')
+const PollingTaskNoCompleteReason = () =>
+    import ('@/pages/environmentalManagement/cleaningManagement/PollingTaskNoCompleteReason')
 const ScanQRCode = () =>
     import ('@/pages/environmentalManagement/cleaningManagement/ScanQRCode')
 const AttendanceManagement = () =>
@@ -96,6 +98,11 @@ let baseRoute = [{
         path: '/pollingTaskDepartmentCornerDetails',
         name: 'pollingTaskDepartmentCornerDetails',
         component: PollingTaskDepartmentCornerDetails
+    },
+    {
+        path: '/pollingTaskNoCompleteReason',
+        name: 'pollingTaskNoCompleteReason',
+        component: PollingTaskNoCompleteReason
     },
     {
         path: '/scanQRCode',

@@ -13,7 +13,8 @@
         @click-left="onClickLeft"
     >
         <template #right>
-            <van-icon name="scan" size="26" color="#101010" @click="scanQRCode" />
+            <!-- <van-icon name="scan" size="26" color="#101010" @click="scanQRCode" /> -->
+            <van-icon name="records" size="26" color="#101010" @click="editReasonEvent"/>
         </template>
     </van-nav-bar>
     </div>
@@ -85,6 +86,11 @@ export default {
     // 时间tab点击事件
     tabEvent (index) {
       this.currentTabIndex = index
+    },
+
+    // 编辑原因事件
+    editReasonEvent () {
+
     },
 
     // 扫描二维码方法
