@@ -10,7 +10,9 @@
         <div class="tabs-box">
             <van-tabs v-model="activeObjectName" color="#101010" sticky>
                 <van-tab title="环境管理" name="environmentalManagement">
-                    <div class="banner-box"></div>
+                    <div class="banner-box">
+                        <img :src="environmentBannerPng" alt="">
+                    </div>
                     <div class="subproject">
                         <h2>保洁管理</h2>
                         <div class="subproject-list-box">
@@ -68,6 +70,7 @@
                 currentHospitaiName: '',
                 hospitalOption: [],
                 myLocationPng: require("@/common/images/home/my-location.png"),
+                environmentBannerPng: require("@/common/images/home/environment-banner.png")
             }
         },
 
@@ -161,7 +164,8 @@
                         background: transparent !important;
                         box-shadow: none !important;
                         .van-dropdown-menu__title {
-                            font-size: 16px !important
+                            font-size: 16px !important;
+                            color: #1965FF !important
                         }
                     }
                 }
@@ -180,14 +184,24 @@
                             .van-tab {
                                 flex: none !important
                             }
+                        };
+                        .van-tabs__nav--line {
+                            box-sizing: border-box;
+                            padding-bottom: 0 !important;
+                            .van-tabs__line {
+                                bottom: 2px !important
+                            }
                         }
                     };
                     .van-tabs__content {
-                        margin-top: 10px;
+                        margin-top: 4px;
                         .banner-box {
                             width: 100%;
-                            height: 120px;
-                            background: #e1e1e1
+                            height: 145px;
+                            img {
+                                width: 100%;
+                                height: 100%
+                            }
                         };
                         .subproject {
                             width: 100%;

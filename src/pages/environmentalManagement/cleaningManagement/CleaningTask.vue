@@ -210,7 +210,8 @@ export default {
             checkingPeople: '住院部',
             complete: 87
         }
-      ]
+      ],
+      allPollingTaskList: []
     }
   },
 
@@ -239,13 +240,16 @@ export default {
       })
     };
     this.itemNameIndex = this.currentCleanTaskName.num;
-    if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+    if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
         this.getForthwithTaskList(0);
-        this.getSpecialTaskList(1)
+        this.getSpecialTaskList(1);
+        this.getPollingTaskList(2)
     } else if (this.currentCleanTaskName.forthwithTaskShow) {
         this.getForthwithTaskList(0);
     } else if (this.currentCleanTaskName.specialTaskShow) {
         this.getSpecialTaskList(1)
+    } else if (this.currentCleanTaskName.pollingTaskShow) {
+        this.getPollingTaskList(2)
     }
   },
 
@@ -256,7 +260,7 @@ export default {
                 if (this.searchValue) {
                     this.searchValue = ''
                 };
-                if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+                if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
                     if (newName == -1) {
                         this.forthwithTaskList = this.allForthwithTaskList;
                         if (this.forthwithTaskList.length == 0) {
@@ -269,6 +273,12 @@ export default {
                             this.specialEmptyShow = true
                         } else {
                             this.specialEmptyShow = false
+                        };
+                        this.pollingTaskList = this.allPollingTaskList;
+                        if (this.pollingTaskList.length == 0) {
+                            this.pollingEmptyShow = true
+                        } else {
+                            this.pollingEmptyShow = false
                         };
                         return
                     };
@@ -283,6 +293,12 @@ export default {
                         this.specialEmptyShow = true
                     } else {
                         this.specialEmptyShow = false
+                    };
+                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == newName});
+                    if (this.pollingTaskList.length == 0) {
+                        this.pollingEmptyShow = true
+                    } else {
+                        this.pollingEmptyShow = false
                     }
                 } else if (this.currentCleanTaskName.forthwithTaskShow) {
                     if (newName == -1) {
@@ -316,6 +332,22 @@ export default {
                     } else {
                         this.specialEmptyShow = false
                     }
+                } else if (this.currentCleanTaskName.pollingTaskShow) {
+                    if (newName == -1) {
+                        this.pollingTaskList = this.allPollingTaskList;
+                        if (this.pollingTaskList.length == 0) {
+                            this.pollingEmptyShow = true
+                        } else {
+                            this.pollingEmptyShow = false
+                        };
+                        return
+                    };
+                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == newName});
+                    if (this.pollingTaskList.length == 0) {
+                        this.pollingEmptyShow = true
+                    } else {
+                        this.pollingEmptyShow = false
+                    }
                 }
             },
             deep: true
@@ -337,13 +369,16 @@ export default {
         //     this.selectValue = -1;
         //     this.currentSelectValue = -1
         // };
-        if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+        if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
             this.getForthwithTaskList(0);
-            this.getSpecialTaskList(1)
+            this.getSpecialTaskList(1);
+            this.getPollingTaskList(2)
         } else if (this.currentCleanTaskName.forthwithTaskShow) {
             this.getForthwithTaskList(0);
         } else if (this.currentCleanTaskName.specialTaskShow) {
             this.getSpecialTaskList(1)
+        } else if (this.currentCleanTaskName.pollingTaskShow) {
+            this.getPollingTaskList(2)
         }
     },
     
@@ -505,6 +540,55 @@ export default {
         })
     },
 
+     // 查询巡检任务列表
+    getPollingTaskList (taskType) {
+        let data = {
+            proId : this.userInfo.proIds[0], // 所属项目id
+            queryDate: this.currentCleanTaskName.date, // 查询时间
+            managerId: this.userInfo.id, // 保洁主管id    
+            taskType: taskType // 0-即时，1-专项,2-巡检
+        };
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.specialTaskList = [];
+        queryCleaningManageTaskList(data).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+	      if (res && res.data.code == 200) {
+                this.pollingTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
+                this.allPollingTaskList = this.pollingTaskList;
+                if (this.currentSelectValue == -1) {
+                    this.pollingTaskList = this.allPollingTaskList;
+                    if (this.pollingTaskList.length == 0) {
+                        this.pollingEmptyShow = true
+                    } else {
+                        this.pollingEmptyShow = false
+                    };
+                    return
+                };
+                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue});
+                if (this.pollingTaskList.length == 0) {
+                    this.pollingEmptyShow = true
+                } else {
+                    this.pollingEmptyShow = false
+                }
+            } else {
+                this.$toast({
+                    message: `${res.data.msg}`,
+                    type: 'fail'
+                })
+            }
+        }).
+        catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
     // 下拉框值改变事件
     selecOptionChangeEvent (value) {
     },
@@ -529,6 +613,12 @@ export default {
             } else {
                 this.specialEmptyShow = false
             };
+            this.pollingTaskList = this.allPollingTaskList;
+            if (this.pollingTaskList.length == 0) {
+                this.pollingEmptyShow = true
+            } else {
+                this.pollingEmptyShow = false
+            };
             return 
         };
         this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue});
@@ -542,6 +632,12 @@ export default {
             this.specialEmptyShow = true
         } else {
             this.specialEmptyShow = false
+        };
+        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
+        if (this.pollingTaskList.length == 0) {
+            this.pollingEmptyShow = true
+        } else {
+            this.pollingEmptyShow = false
         }
     },
 
@@ -578,7 +674,22 @@ export default {
             } else {
                 this.specialEmptyShow = false
             }
-        }
+        } else if (this.itemNameIndex == 3) {
+            if (!this.searchValue) {
+                this.pollingTaskList = this.allPollingTaskList;
+                this.currentSelectValue = -1;
+                this.selectValue = -1
+            } else {
+                this.pollingTaskList = this.pollingTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                item.areaSpecialName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
+                )
+            };
+            if (this.pollingTaskList.length == 0) {
+                this.pollingEmptyShow = true
+            } else {
+                this.pollingEmptyShow = false
+            }
+        }    
     },
 
     // 即时保洁任务点击进入任务详情事件
@@ -602,7 +713,12 @@ export default {
     },
 
     // 巡检任务点击进入任务详情事件
-    pollingTaskDetailsEvent() {
+    pollingTaskDetailsEvent(item,number) {
+        this.storeCleanTaskDetails(item);
+        let temporaryMessage = this.cleanTaskDetails;
+        temporaryMessage['num'] = number;
+        temporaryMessage['selectValue'] = this.selectValue;
+        this.storeCleanTaskDetails(temporaryMessage);
         this.$router.push({path: '/pollingTaskDetails'})
     }
   }

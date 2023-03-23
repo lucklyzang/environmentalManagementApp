@@ -632,9 +632,8 @@ export default {
       background: #fff;
       text-align: center;
       border-radius: 30px;
-      font-weight: bold;
       &:first-child {
-        color: blue;
+        color: #1864FF;
         box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
       };
        &:last-child {

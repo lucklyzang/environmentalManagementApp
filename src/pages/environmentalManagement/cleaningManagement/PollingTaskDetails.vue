@@ -13,8 +13,8 @@
         @click-left="onClickLeft"
     >
         <template #right>
-            <!-- <van-icon name="scan" size="26" color="#101010" @click="scanQRCode" /> -->
-            <van-icon name="records" size="26" color="#101010" @click="editReasonEvent"/>
+            <!-- <van-icon name="scan" size="23" color="#101010" @click="scanQRCode" /> -->
+            <van-icon name="records" size="23" color="#101010" @click="editReasonEvent"/>
         </template>
     </van-nav-bar>
     </div>
@@ -150,7 +150,7 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 6px;
+    padding: 0 6px 6px 6px;
     box-sizing: border-box;
     .departments-name-list {
         width: 100%;
@@ -195,6 +195,10 @@ export default {
       align-items: center;
       overflow-x: scroll;
       white-space: nowrap;
+      &::-webkit-scrollbar {
+        height: 0;
+        display: none
+      };
       >span {
         flex: none;
         display: inline-block;
