@@ -51,10 +51,10 @@
                             即时任务编号{{ generateTaskNumber('即时',index) }}
                         </div>
                         <div class="task-list-title-right" :class="{
-                            'underwayStyle' : item.state == 2, 
-                            'completeStyle' : item.state == 4,
-                            'reviewStyle' : item.state == 3,
-                            'haveReviewStyle' : item.state == 5
+                            'underwayStyle' : item.state == 3, 
+                            'completeStyle' : item.state == 5,
+                            'reviewStyle' : item.state == 4,
+                            'haveReviewStyle' : item.state == 6
                             }"
                             >
                             {{ stausTransfer(item.state) }}
@@ -96,10 +96,10 @@
                             编号{{ generateTaskNumber('专项',index) }}
                         </div>
                         <div class="task-list-title-right" :class="{
-                                'underwayStyle' : item.state == 2, 
-                                'completeStyle' : item.state == 4,
-                                'reviewStyle' : item.state == 3,
-                                'haveReviewStyle' : item.state == 5
+                                'underwayStyle' : item.state == 3, 
+                                'completeStyle' : item.state == 5,
+                                'reviewStyle' : item.state == 4,
+                                'haveReviewStyle' : item.state == 6
                             }">
                             {{ stausTransfer(item.state) }}
                         </div>
@@ -139,8 +139,8 @@
                         <div class="task-list-title-left">
                             {{ generateTaskNumber('巡检',index) }}
                         </div>
-                        <div class="task-list-title-right" :class="{'underwayStyle' : item.status == 1, 'completeStyle' : item.status == 2}">
-                            {{ stausTransfer(item.status) }}
+                        <div class="task-list-title-right" :class="{'underwayStyle' : item.state == 2, 'completeStyle' : item.status == 3}">
+                            {{ stausPollingTaskTransfer(item.status) }}
                         </div>
                     </div>
                     <div class="task-list-content">
@@ -192,11 +192,12 @@ export default {
       currenDate: new Date(),
       selectOption: [
         { text: '全部', value: -1 },
-        { text: '未开始', value: 1 },
-        { text: '进行中', value: 2 },
-        { text: '复核中', value: 3 },
-        { text: '已完成', value: 4 },
-        { text: '已复核', value: 5 }
+        { text: '未查阅', value: 1 },
+        { text: '未开始', value: 2 },
+        { text: '进行中', value: 3 },
+        { text: '复核中', value: 4 },
+        { text: '已完成', value: 5},
+        { text: '已复核', value: 6 }
       ],
       forthwithTaskList: [],
       specialTaskList: [],
@@ -243,13 +244,82 @@ export default {
     if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
         this.getForthwithTaskList(0);
         this.getSpecialTaskList(1);
-        this.getPollingTaskList(2)
+        this.getPollingTaskList(2);
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ]
     } else if (this.currentCleanTaskName.forthwithTaskShow) {
         this.getForthwithTaskList(0);
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ]
     } else if (this.currentCleanTaskName.specialTaskShow) {
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ];
         this.getSpecialTaskList(1)
     } else if (this.currentCleanTaskName.pollingTaskShow) {
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未开始', value: 1 },
+            { text: '进行中', value: 2 },
+            { text: '已完成', value: 3 }
+        ]; 
         this.getPollingTaskList(2)
+    } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+        this.getForthwithTaskList(0);
+        this.getSpecialTaskList(1)
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ]
+    } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.pollingTaskShow) {
+        this.getForthwithTaskList(0);
+        this.getSpecialTaskList(2)
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ]
+    } else if (this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
+        this.getForthwithTaskList(1);
+        this.getSpecialTaskList(2)
+        this.selectOption = [
+            { text: '全部', value: -1 },
+            { text: '未查阅', value: 1 },
+            { text: '未开始', value: 2 },
+            { text: '进行中', value: 3 },
+            { text: '复核中', value: 4 },
+            { text: '已完成', value: 5},
+            { text: '已复核', value: 6 }
+        ]
     }
   },
 
@@ -372,18 +442,111 @@ export default {
         if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
             this.getForthwithTaskList(0);
             this.getSpecialTaskList(1);
-            this.getPollingTaskList(2)
+            this.getPollingTaskList(2);
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
         } else if (this.currentCleanTaskName.forthwithTaskShow) {
             this.getForthwithTaskList(0);
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
         } else if (this.currentCleanTaskName.specialTaskShow) {
-            this.getSpecialTaskList(1)
+            this.getSpecialTaskList(1);
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
         } else if (this.currentCleanTaskName.pollingTaskShow) {
-            this.getPollingTaskList(2)
+            this.getPollingTaskList(2);
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未开始', value: 1 },
+                { text: '进行中', value: 2 },
+                { text: '已完成', value: 3 }
+            ]
+        } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
+            this.getForthwithTaskList(0);
+            this.getSpecialTaskList(1)
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
+        } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.pollingTaskShow) {
+            this.getForthwithTaskList(0);
+            this.getSpecialTaskList(2)
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
+        } else if (this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
+            this.getForthwithTaskList(1);
+            this.getSpecialTaskList(2)
+            this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
         }
     },
     
-    // 任务状态转换
+    // 任务状态转换(即时和专项)
     stausTransfer (num) {
+        switch(num) {
+            case 1:
+                return '未查阅'
+                break;
+            case 2:
+                return '未开始'
+                break;
+            case 3:
+                return '进行中'
+                break;
+            case 4:
+                return '复核中'
+                break;
+            case 5:
+                return '已完成'
+                break;
+            case 6:
+                return '已复核'
+                break
+        } 
+    },
+
+    // 任务状态转换(巡检)
+    stausPollingTaskTransfer (num) {
         switch(num) {
             case 1:
                 return '未开始'
@@ -391,15 +554,9 @@ export default {
             case 2:
                 return '进行中'
                 break;
-            case 3:
-                return '复核中'
-                break;
-            case 4:
+             case 3:
                 return '已完成'
                 break;
-            case 5:
-                return '已复核'
-                break
         } 
     },
 
@@ -452,7 +609,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
+                this.forthwithTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0});
                 this.allForthwithTaskList = this.forthwithTaskList;
                 if (this.currentSelectValue == -1) {
                     this.forthwithTaskList = this.allForthwithTaskList;
@@ -506,7 +663,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.specialTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
+                this.specialTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0});
                 this.allSpecialTaskList = this.specialTaskList;
                 if (this.currentSelectValue == -1) {
                     this.specialTaskList = this.allSpecialTaskList;
@@ -555,7 +712,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-                this.pollingTaskList = res.data.data.filter((item) => { return item.state != 6 && item.state != 0});
+                this.pollingTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0});
                 this.allPollingTaskList = this.pollingTaskList;
                 if (this.currentSelectValue == -1) {
                     this.pollingTaskList = this.allPollingTaskList;
@@ -595,6 +752,24 @@ export default {
 
     // 任务名称点击事件
     taskItemNameEvent (num) {
+        if (num == 1 || num == 2) {
+           this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未查阅', value: 1 },
+                { text: '未开始', value: 2 },
+                { text: '进行中', value: 3 },
+                { text: '复核中', value: 4 },
+                { text: '已完成', value: 5},
+                { text: '已复核', value: 6 }
+            ]
+        } else {
+           this.selectOption = [
+                { text: '全部', value: -1 },
+                { text: '未开始', value: 1 },
+                { text: '进行中', value: 2 },
+                { text: '已完成', value: 3 }
+            ] 
+        };
         let temporaryMessage = this.currentCleanTaskName;
         temporaryMessage['num'] = num;
         this.storeCurrentCleanTaskName(temporaryMessage);
@@ -937,6 +1112,15 @@ export default {
             .task-list-title {
                 .task-list-title-left {
                     color: #E86F50
+                };
+                .task-list-title-right {
+                    width: 61px;
+                    height: 27px;
+                    text-align: center;
+                    line-height: 27px;
+                    background: #174E97;
+                    color: #fff;
+                    border-radius: 4px
                 }
             };
             .task-list-content {

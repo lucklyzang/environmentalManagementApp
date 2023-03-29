@@ -9,10 +9,10 @@
       <div class="forthwith-task-number">
         <span>专项保洁编号{{cleanTaskDetails.num}}</span>
         <span :class="{
-            'underwayStyle' : cleanTaskDetails.state == 2, 
-            'completeStyle' : cleanTaskDetails.state == 4,
-            'reviewStyle' : cleanTaskDetails.state == 3,
-            'haveReviewStyle' : cleanTaskDetails.state == 5
+            'underwayStyle' : cleanTaskDetails.state == 3, 
+            'completeStyle' : cleanTaskDetails.state == 5,
+            'reviewStyle' : cleanTaskDetails.state == 4,
+            'haveReviewStyle' : cleanTaskDetails.state == 6
           }">
             {{stausTransfer(cleanTaskDetails.state)}}
         </span>
@@ -25,7 +25,7 @@
         <span>创建时间</span>
         <span>{{cleanTaskDetails.createTime}}</span>
       </div>
-      <div class="location" v-show="cleanTaskDetails.state != 1">
+      <div class="location" v-show="cleanTaskDetails.state != 1 && cleanTaskDetails.state != 2">
         <span>开始时间</span>
         <span>{{cleanTaskDetails.startTime }}</span>
       </div>
@@ -33,7 +33,7 @@
         <span>计划执行人</span>
         <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
       </div>
-      <div class="location" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
+      <div class="location" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
         <span>完成时间</span>
         <span>{{cleanTaskDetails.finishTime }}</span>
       </div>
@@ -51,19 +51,19 @@
         <span>问题描述</span>
         <span>{{ cleanTaskDetails.taskRemark}}</span>
       </div>
-      <div class="issue-picture" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
+      <div class="issue-picture" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
         <div>结果图片</div>
         <div class="image-list">
           <img :src="item.path" alt="" v-for="(item,index) in resultPicturesEchoList" :key="index">
         </div>
       </div>
-      <div class="remark" v-show="cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5">
+      <div class="remark" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
         <div>备注</div>
         <div class="remark-content">
           {{ cleanTaskDetails.completeRemark }}
         </div>
       </div>
-      <div class="result-picture" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
+      <div class="result-picture" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
         <div>
           <span>*</span>
           结果图片
@@ -83,7 +83,7 @@
 					</div>
         </div>
       </div>
-      <div class="enter-remark" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
+      <div class="enter-remark" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
         <div>
           <span>*</span>
           备注
@@ -99,14 +99,18 @@
         </div>
       </div>
     </div>
-    <div class="task-start" @click="taskStartEvent" v-show="cleanTaskDetails.state == 1">
+    <div class="task-start" @click="taskStartEvent" v-show="cleanTaskDetails.state == 2">
       任务开始
     </div>
-    <div class="task-operation-box" v-show="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3">
+    <div class="task-operation-box-one" v-show="cleanTaskDetails.state == 1">
+      <div class="task-no-complete" @click="getTaskEvent">获取任务</div>、
+      <div class="task-complete" @click="backTaskEvent">退回</div>
+    </div>
+    <div class="task-operation-box" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
       <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
-    <div class="task-start" @click="reCheckEvent" v-show="(cleanTaskDetails.state == 4 || cleanTaskDetails.state == 5) && cleanTaskDetails.reviewFlag == 0">
+    <div class="task-start" @click="reCheckEvent" v-show="(cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6) && cleanTaskDetails.reviewFlag == 0">
       复核质疑
     </div>
     <transition name="van-slide-up">
@@ -131,7 +135,29 @@
       confirm-button-color="#218FFF" show-cancel-button
       @confirm="sureQueryEvent"
       >
-    </van-dialog>   
+    </van-dialog>
+    <!-- 退回任务框   -->
+    <div class="back-box">
+       <van-dialog v-model="backShow"  show-cancel-button width="85%"
+          @confirm="backSure" @cancel="backCancel" confirm-button-text="取消"
+          cancel-button-text="确认"
+        >
+          <div class="dialog-title">
+            退回理由
+          </div>
+          <div class="dialog-center">
+            <van-field
+              v-model="backReason"
+              maxlength="50"
+              show-word-limit
+              rows="3"
+              autosize
+              type="textarea"
+              placeholder="请输入退回理由"
+            />
+          </div>
+      </van-dialog>
+    </div>     
   </div>
 </template>
 <script>
@@ -149,6 +175,8 @@ export default {
   data() {
     return {
       photoBox: false,
+      backShow: false,
+      backReason: '',
       queryDialogShow: false,
       temporaryFileArray: [],
       imgOnlinePathArr: [],
@@ -193,7 +221,7 @@ export default {
     // 回显图片
     echoImage () {
       this.problemPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 0});
-      if (this.cleanTaskDetails.state == 4 || this.cleanTaskDetails.state == 5) {
+      if (this.cleanTaskDetails.state == 5 || this.cleanTaskDetails.state == 6) {
         this.resultPicturesEchoList = this.cleanTaskDetails.images.filter((item) => { return item.imgType == 1})
       }
     },
@@ -201,19 +229,22 @@ export default {
     // 任务状态转换
     stausTransfer (num) {
       switch(num) {
-        case 1:
-            return '未开始'
+         case 1:
+            return '未查阅'
             break;
         case 2:
-            return '进行中'
+            return '未开始'
             break;
         case 3:
-            return '复核中'
+            return '进行中'
             break;
         case 4:
-            return '已完成'
+            return '复核中'
             break;
         case 5:
+            return '已完成'
+            break;
+        case 6:
             return '已复核'
             break
       } 
@@ -244,6 +275,15 @@ export default {
       return currentdate;
     },
 
+    // 退回任务确定事件
+    backSure () {
+
+    },
+
+    // 退回任务取消事件
+    backCancel () {
+
+    },
       // 任务开始事件
       taskStartEvent () {
         this.overlayShow = true;
@@ -285,6 +325,16 @@ export default {
     // 复合质疑确定事件
     sureQueryEvent () {
       this.reCheckEvent()
+    },
+
+    // 获取任务事件
+    getTaskEvent () {
+
+    },
+
+    // 退回任务事件
+    backTaskEvent () {
+
     },
 
     // 复核质疑事件
@@ -555,8 +605,59 @@ export default {
 @import "~@/common/stylus/mixin.less";
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
-    height: 0;
+  height: 0;
+  background: #F8F8F8;
   .content-wrapper();
+  .back-box {
+    /deep/ .van-dialog {
+      .van-dialog__content {
+          padding: 10px 16px 0 16px !important;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          .dialog-title {
+            padding: 10px 0;
+            box-sizing: border-box;
+            text-align: center;
+            color: #101010;
+            font-size: 16px;
+          };
+          .dialog-center {
+            padding: 10px 0;
+            box-sizing: border-box;
+            color: #101010;
+            font-size: 12px;
+            .van-cell {
+              border: 1px solid #dcdcdc
+            }
+          }
+        };
+        .van-dialog__footer {
+          padding: 10px 40px 20px 40px !important;
+          box-sizing: border-box;
+          justify-content: space-between;
+          ::after {
+            content: none
+          };
+        .van-dialog__cancel {
+          height: 40px;
+          background: #3B9DF9;
+          color: #fff !important;
+          border-radius: 8px;
+          margin-right: 20px
+        };
+        .van-dialog__confirm {
+           height: 40px;
+            color: #3B9DF9;
+            border: 1px solid #3B9DF9;
+            border-radius: 8px
+        }
+        };
+        .van-hairline--top::after {
+          border-top-width: 0 !important
+        }
+    }
+  };
    .choose-photo-box {
     position: fixed;
     margin: auto;
@@ -639,6 +740,7 @@ export default {
   }
   .nav {
     /deep/ .van-nav-bar {
+      background: #fff;
       .van-nav-bar__left {
         .van-nav-bar__text {
             color: black !important;
@@ -657,7 +759,6 @@ export default {
   };
   .content {
     flex: 1;
-    background: #F8F8F8;
     box-sizing: border-box;
     padding: 6px 0;
     overflow: auto;
@@ -908,6 +1009,33 @@ export default {
     margin-bottom: 20px;
     text-align: center;
   };
+  .task-operation-box-one {
+    height: 80px;
+    display: flex;
+    width: 90%;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    >div {
+      width: 48%;
+      height: 48px;
+      font-size: 18px;
+      line-height: 48px;
+      background: #fff;
+      text-align: center;
+      border-radius: 30px;
+      font-weight: bold;
+      &:first-child {
+        color: #fff;
+        background: linear-gradient(to right, #6cd2f8, #2390fe);
+        box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+      };
+      &:last-child {
+        color: #1864FF;
+        box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
+      }
+    }
+  };
   .task-operation-box {
     height: 80px;
     display: flex;
@@ -925,7 +1053,7 @@ export default {
       border-radius: 30px;
       font-weight: bold;
       &:first-child {
-        color: blue;
+        color: #1864FF;
         box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1);
       };
        &:last-child {
