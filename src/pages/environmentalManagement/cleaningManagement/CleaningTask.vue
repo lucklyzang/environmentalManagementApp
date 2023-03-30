@@ -18,7 +18,12 @@
     />
     </div>
     <div class="content">
-        <div class="content-top">
+        <div class="content-top-task-item-name">
+            <div @click="taskItemNameEvent(1)" v-show="currentCleanTaskName.forthwithTaskShow" :class="{'forthwithItemStyle':itemNameIndex == 1}">{{`即时${forthwithTaskList.length}`}}</div>
+            <div @click="taskItemNameEvent(2)" v-show="currentCleanTaskName.specialTaskShow" :class="{'specialItemStyle':itemNameIndex == 2}">{{`专项${specialTaskList.length}`}}</div>
+            <div @click="taskItemNameEvent(3)" v-show="currentCleanTaskName.pollingTaskShow" :class="{'pollingItemStyle':itemNameIndex == 3}">{{`巡检${pollingTaskList.length}`}}</div>
+        </div>
+        <div class="content-top-filtrate">
             <div class="filtrate-box">
                 <div class="select-box">
                     <van-dropdown-menu active-color="#1989fa">
@@ -30,16 +35,11 @@
                         v-model="searchValue"
                         placeholder="搜索关键词"
                     >
-                        <template #button>
-                           <van-icon @click="searchEvent" name="search" color="#101010" size="25" />
+                        <template #left-icon>
+                           <van-icon @click="searchEvent" name="search" color="#101010" size="20" />
                         </template>
                     </van-field>
                 </div>
-            </div>
-            <div class="task-item-name">
-                <div @click="taskItemNameEvent(1)" v-show="currentCleanTaskName.forthwithTaskShow" :class="{'forthwithItemStyle':itemNameIndex == 1}">{{`即时${forthwithTaskList.length}`}}</div>
-                <div @click="taskItemNameEvent(2)" v-show="currentCleanTaskName.specialTaskShow" :class="{'specialItemStyle':itemNameIndex == 2}">{{`专项${specialTaskList.length}`}}</div>
-                <div @click="taskItemNameEvent(3)" v-show="currentCleanTaskName.pollingTaskShow" :class="{'pollingItemStyle':itemNameIndex == 3}">{{`巡检${pollingTaskList.length}`}}</div>
             </div>
         </div>
         <div class="content-bottom">
@@ -69,11 +69,11 @@
                             <span>创建时间: </span>
                             <span>{{ item.createTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state != 1">
+                        <div class="one-line" v-show="item.state != 1 && item.state != 2">
                             <span>开始时间: </span>
                             <span>{{ item.startTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state == 4 || item.state == 5">
+                        <div class="one-line" v-show="item.state == 5 || item.state == 6">
                             <span>完成时间: </span>
                             <span>{{ item.finishTime }}</span>
                         </div>
@@ -117,11 +117,11 @@
                             <span>创建时间: </span>
                             <span>{{ item.createTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state != 1">
+                        <div class="one-line" v-show="item.state != 1 && item.state != 2">
                             <span>开始时间: </span>
                             <span>{{ item.startTime }}</span>
                         </div>
-                        <div class="one-line" v-show="item.state == 4 || item.state == 5">
+                        <div class="one-line" v-show="item.state == 5 || item.state == 6">
                             <span>完成时间: </span>
                             <span>{{ item.finishTime }}</span>
                         </div>
@@ -191,8 +191,7 @@ export default {
       searchValue: '',
       currenDate: new Date(),
       selectOption: [
-        { text: '全部', value: -1 },
-        { text: '未查阅', value: 1 },
+        { text: '全部状态', value: -1 },
         { text: '未开始', value: 2 },
         { text: '进行中', value: 3 },
         { text: '复核中', value: 4 },
@@ -241,86 +240,26 @@ export default {
       })
     };
     this.itemNameIndex = this.currentCleanTaskName.num;
-    if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-        this.getForthwithTaskList(0);
-        this.getSpecialTaskList(1);
-        this.getPollingTaskList(2);
+    if (this.itemNameIndex == 1 || this.itemNameIndex == 2) {
         this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
+            { text: '全部状态', value: -1 },
             { text: '未开始', value: 2 },
             { text: '进行中', value: 3 },
             { text: '复核中', value: 4 },
             { text: '已完成', value: 5},
             { text: '已复核', value: 6 }
         ]
-    } else if (this.currentCleanTaskName.forthwithTaskShow) {
-        this.getForthwithTaskList(0);
+    } else if (this.itemNameIndex == 3) {
         this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
-            { text: '未开始', value: 2 },
-            { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
-            { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
-        ]
-    } else if (this.currentCleanTaskName.specialTaskShow) {
-        this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
-            { text: '未开始', value: 2 },
-            { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
-            { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
-        ];
-        this.getSpecialTaskList(1)
-    } else if (this.currentCleanTaskName.pollingTaskShow) {
-        this.selectOption = [
-            { text: '全部', value: -1 },
+            { text: '全部状态', value: -1 },
             { text: '未开始', value: 1 },
             { text: '进行中', value: 2 },
             { text: '已完成', value: 3 }
-        ]; 
-        this.getPollingTaskList(2)
-    } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
-        this.getForthwithTaskList(0);
-        this.getSpecialTaskList(1)
-        this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
-            { text: '未开始', value: 2 },
-            { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
-            { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
         ]
-    } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-        this.getForthwithTaskList(0);
-        this.getSpecialTaskList(2)
-        this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
-            { text: '未开始', value: 2 },
-            { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
-            { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
-        ]
-    } else if (this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-        this.getForthwithTaskList(1);
-        this.getSpecialTaskList(2)
-        this.selectOption = [
-            { text: '全部', value: -1 },
-            { text: '未查阅', value: 1 },
-            { text: '未开始', value: 2 },
-            { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
-            { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
-        ]
-    }
+    };
+    this.getForthwithTaskList(0);
+    this.getSpecialTaskList(1);
+    this.getPollingTaskList(2)
   },
 
   watch: {
@@ -330,93 +269,65 @@ export default {
                 if (this.searchValue) {
                     this.searchValue = ''
                 };
-                if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-                    if (newName == -1) {
+                if (this.currentSelectValue == -1) {
+                    if (this.itemNameIndex == 1) {
                         this.forthwithTaskList = this.allForthwithTaskList;
                         if (this.forthwithTaskList.length == 0) {
                             this.forthwithEmptyShow = true
                         } else {
                             this.forthwithEmptyShow = false
-                        };
+                        }
+                    };
+                    if (this.itemNameIndex == 2) {
                         this.specialTaskList = this.allSpecialTaskList;
                         if (this.specialTaskList.length == 0) {
                             this.specialEmptyShow = true
                         } else {
                             this.specialEmptyShow = false
-                        };
+                        }
+                    };
+                    if (this.itemNameIndex == 3) {
                         this.pollingTaskList = this.allPollingTaskList;
                         if (this.pollingTaskList.length == 0) {
                             this.pollingEmptyShow = true
                         } else {
                             this.pollingEmptyShow = false
-                        };
-                        return
-                    };
-                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == newName});
-                    if (this.forthwithTaskList.length == 0) {
-                        this.forthwithEmptyShow = true
-                    } else {
-                        this.forthwithEmptyShow = false
-                    };
-                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == newName});
-                    if (this.specialTaskList.length == 0) {
-                        this.specialEmptyShow = true
-                    } else {
-                        this.specialEmptyShow = false
-                    };
-                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == newName});
-                    if (this.pollingTaskList.length == 0) {
-                        this.pollingEmptyShow = true
-                    } else {
-                        this.pollingEmptyShow = false
+                        }
                     }
-                } else if (this.currentCleanTaskName.forthwithTaskShow) {
-                    if (newName == -1) {
-                        this.forthwithTaskList = this.allForthwithTaskList;
+                } else {
+                    if (this.itemNameIndex == 1) {
+                        // 未查阅也算未开始
+                        if (this.currentSelectValue == 2) {
+                            this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1})
+                        } else {
+                            this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                        };
                         if (this.forthwithTaskList.length == 0) {
                             this.forthwithEmptyShow = true
                         } else {
                             this.forthwithEmptyShow = false
-                        };
-                        return
+                        }
                     };
-                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == newName});
-                    if (this.forthwithTaskList.length == 0) {
-                        this.forthwithEmptyShow = true
-                    } else {
-                        this.forthwithEmptyShow = false
-                    }
-                } else if (this.currentCleanTaskName.specialTaskShow) {
-                    if (newName == -1) {
-                        this.specialTaskList = this.allSpecialTaskList;
+                    if (this.itemNameIndex == 2) {
+                        // 未查阅也算未开始
+                        if (this.currentSelectValue == 2) {
+                            this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1 })
+                        } else {
+                            this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                        };
                         if (this.specialTaskList.length == 0) {
                             this.specialEmptyShow = true
                         } else {
                             this.specialEmptyShow = false
-                        };
-                        return
+                        }
                     };
-                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == newName});
-                    if (this.specialTaskList.length == 0) {
-                        this.specialEmptyShow = true
-                    } else {
-                        this.specialEmptyShow = false
-                    }
-                } else if (this.currentCleanTaskName.pollingTaskShow) {
-                    if (newName == -1) {
-                        this.pollingTaskList = this.allPollingTaskList;
+                    if (this.itemNameIndex == 3) {
+                        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
                         if (this.pollingTaskList.length == 0) {
                             this.pollingEmptyShow = true
                         } else {
                             this.pollingEmptyShow = false
-                        };
-                        return
-                    };
-                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == newName});
-                    if (this.pollingTaskList.length == 0) {
-                        this.pollingEmptyShow = true
-                    } else {
-                        this.pollingEmptyShow = false
+                        }
                     }
                 }
             },
@@ -434,98 +345,23 @@ export default {
       this.$router.push({ path: "/cleanTaskList"})
     },
     onClickRight () {
-        this.searchValue = '';
-        // if (this.selectValue != -1) {
-        //     this.selectValue = -1;
-        //     this.currentSelectValue = -1
-        // };
-        if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-            this.getForthwithTaskList(0);
-            this.getSpecialTaskList(1);
-            this.getPollingTaskList(2);
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        } else if (this.currentCleanTaskName.forthwithTaskShow) {
-            this.getForthwithTaskList(0);
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        } else if (this.currentCleanTaskName.specialTaskShow) {
-            this.getSpecialTaskList(1);
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        } else if (this.currentCleanTaskName.pollingTaskShow) {
-            this.getPollingTaskList(2);
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未开始', value: 1 },
-                { text: '进行中', value: 2 },
-                { text: '已完成', value: 3 }
-            ]
-        } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.specialTaskShow) {
-            this.getForthwithTaskList(0);
-            this.getSpecialTaskList(1)
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        } else if (this.currentCleanTaskName.forthwithTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-            this.getForthwithTaskList(0);
-            this.getSpecialTaskList(2)
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        } else if (this.currentCleanTaskName.specialTaskShow && this.currentCleanTaskName.pollingTaskShow) {
-            this.getForthwithTaskList(1);
-            this.getSpecialTaskList(2)
-            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
-                { text: '未开始', value: 2 },
-                { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
-                { text: '已完成', value: 5},
-                { text: '已复核', value: 6 }
-            ]
-        }
+        if (this.searchValue) {
+            this.searchValue = ''
+        };
+        if (this.selectValue != -1) {
+            this.selectValue = -1;
+            this.currentSelectValue = -1
+        };
+        this.getForthwithTaskList(0);
+        this.getSpecialTaskList(1);
+        this.getPollingTaskList(2)
     },
     
     // 任务状态转换(即时和专项)
     stausTransfer (num) {
         switch(num) {
             case 1:
-                return '未查阅'
+                return '未开始'
                 break;
             case 2:
                 return '未开始'
@@ -620,7 +456,12 @@ export default {
                     };
                     return
                 };
-                this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue});
+                // 未查阅也算未开始
+                if (this.currentSelectValue == 2) {
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1})
+                } else {
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                };
                 if (this.forthwithTaskList.length == 0) {
                     this.forthwithEmptyShow = true
                 } else {
@@ -674,7 +515,12 @@ export default {
                     };
                     return
                 };
-                this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue});
+                // 未查阅也算未开始
+                if (this.currentSelectValue == 2) {
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1 })
+                } else {
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue })
+                };
                 if (this.specialTaskList.length == 0) {
                     this.specialEmptyShow = true
                 } else {
@@ -752,10 +598,13 @@ export default {
 
     // 任务名称点击事件
     taskItemNameEvent (num) {
+        if (this.selectValue != -1) {
+            this.selectValue = -1;
+            this.currentSelectValue = -1
+        };
         if (num == 1 || num == 2) {
            this.selectOption = [
-                { text: '全部', value: -1 },
-                { text: '未查阅', value: 1 },
+                { text: '全部状态', value: -1 },
                 { text: '未开始', value: 2 },
                 { text: '进行中', value: 3 },
                 { text: '复核中', value: 4 },
@@ -764,7 +613,7 @@ export default {
             ]
         } else {
            this.selectOption = [
-                { text: '全部', value: -1 },
+                { text: '全部状态', value: -1 },
                 { text: '未开始', value: 1 },
                 { text: '进行中', value: 2 },
                 { text: '已完成', value: 3 }
@@ -776,43 +625,65 @@ export default {
         if (this.searchValue) { this.searchValue = ''}
         this.itemNameIndex = num;
         if (this.currentSelectValue == -1) {
-            this.forthwithTaskList = this.allForthwithTaskList;
-            if (this.forthwithTaskList.length == 0) {
-                this.forthwithEmptyShow = true
-            } else {
-                this.forthwithEmptyShow = false
+            if (this.itemNameIndex == 1) {
+                this.forthwithTaskList = this.allForthwithTaskList;
+                if (this.forthwithTaskList.length == 0) {
+                    this.forthwithEmptyShow = true
+                } else {
+                    this.forthwithEmptyShow = false
+                }
             };
-            this.specialTaskList = this.allSpecialTaskList;
-            if (this.specialTaskList.length == 0) {
-                this.specialEmptyShow = true
-            } else {
-                this.specialEmptyShow = false
+            if (this.itemNameIndex == 2) {
+                this.specialTaskList = this.allSpecialTaskList;
+                if (this.specialTaskList.length == 0) {
+                    this.specialEmptyShow = true
+                } else {
+                    this.specialEmptyShow = false
+                }
             };
-            this.pollingTaskList = this.allPollingTaskList;
-            if (this.pollingTaskList.length == 0) {
-                this.pollingEmptyShow = true
-            } else {
-                this.pollingEmptyShow = false
+            if (this.itemNameIndex == 3) {
+                this.pollingTaskList = this.allPollingTaskList;
+                if (this.pollingTaskList.length == 0) {
+                    this.pollingEmptyShow = true
+                } else {
+                    this.pollingEmptyShow = false
+                }
+            }
+        } else {
+            if (this.itemNameIndex == 1) {
+                // 未查阅也算未开始
+                if (this.currentSelectValue == 2) {
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1})
+                } else {
+                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                };
+                if (this.forthwithTaskList.length == 0) {
+                    this.forthwithEmptyShow = true
+                } else {
+                    this.forthwithEmptyShow = false
+                }
             };
-            return 
-        };
-        this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue});
-        if (this.forthwithTaskList.length == 0) {
-            this.forthwithEmptyShow = true
-        } else {
-            this.forthwithEmptyShow = false
-        };
-        this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue});
-        if (this.specialTaskList.length == 0) {
-            this.specialEmptyShow = true
-        } else {
-            this.specialEmptyShow = false
-        };
-        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
-        if (this.pollingTaskList.length == 0) {
-            this.pollingEmptyShow = true
-        } else {
-            this.pollingEmptyShow = false
+            if (this.itemNameIndex == 2) {
+                // 未查阅也算未开始
+                if (this.currentSelectValue == 2) {
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1 })
+                } else {
+                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                };
+                if (this.specialTaskList.length == 0) {
+                    this.specialEmptyShow = true
+                } else {
+                    this.specialEmptyShow = false
+                }
+            };
+            if (this.itemNameIndex == 3) {
+                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
+                if (this.pollingTaskList.length == 0) {
+                    this.pollingEmptyShow = true
+                } else {
+                    this.pollingEmptyShow = false
+                }
+            }
         }
     },
 
@@ -935,38 +806,94 @@ export default {
     flex-direction: column;
     position: relative;
     height: 0;
-    .content-top {
-        width: 92%;
-        margin: 0 auto;
+    .content-top-task-item-name{
+        display: flex;
+        box-sizing: border-box;
         padding: 10px 0;
+        margin: 0 auto;
+        width: 92%;
+        .forthwithItemStyle {
+            background: #289E8E !important;
+            border: 1px solid #289E8E;
+            color: #fff !important
+        };
+        .specialItemStyle {
+            background: #174E97 !important;
+            border: 1px solid #174E97;
+            color: #fff !important
+        };
+        .pollingItemStyle {
+            background: #E86F50 !important;
+            border: 1px solid #E86F50;
+            color: #fff !important
+        };
+        >div {
+            width: 32%;
+            height: 32px;
+            font-size: 14px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            &:nth-child(1) {
+                border: 1px solid #289E8E;
+                color: #289E8E
+            };
+            &:nth-child(2) {
+                border: 1px solid #174E97;
+                color: #174E97;
+                margin: 0 2%;
+            };
+            &:nth-child(3) {
+                border: 1px solid #E86F50;
+                color: #E86F50
+            }
+        }
+    };
+    .content-top-filtrate {
+        width: 100%;
+        background: #f8f8f8;
+        padding: 8px 0;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         justify-content: center;
         .filtrate-box {
-            height: 32px;
+            height: 24px;
             display: flex;
+            padding: 0 18px;
+            box-sizing: border-box;
             justify-content: space-between;
             .select-box {
-                height: 32px;
-                width: 30%;
+                height: 24px;
+                width: 20%;
                 /deep/ .van-dropdown-menu {
                     .van-dropdown-menu__bar {
-                        height: 34px !important;
+                        height: 24px !important;
                         box-shadow: none !important;
-                        border: 1px solid #BBBBBB;
+                        background: none;
                         border-radius: 4px;
+                        .van-dropdown-menu__item {
+                            justify-content: flex-start !important;
+                            .van-dropdown-menu__title {
+                                font-size: 12px !important;
+                                padding: 0 8px 0 0 !important;
+                                color: #101010
+                            }
+                        };    
+                        .van-dropdown-menu__title::after {
+                            border-color: transparent transparent #101010 #101010 !important
+                        }
                     }
                 }
             };
             .search-box {
-                height: 32px;
-                width: 68%;
+                height: 24px;
+                width: 78%;
                 /deep/ .van-cell {
-                    line-height: 36px !important;
-                    border: 1px solid #BBBBBB;
-                    border-radius: 4px;
-                    height: 36px;
+                    line-height: 24px !important;
+                    border-radius: 20px;
+                    height: 24px;
                     padding: 0 10px !important;
                     .van-cell__value {
                         .van-field__body {
@@ -978,56 +905,13 @@ export default {
                     }
                 }
             }    
-        };
-        .task-item-name{
-            margin-top: 14px;
-            display: flex;
-            height: 32px;
-            .forthwithItemStyle {
-                background: #289E8E !important;
-                border: none !important;
-                color: #fff !important
-            };
-            .specialItemStyle {
-                background: #174E97 !important;
-                border: none !important;
-                color: #fff !important
-            };
-            .pollingItemStyle {
-                background: #E86F50 !important;
-                border: none !important;
-                color: #fff !important
-            };
-            >div {
-                width: 32%;
-                height: 32px;
-                font-size: 14px;
-                border-radius: 4px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                &:nth-child(1) {
-                    border: 1px solid #289E8E;
-                    color: #289E8E
-                };
-                &:nth-child(2) {
-                    border: 1px solid #174E97;
-                    color: #174E97;
-                    margin: 0 2%;
-                };
-                &:nth-child(3) {
-                    border: 1px solid #E86F50;
-                    color: #E86F50
-                }
-            }
         }
-
     };
     .content-bottom {
         width: 100%;
         background: #F8F8F8;
         flex: 1;
-        padding: 6px;
+        padding: 0 6px 6px 6px;
         box-sizing: border-box;
         overflow: auto;
         .task-list-box {

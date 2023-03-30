@@ -251,7 +251,7 @@ export default {
     stausTransfer (num) {
       switch(num) {
         case 1:
-            return '未查阅'
+            return '未开始'
             break;
         case 2:
             return '未开始'
@@ -361,7 +361,7 @@ export default {
           if (res && res.data.code == 200) {
             // 更改store中存储的任务状态
             let temporaryDetails = this.cleanTaskDetails;
-            temporaryDetails['state'] = 2;
+            temporaryDetails['state'] = 3;
             temporaryDetails['startTime'] = this.getNowFormatDate(new Date());
             this.storeCleanTaskDetails(temporaryDetails)
           } else {

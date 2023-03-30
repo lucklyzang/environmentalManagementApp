@@ -51,7 +51,7 @@
             <div class="forthwith-cleaning-task-content">
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
-                  <span>总数: </span>
+                  <span>总&nbsp;&nbsp;&nbsp;数: </span>
                   <span>{{ forthwithCleaningTaskGlobalStatistics.total }}</span>
                 </div>
                 <div class="execution">
@@ -90,7 +90,7 @@
             <div class="forthwith-cleaning-task-content">
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
-                  <span>总数: </span>
+                  <span>总&nbsp;&nbsp;&nbsp;数: </span>
                   <span>{{ specialCleaningTaskGlobalStatistics.total }}</span>
                 </div>
                 <div class="execution">
@@ -129,7 +129,7 @@
             <div class="forthwith-cleaning-task-content">
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
-                  <span>总数: </span>
+                  <span>总&nbsp;&nbsp;&nbsp;数: </span>
                   <span>20</span>
                 </div>
                 <div class="execution">
@@ -276,7 +276,6 @@ export default {
 
     // 点击任务详情事件
     taskDetailsEvent (num) {
-     console.log(this.currentCleanTaskName);
       let temporaryMessage = this.currentCleanTaskName;
       temporaryMessage['num'] = num;
       temporaryMessage['date'] = this.getNowFormatDate(this.currentDayDate,'day');
@@ -313,6 +312,12 @@ export default {
                 this.specialTaskShow = true
               } else {
                 this.specialTaskShow = false
+              };
+              if (res.data.data['2']) {
+                this.specialCleaningTaskGlobalStatistics = res.data.data['1'];
+                this.pollingTaskShow = true
+              } else {
+                this.pollingTaskShow = false
               }
             }
 					} else {

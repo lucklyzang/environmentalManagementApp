@@ -230,7 +230,7 @@ export default {
     stausTransfer (num) {
       switch(num) {
          case 1:
-            return '未查阅'
+            return '未开始'
             break;
         case 2:
             return '未开始'
@@ -291,7 +291,7 @@ export default {
         this.loadText ='更新中';
         updateCleaningManageTaskState({
           id : this.cleanTaskDetails.id, // 任务id
-		      state: 2 
+		      state: 3
         })
         .then((res) => {
           this.overlayShow = false;
