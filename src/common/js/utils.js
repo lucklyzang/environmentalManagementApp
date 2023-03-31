@@ -275,26 +275,6 @@ export const checkEmptyArray = (currentArr) => {
 }
 
 /* 
-  * Base64编码转换图片
-  * @param{String} dataurl base编码字符串
-  * @param{String} filename 文件名称
-*/
-export const base64ImgtoFile = (dataurl, filename = 'file') => {
-  let arr = dataurl.split(',')
-  let mime = arr[0].match(/:(.*?);/)[1]
-  let suffix = mime.split('/')[1]
-  let bstr = atob(arr[1])
-  let n = bstr.length
-  let u8arr = new Uint8Array(n)
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n)
-  }
-  return new File([u8arr], `${filename}.${suffix}`, {
-    type: mime
-  })
-}
-
-/* 
   * 引用类型数据深度克隆
   * @param{Array || Object} obj
 */
@@ -504,6 +484,26 @@ export const dataURItoBlob = (urlData) => {
 }
 
 /* 
+ * Base64编码转换为file对象
+ * @param{String} dataurl base编码字符串
+ * @param{String} filename 文件名称
+ */
+export const base64ImgtoFile = (dataurl, filename = 'file') => {
+  let arr = dataurl.split(',')
+  let mime = arr[0].match(/:(.*?);/)[1]
+  let suffix = mime.split('/')[1]
+  let bstr = atob(arr[1])
+  let n = bstr.length
+  let u8arr = new Uint8Array(n)
+  while (n--) {
+      u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], `${filename}.${suffix}`, {
+      type: mime
+  })
+}
+
+/* 
   * 将数组中符合条件的元素移到最前面
   * @param{Array} arr
   * @param{String} key 
@@ -579,6 +579,8 @@ export const removeAllLocalStorage = () => {
   removeStore('currentCleanTaskDateVlue');
   removeStore('cleanTaskDetails');
   removeStore('timeMessage');
+  removeStore('storageForthwithTaskMessage');
+  removeStore('storageSpecialTaskMessage');
   removeStore('ossMessage');
   removeStore('chooseProject');
   removeStore('attendanceTypeDetailsMessage');
@@ -597,6 +599,8 @@ export const removeExceptLoginMessageLocalStorage = () => {
   removeStore('currentCleanTaskDateVlue');
   removeStore('cleanTaskDetails');
   removeStore('timeMessage');
+  removeStore('storageForthwithTaskMessage');
+  removeStore('storageSpecialTaskMessage');
   removeStore('ossMessage');
   removeStore('chooseProject');
   removeStore('attendanceTypeDetailsMessage');

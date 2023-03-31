@@ -103,11 +103,11 @@
       任务开始
     </div>
     <div class="task-operation-box-one" v-show="cleanTaskDetails.state == 1">
-      <div class="task-no-complete" @click="getTaskEvent">获取任务</div>、
+      <div class="task-no-complete" @click="getTaskEvent">获取任务</div>
       <div class="task-complete" @click="backTaskEvent">退回</div>
     </div>
     <div class="task-operation-box" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
-      <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
+      <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
     <div class="task-start" @click="reCheckDialogEvent" v-show="(cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6) && cleanTaskDetails.reviewFlag == 0">
@@ -139,7 +139,8 @@
     <!-- 退回任务框   -->
     <div class="back-box">
        <van-dialog v-model="backShow"  show-cancel-button width="85%"
-          @confirm="backSure" @cancel="backCancel" confirm-button-text="取消"
+          :beforeClose="beforeClose"
+          @confirm="backSure" confirm-button-text="取消"
           cancel-button-text="确认"
         >
           <div class="dialog-title">
@@ -162,10 +163,11 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {updateCleaningManageTaskState, cleaningManageTaskComplete, reviewTask} from "@/api/environmentalManagement.js";
+import {updateCleaningManageTaskState, cleaningManageTaskComplete, reviewTask, fetchTask, returnTask} from "@/api/environmentalManagement.js";
 import {getAliyunSign} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
-import { IsPC, compress} from "@/common/js/utils";
+import { IsPC, compress, getStore, base64ImgtoFile } from "@/common/js/utils";
+import _ from 'lodash'
 import axios from 'axios'
 export default {
   name: "ForthwithCleaningTaskDetails",
@@ -186,7 +188,6 @@ export default {
       enterRemark: '',
       resultImgList: [],
       imgOnlinePathArr: [],
-      temporaryFileArray: [],
       problemPicturesEchoList: [],
       resultPicturesEchoList: [],
       isExpire: false
@@ -205,17 +206,19 @@ export default {
       })
     };
     this.echoImage();
-    console.log('任务详情',this.cleanTaskDetails)
+    if (this.cleanTaskDetails.state == 3 || this.cleanTaskDetails.state == 4) {
+      this.echoStorage()
+    }
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","cleanTaskDetails","timeMessage","ossMessage","chooseProject"]),
+    ...mapGetters(["userInfo","cleanTaskDetails","timeMessage","ossMessage","chooseProject","storageForthwithTaskMessage"]),
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","changeTimeMessage","changeOssMessage","storeCleanTaskDetails"]),
+    ...mapMutations(["changeIsLogin","storeCurrentCleanTaskName","changeTimeMessage","changeOssMessage","storeCleanTaskDetails","changeTemporaryStorageForthwithTaskMessage"]),
 
     // 回显图片
     echoImage () {
@@ -225,14 +228,77 @@ export default {
       }
     },
 
+    // 回显暂存的备注和图片信息(点击任务未完成按钮时存的信息)
+    echoStorage () {
+      if (getStore('storageForthwithTaskMessage')) {
+        this.changeTemporaryStorageForthwithTaskMessage(JSON.parse(getStore('storageForthwithTaskMessage')))
+      };
+      let temporaryStorageForthwithTaskMessage = this.storageForthwithTaskMessage.filter((item) => { return item.id == this.cleanTaskDetails.id});
+      if (temporaryStorageForthwithTaskMessage.length > 0 ) {
+        this.enterRemark = temporaryStorageForthwithTaskMessage[0]['enterRemark'];
+        this.resultImgList = temporaryStorageForthwithTaskMessage[0]['resultImgList']
+      }
+    },
+
+    // 退回框关闭前事件
+    beforeClose(action, done) {
+      if (action == 'cancel') {
+        if (!this.backReason) {
+          this.$toast({
+            message: '退回原因不能为空',
+            type: 'success'
+          });
+          done(false)
+        } else {
+          done();
+          this.backCancel()
+        }
+      } else {
+        done()
+      }
+    },
+
     // 退回任务确定事件
     backSure () {
-
     },
 
     // 退回任务取消事件
     backCancel () {
-
+      this.overlayShow = true;
+      this.loadingShow = true;
+      this.loadText = '退回中...';
+      returnTask({
+        id: this.cleanTaskDetails.id,
+        returnReasonByApp: this.backReason,
+        workerName: this.userInfo.name
+      }).then((res) => {
+        this.overlayShow = false;
+        this.loadingShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          this.$toast({
+            message: '退回成功',
+            type: 'success'
+          });
+          this.$router.push({
+            path: "/cleaningTask"
+          })
+        } else {
+          this.$toast({
+            message: `${res.data.msg}`,
+            type: 'fail'
+          })
+        }
+      })
+      .catch((err) => {
+        this.overlayShow = false;
+        this.loadingShow = false;
+        this.loadText = '';
+        this.$toast({
+          message: `${err}`,
+          type: 'fail'
+        })
+      })
     },
 
     // 提取即时保洁功能区信息
@@ -283,7 +349,38 @@ export default {
 
     // 获取任务事件
     getTaskEvent () {
-
+      this.overlayShow = true;
+      this.loadingShow = true;
+      this.loadText = '获取中...';
+      fetchTask(this.cleanTaskDetails.id).then((res) => {
+        this.overlayShow = false;
+        this.loadingShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          // 更改store中存储的任务状态
+          let temporaryDetails = this.cleanTaskDetails;
+          temporaryDetails['state'] = 2;
+          this.storeCleanTaskDetails(temporaryDetails)
+          this.$toast({
+            message: '获取任务成功',
+            type: 'success'
+          })
+        } else {
+          this.$toast({
+            message: `${res.data.msg}`,
+            type: 'fail'
+          })
+        }
+      })
+      .catch((err) => {
+        this.overlayShow = false;
+        this.loadingShow = false;
+        this.loadText = '';
+        this.$toast({
+          message: `${err}`,
+          type: 'fail'
+        })
+      })
     },
 
     // 退回任务事件
@@ -293,10 +390,14 @@ export default {
 
     // 复核质疑事件
     reCheckEvent () {
+      this.loadText ='复核质疑中...';
+      this.overlayShow = true;
+      this.loadingShow = true;
        reviewTask(this.cleanTaskDetails.id)
         .then((res) => {
           this.overlayShow = false;
           this.loadingShow = false;
+          this.loadText = '';
           if (res && res.data.code == 200) {
              this.$toast({
               message: '复核质疑成功',
@@ -313,6 +414,9 @@ export default {
           }
         })
         .catch((err) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText = '';
           this.$toast({
             message: `${err}`,
             type: 'fail'
@@ -350,14 +454,15 @@ export default {
       taskStartEvent () {
         this.overlayShow = true;
         this.loadingShow = true;
-        this.loadText ='更新中';
+        this.loadText ='更新中...';
         updateCleaningManageTaskState({
           id : this.cleanTaskDetails.id, // 任务id
-		      state: 2 
+		      state: 3 
         })
         .then((res) => {
           this.overlayShow = false;
           this.loadingShow = false;
+          this.loadText ='';
           if (res && res.data.code == 200) {
             // 更改store中存储的任务状态
             let temporaryDetails = this.cleanTaskDetails;
@@ -372,6 +477,9 @@ export default {
           }
         })
         .catch((err) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText ='';
           this.$toast({
             message: `${err}`,
             type: 'fail'
@@ -379,12 +487,34 @@ export default {
         })
       },
 
-      // 任务未完成事件
-     taskNoCompleteEvent () {
-        this.$router.push({
-          path: "/cleaningTask"
-        })
-      },
+    // 任务未完成事件
+    taskNoCompleteEvent () {
+      //  暂存输入的备注和上传的图片
+      let casuallyTemporaryStorageForthwithTaskMessage = _.cloneDeep(this.storageForthwithTaskMessage);
+      if (casuallyTemporaryStorageForthwithTaskMessage.length > 0 ) {
+          let temporaryIndex = casuallyTemporaryStorageForthwithTaskMessage.findIndex((item) => { return item.id == this.cleanTaskDetails.id});
+          if (temporaryIndex != -1) {
+            casuallyTemporaryStorageForthwithTaskMessage[temporaryIndex]['resultImgList'] = _.cloneDeep(this.resultImgList);
+            casuallyTemporaryStorageForthwithTaskMessage[temporaryIndex]['enterRemark'] = this.enterRemark
+          } else {
+            casuallyTemporaryStorageForthwithTaskMessage.push({
+              id: this.cleanTaskDetails.id,
+              resultImgList: _.cloneDeep(this.resultImgList),
+              enterRemark: this.enterRemark
+            })
+          }
+        } else {
+          casuallyTemporaryStorageForthwithTaskMessage.push({
+            id: this.cleanTaskDetails.id,
+            resultImgList: _.cloneDeep(this.resultImgList),
+            enterRemark: this.enterRemark
+          })
+      };
+      this.changeTemporaryStorageForthwithTaskMessage(casuallyTemporaryStorageForthwithTaskMessage);
+      this.$router.push({
+        path: "/cleaningTask"
+      })
+    },
 
       // 任务完成事件
       async taskCompleteEvent () {
@@ -398,10 +528,10 @@ export default {
         };
         // 上传图片到阿里云服务器
         if (this.resultImgList.length > 0) {
-          this.loadText ='提交中';
+          this.loadText ='提交中...';
           this.overlayShow = true;
           this.loadingShow = true;
-          for (let imgI of this.temporaryFileArray) {
+          for (let imgI of this.resultImgList) {
             if (Object.keys(this.timeMessage).length > 0) {
               // 判断签名信息是否过期
               if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
@@ -427,15 +557,20 @@ export default {
             .then((res) => {
               this.overlayShow = false;
               this.loadingShow = false;
+              this.loadText ='';
               if (res && res.data.code == 200) {
                  this.$toast({
                   message: '任务已完成',
                   type: 'success'
                 });
+                // 清除该条任务暂存的信息
+                let casuallyTemporaryStorageForthwithTaskMessage = this.storageForthwithTaskMessage.filter((item) => { return item.id != this.cleanTaskDetails.id});
+                this.changeTemporaryStorageForthwithTaskMessage(casuallyTemporaryStorageForthwithTaskMessage);
                 this.$router.push({
                   path: "/cleaningTask"
                 })
               } else {
+                this.imgOnlinePathArr = [];
                 this.$toast({
                   message: `${res.data.msg}`,
                   type: 'fail'
@@ -443,8 +578,10 @@ export default {
               }
             })
             .catch((err) => {
+              this.imgOnlinePathArr = [];
               this.overlayShow = false;
               this.loadingShow = false;
+              this.loadText ='';
               this.$toast({
                 message: `${err}`,
                 type: 'fail'
@@ -476,7 +613,6 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
-            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           }
@@ -508,7 +644,6 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
-            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           }
@@ -574,7 +709,7 @@ export default {
           // OSS地址
           const aliyunServerURL = this.ossMessage.host;
           // 存储路径(后台固定位置+随即数+文件格式)
-          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + filePath.name;
+          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + base64ImgtoFile(filePath).name;
           // 临时AccessKeyID0
           const OSSAccessKeyId = this.ossMessage.accessId;
           // 加密策略
@@ -587,7 +722,7 @@ export default {
           formData.append('OSSAccessKeyId',OSSAccessKeyId);
           formData.append('success_action_status','200');
           formData.append('Signature',signature);
-          formData.append('file',filePath);
+          formData.append('file',base64ImgtoFile(filePath));
           axios({
             url: aliyunServerURL,
             method: 'post',
@@ -595,8 +730,7 @@ export default {
             headers: {'Content-Type': 'multipart/form-data'}
           }).then((res) => {
             this.imgOnlinePathArr.push(`${aliyunServerURL}/${aliyunFileKey}`);
-            resolve();
-            console.log(this.imgOnlinePathArr);
+            resolve()
           })
           .catch((err) => {
             this.overlayShow = false;
@@ -612,8 +746,7 @@ export default {
 
       // 确定删除提示框确定事件
       sureDeleteEvent () {
-        this.resultImgList.splice(this.imgIndex, 1);
-        this.temporaryFileArray.splice(this.imgIndex, 1)
+        this.resultImgList.splice(this.imgIndex, 1)
       },
 
       // 拍照取消
@@ -631,6 +764,12 @@ export default {
 .page-box {
   height: 0;
   .content-wrapper();
+  /deep/ .van-loading {
+    z-index: 1000 !important
+  };
+  /deep/ .van-overlay {
+    z-index: 100 !important
+  };
   .back-box {
     /deep/ .van-dialog {
       .van-dialog__content {
@@ -764,6 +903,7 @@ export default {
   }
   .nav {
     /deep/ .van-nav-bar {
+      z-index: 10 !important;
       background: #fff;
       .van-nav-bar__left {
         .van-nav-bar__text {

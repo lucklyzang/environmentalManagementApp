@@ -36,6 +36,23 @@ export function cleaningManageTaskComplete(data) {
     })
 }
 
+// 获取任务(即时保洁和专项保洁)
+export function fetchTask(taskId) {
+    return request({
+        url: `clean/cleanTask/fetchTask/${taskId}`,
+        method: 'put'
+    })
+}
+
+// 退回任务(即时保洁和专项保洁)
+export function returnTask(data) {
+    return request({
+        url: 'clean/cleanTask/returnTask',
+        method: 'put',
+        data
+    })
+}
+
 //复核质疑流历史任务
 export function reviewTask(id) {
     return request({

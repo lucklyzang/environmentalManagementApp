@@ -9,6 +9,16 @@ export default {
             return state.currentCleanTaskName
         },
 
+        storageForthwithTaskMessage: (state) => {
+            state.storageForthwithTaskMessage = getStore('storageForthwithTaskMessage') ? JSON.parse(getStore('storageForthwithTaskMessage')) : [];
+            return state.storageForthwithTaskMessage
+        },
+
+        storageSpecialTaskMessage: (state) => {
+            state.storageSpecialTaskMessage = getStore('storageSpecialTaskMessage') ? JSON.parse(getStore('storageSpecialTaskMessage')) : [];
+            return state.storageSpecialTaskMessage
+        },
+
         currentCleanTaskDateVlue : (state) => {
             state.currentCleanTaskDateVlue = getStore('currentCleanTaskDateVlue') ? getStore('currentCleanTaskDateVlue') : 1;
             return state.currentCleanTaskDateVlue
@@ -52,6 +62,22 @@ export default {
             if (playLoad && playLoad != 'null') {
                 setStore('currentCleanTaskDateVlue', playLoad);
                 state.currentCleanTaskDateVlue = playLoad
+            }
+        },
+
+        // 保存暂存的即时保洁任务相关信息
+        changeTemporaryStorageForthwithTaskMessage(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                setStore('storageForthwithTaskMessage', playLoad);
+                state.storageForthwithTaskMessage = playLoad
+            }
+        },
+
+        // 保存暂存的专项保洁任务相关信息
+        changeTemporaryStorageSpecialTaskMessage(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                setStore('storageSpecialTaskMessage', playLoad);
+                state.storageSpecialTaskMessage = playLoad
             }
         },
 

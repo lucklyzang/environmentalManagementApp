@@ -21,6 +21,8 @@ export function getDefaultEnvironmentManagementState() {
        attendanceTypeDetailsMessage: {},
        personnelStatisticsDetailsMessage: {},
        locationMessage: [],
-       attendanceStatisticsSwitchMessage: {}
+       attendanceStatisticsSwitchMessage: {},
+       storageForthwithTaskMessage: [],
+       storageSpecialTaskMessage: []
     }
 };

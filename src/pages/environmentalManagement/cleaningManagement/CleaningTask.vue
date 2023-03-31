@@ -219,10 +219,10 @@ export default {
     next(vm=>{
       if (from.path != '/cleanTaskList') {
         //非此页面进入时,回显筛选状态
-        if (JSON.stringify(vm.cleanTaskDetails) != "{}" && vm.cleanTaskDetails.selectValue) {
-            vm.currentSelectValue = vm.cleanTaskDetails.selectValue;
-            vm.selectValue = vm.cleanTaskDetails.selectValue
-        }
+        // if (JSON.stringify(vm.cleanTaskDetails) != "{}" && vm.cleanTaskDetails.selectValue) {
+        //     vm.currentSelectValue = vm.cleanTaskDetails.selectValue;
+        //     vm.selectValue = vm.cleanTaskDetails.selectValue
+        // }
       }
 	});
     next() 
@@ -456,12 +456,14 @@ export default {
                     };
                     return
                 };
-                // 未查阅也算未开始
-                if (this.currentSelectValue == 2) {
-                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1})
-                } else {
-                    this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue})
-                };
+                if (this.itemNameIndex == 1) {
+                    // 未查阅也算未开始
+                    if (this.currentSelectValue == 2) {
+                        this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1})
+                    } else {
+                        this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                    }
+                };    
                 if (this.forthwithTaskList.length == 0) {
                     this.forthwithEmptyShow = true
                 } else {
@@ -515,12 +517,14 @@ export default {
                     };
                     return
                 };
-                // 未查阅也算未开始
-                if (this.currentSelectValue == 2) {
-                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1 })
-                } else {
-                    this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue })
-                };
+                if (this.itemNameIndex == 2) {
+                    // 未查阅也算未开始
+                    if (this.currentSelectValue == 2) {
+                        this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == 1 })
+                    } else {
+                        this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.state == this.currentSelectValue })
+                    }
+                };    
                 if (this.specialTaskList.length == 0) {
                     this.specialEmptyShow = true
                 } else {
@@ -569,7 +573,9 @@ export default {
                     };
                     return
                 };
-                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue});
+                if (this.itemNameIndex == 3) {
+                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                };
                 if (this.pollingTaskList.length == 0) {
                     this.pollingEmptyShow = true
                 } else {

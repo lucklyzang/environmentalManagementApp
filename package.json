@@ -17,6 +17,7 @@
         "fastclick": "^1.0.6",
         "js-base64": "^2.6.3",
         "lib-flexible": "^0.3.2",
+        "lodash": "^4.17.21",
         "moment": "^2.24.0",
         "postcss-pxtorem": "^5.1.1",
         "qs": "^6.6.0",
