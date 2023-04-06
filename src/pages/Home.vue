@@ -26,7 +26,7 @@
                         </div>
                     </div>
                 </van-tab>
-                <van-tab title="中央运送" name="centralTransport">中央运送</van-tab>
+                <van-tab title="中央运送" name="centralTransport"></van-tab>
             </van-tabs>
         </div>
     </div>
