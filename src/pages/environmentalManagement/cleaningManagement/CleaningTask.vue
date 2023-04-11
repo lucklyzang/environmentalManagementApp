@@ -139,8 +139,8 @@
                         <div class="task-list-title-left">
                             {{ generateTaskNumber('巡检',index) }}
                         </div>
-                        <div class="task-list-title-right" :class="{'underwayStyle' : item.state == 2, 'completeStyle' : item.status == 3}">
-                            {{ stausPollingTaskTransfer(item.status) }}
+                        <div class="task-list-title-right" :class="{'underwayStyle' : item.state == 2, 'completeStyle' : item.state == 3}">
+                            {{ stausPollingTaskTransfer(item.state) }}
                         </div>
                     </div>
                     <div class="task-list-content">
@@ -173,6 +173,7 @@ import NavBar from "@/components/NavBar";
 import { queryCleaningManageTaskList } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
+let windowTimer
 export default {
   name: "CleaningTask",
   components: {
@@ -182,6 +183,7 @@ export default {
     return {
       loadingShow: false,
       forthwithEmptyShow: false,
+      isTimeoutContinue: true,
       specialEmptyShow: false,
       pollingEmptyShow: false,
       overlayShow: false,
@@ -205,7 +207,7 @@ export default {
       pollingTaskList: [
         {
             pollingTaskName: '巡检任务配置一',
-            status: 0,
+            state: 0,
             startTime: '05-31 17:21',
             checkingPeople: '住院部',
             complete: 87
@@ -259,7 +261,24 @@ export default {
     };
     this.getForthwithTaskList(0);
     this.getSpecialTaskList(1);
-    this.getPollingTaskList(2)
+    this.getPollingTaskList(2);
+    // 轮询巡检任务状态
+    if (!windowTimer) {
+        windowTimer = window.setInterval(() => {
+            // 所有任务都完成时就不在查询任务状态状态
+            let isAllSellout = this.pollingTaskList.every((item) => { return item.state == 3 });
+            if (this.isTimeoutContinue && !isAllSellout) {
+                this.timingGetPollingTaskList()
+            }
+        }, 3000)
+    }
+  },
+
+  beforeDestroy () {
+    if(windowTimer) {
+        clearTimeout(windowTimer);
+        windowTimer = null
+    }
   },
 
   watch: {
@@ -547,7 +566,42 @@ export default {
         })
     },
 
-     // 查询巡检任务列表
+    // 定时查询巡检任务列表(实时更新任务状态)
+    timingGetPollingTaskList() {
+        this.isTimeoutContinue = false;
+        queryCleaningManageTaskList({
+            proId : this.userInfo.proIds[0], // 所属项目id
+            queryDate: this.currentCleanTaskName.date, // 查询时间
+            managerId: this.userInfo.id, // 保洁主管id    
+            taskType: 2 // 0-即时，1-专项,2-巡检
+        }).then((res) => {
+            this.isTimeoutContinue = true;
+            let temporaryPollingTaskList;
+            if (res && res.data.code == 200) {
+                if (this.currentSelectValue == -1) {
+                    temporaryPollingTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0})
+                } else {
+                    temporaryPollingTaskList = res.data.data.filter((item) => { return item.state == this.currentSelectValue && item.state != 7 && item.state != 0})
+                };
+                if (temporaryPollingTaskList.length > 0) {
+                    for (let item of temporaryPollingTaskList) {
+                        let currentIndex = this.pollingTaskList.indexOf(this.pollingTaskList.filter((innerItem) => { return innerItem.id == item.id})[0]);
+                        if (currentIndex != -1) {
+                            // 已完成任务的状态不更改
+                            if (this.digitalCollectionList[currentIndex]['state'] != 3) {
+                                this.pollingTaskList[currentIndex]['state'] = item.state
+                            }    
+                        }
+                    } 
+                }
+            }
+        })
+        .catch((err) => {
+            this.isTimeoutContinue = true
+        })
+    },
+
+    // 查询巡检任务列表
     getPollingTaskList (taskType) {
         let data = {
             proId : this.userInfo.proIds[0], // 所属项目id
