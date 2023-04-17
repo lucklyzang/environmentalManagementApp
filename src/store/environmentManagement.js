@@ -37,6 +37,14 @@ export default {
             return state.locationMessage
         },
 
+        pollingTaskDepartmentMessage : (state) => {
+            return state.pollingTaskDepartmentMessage
+        },
+
+        pollingTaskDepartmentFunctionalZoneMessage : (state) => {
+            return state.pollingTaskDepartmentFunctionalZoneMessage
+        },
+
         attendanceTypeDetailsMessage : (state) => {
             state.attendanceTypeDetailsMessage = getStore('attendanceTypeDetailsMessage') ? JSON.parse(getStore('attendanceTypeDetailsMessage')) : {};
             return state.attendanceTypeDetailsMessage
@@ -116,6 +124,20 @@ export default {
         storeLocationMessage(state, playLoad) {
             if (playLoad && playLoad != 'null') {
                 state.locationMessage = playLoad
+            }
+        },
+
+        // 保存保洁管理巡检任务科室相关信息
+        storePollingTaskDepartmentMessage() {
+            if (playLoad && playLoad != 'null') {
+                state.pollingTaskDepartmentMessage = playLoad
+            }
+        },
+
+         // 保存保洁管理巡检任务科室相关信息
+         storePollingTaskDepartmentFunctionalZoneMessage() {
+            if (playLoad && playLoad != 'null') {
+                state.pollingTaskDepartmentFunctionalZoneMessage = playLoad
             }
         },
 

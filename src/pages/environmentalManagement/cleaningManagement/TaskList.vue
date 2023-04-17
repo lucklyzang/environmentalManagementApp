@@ -130,27 +130,27 @@
               <div class="forthwith-cleaning-task-content-left">
                 <div class="total">
                   <span>总&nbsp;&nbsp;&nbsp;数: </span>
-                  <span>20</span>
+                  <span>{{ pollingTaskGlobalStatistics.all }}</span>
                 </div>
                 <div class="execution">
                   <span>执行中: </span>
-                  <span>20</span>
+                  <span>{{ pollingTaskGlobalStatistics.proceed }}</span>
                 </div>
                 <div class="no-comolete">
                   <span>未完成: </span>
-                  <span>20</span>
+                  <span>{{ pollingTaskGlobalStatistics.all - pollingTaskGlobalStatistics.finish }}</span>
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="pollingCurrentRate" :rate="50" :text="`${20}%`" :speed="100" 
+                <van-circle v-model="pollingCurrentRate" :rate="`${(Math.ceil(specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all))*100}`" :text="`${(Math.ceil(specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all))*100}%`" :speed="100" 
                 layer-color="#d0d0cc" 
-                :color="50 == 0 ? '#d0d0cc' : '#1864FF'"
+                :color="specialCleaningTaskGlobalStatistics.finish == 0 ? '#d0d0cc' : '#1864FF'"
                 :size="45" 
                 :stroke-width="140" 
                 />
                 <div class="complete-info">
                   <span>已完成:</span>
-                  <span>8</span>
+                  <span>{{ pollingTaskGlobalStatistics.finish }}</span>
                 </div>
               </div>
             </div>
@@ -167,7 +167,7 @@
 <script>
 import FooterBottom from "@/components/FooterBottom";
 import NavBar from "@/components/NavBar";
-import { queryCleaningManageTaskGlobalStatistics } from "@/api/environmentalManagement.js";
+import { queryCleaningManageTaskGlobalStatistics, queryPollingTaskGlobalStatistics } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -193,6 +193,7 @@ export default {
       calendarShow: false,
       forthwithCleaningTaskGlobalStatistics: {},
       specialCleaningTaskGlobalStatistics: {},
+      pollingTaskGlobalStatistics: {},
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       clockPng: require("@/common/images/home/clock.png"),
       addTaskPng: require("@/common/images/home/add-task.png"),
@@ -212,11 +213,7 @@ export default {
         })
       })
     };
-    this.getCleaningManageTaskGlobalStatistics({
-      proId : this.userInfo.proIds[0], // 所属项目id
-      queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
-      managerId: this.userInfo.id // 保洁主管id
-    })
+    this.parallelGetAllTaskGlobalStatistics()
   },
 
   beforeRouteEnter(to, from, next) {
@@ -267,11 +264,7 @@ export default {
 
     onConfirm(date) {
       this.calendarShow = false;
-      this.getCleaningManageTaskGlobalStatistics({
-        proId : this.userInfo.proIds[0], // 所属项目id
-        queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
-        managerId: this.userInfo.id // 保洁主管id
-      })
+      this.parallelGetAllTaskGlobalStatistics()
     },
 
     // 点击任务详情事件
@@ -288,54 +281,106 @@ export default {
       this.$router.push({path: '/cleaningTask'})
     },
 
-    // 查询任务总体概况
-    getCleaningManageTaskGlobalStatistics (data) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.emptyShow = false;
-      queryCleaningManageTaskGlobalStatistics(data).then((res) => {
-        console.log(res.data.data);
+    // 并行查询保洁任务、专项保洁任务、巡检任务统计详情
+    parallelGetAllTaskGlobalStatistics () {
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.emptyShow = false;
+        Promise.all([this.getCleaningManageTaskGlobalStatistics(),this.getPollingTaskGlobalStatistics()])
+        .then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
-					if (res && res.data.code == 200) {
-            if (JSON.stringify(res.data.data) == '{}') {
-              this.emptyShow = true
-            } else {
-              if (res.data.data['0']) {
-                this.forthwithTaskShow = true;
-                this.forthwithCleaningTaskGlobalStatistics = res.data.data['0'];
+          if (res && res.data.data) {
+            let [item1,item2] = res;
+            if (item1) {
+              if (JSON.stringify(item1) == '{}') {
+                this.emptyShow = true
               } else {
-                this.forthwithTaskShow = false
-              };
-              if (res.data.data['1']) {
-                this.specialCleaningTaskGlobalStatistics = res.data.data['1'];
-                this.specialTaskShow = true
-              } else {
-                this.specialTaskShow = false
-              };
-              if (res.data.data['2']) {
-                this.specialCleaningTaskGlobalStatistics = res.data.data['1'];
-                this.pollingTaskShow = true
-              } else {
-                this.pollingTaskShow = false
+                if (item1['0']) {
+                  this.forthwithTaskShow = true;
+                  this.forthwithCleaningTaskGlobalStatistics = item1['0'];
+                } else {
+                  this.forthwithTaskShow = false
+                };
+                if (item1['1']) {
+                  this.specialCleaningTaskGlobalStatistics = item1['1'];
+                  this.specialTaskShow = true
+                } else {
+                  this.specialTaskShow = false
+                }
               }
-            }
-					} else {
-						this.$toast({
+            };
+            if (item2) {
+              if (JSON.stringify(item2) == '{}') {
+                this.emptyShow = true
+              } else {
+                if (item2) {
+                  this.pollingTaskGlobalStatistics = item2;
+                  this.pollingTaskShow = true
+                } else {
+                  this.pollingTaskShow = false
+                }
+              }
+            }  
+          }
+        })
+        .catch((err) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+          this.$dialog.alert({
+            message: `${err}`,
+            closeOnPopstate: true
+          }).then(() => {})
+        })
+      },
+
+    // 查询保洁任务和专项保洁任务统计详情
+    getCleaningManageTaskGlobalStatistics () {
+      return new Promise((resolve,reject) => {
+        queryCleaningManageTaskGlobalStatistics({
+          proId : this.userInfo.proIds[0], // 所属项目id
+          queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
+          managerId: this.userInfo.id // 保洁主管id
+        })
+        .then((res) => {
+          if (res && res.data.code == 200) {
+            resolve(res.data.data)
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        })
+        .catch((err) => {
+          reject(err)
+        })
+      })  
+    },
+
+    // 查询巡检任务统计详情
+    getPollingTaskGlobalStatistics () {
+      return new Promise((resolve,reject) => {
+        queryPollingTaskGlobalStatistics({
+          proId : this.userInfo.proIds[0], // 所属项目id
+          queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
+          managerId: this.userInfo.id // 保洁主管id
+        }).then((res) => {
+          if (res && res.data.code == 200) {
+            resolve(res.data.data)
+          } else {
+            this.$toast({
 							message: `${res.data.msg}`,
 							type: 'fail'
 						})
-					}
-				}).
-				catch((err) => {
-					this.$toast({
-						message: `${err}`,
-						type: 'fail'
-					});
-					this.loadingShow = false;
-          this.overlayShow = false
-			})
+          }
+        })
+        .catch((err) => {
+          reject(err)
+        })
+      })
     },
+
 
     // 新增任务事件
     addTaskEvent () {

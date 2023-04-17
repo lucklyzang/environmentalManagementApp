@@ -23,6 +23,8 @@ export function getDefaultEnvironmentManagementState() {
        locationMessage: [],
        attendanceStatisticsSwitchMessage: {},
        storageForthwithTaskMessage: [],
-       storageSpecialTaskMessage: []
+       storageSpecialTaskMessage: [],
+       pollingTaskDepartmentMessage: {},
+       pollingTaskDepartmentFunctionalZoneMessage: {}
     }
 };

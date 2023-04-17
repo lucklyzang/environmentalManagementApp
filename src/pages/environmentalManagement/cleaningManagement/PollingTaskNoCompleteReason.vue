@@ -1,5 +1,7 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">提交中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
       <NavBar path="/pollingTaskDetails" title="未完成原因" />
     </div>
@@ -27,7 +29,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import { submitUnfinishedReason } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -57,7 +59,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","cleanTaskDetails"]),
   },
 
   methods: {
@@ -74,7 +76,40 @@ export default {
     },
 
     // 提交原因事件
-    submitEvent () {}
+    submitEvent () {
+      if (!this.reasonValue) {
+        this.$toast({
+            message: '请输入未完成原因',
+            type: 'fail'
+        });
+        return
+      };
+      this.loadingShow = true;
+      this.overlayShow = true;
+      submitUnfinishedReason({
+        id: this.cleanTaskDetails.id,
+        unfinishedReason: this.reasonValue
+      })
+      .then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        if (res && res.data.code == 200) {
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        })
+        .catch((err) => {
+          this.$toast({
+              message: `${err}`,
+              type: 'fail'
+          });
+          this.loadingShow = false;
+          this.overlayShow = false
+        })
+    }
   }
 };
 </script>
@@ -84,6 +119,9 @@ export default {
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
   .content-wrapper();
+  /deep/ .van-loading {
+    z-index: 1000000
+  };
   .nav {
     /deep/ .van-nav-bar {
         .van-nav-bar__left {

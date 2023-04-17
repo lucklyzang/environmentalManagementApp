@@ -1,13 +1,16 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
+    <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
       <NavBar path="/pollingTaskDetails" title="巡检任务详情" />
     </div>
     <div class="content">
+        <van-empty v-show="emptyShow" description="暂无数据" />
         <div class="content-top">
             <div class="department-name">
                 <van-icon name="location" color="#101010" size="22" />
-                <span>科室一</span>
+                <span>{{ pollingTaskDepartmentMessage.depName }}</span>
             </div>
             <div class="tabs-area">
                 <span v-for="(item,index) in tabsList" :class="{ 'spanStyle': currentTabIndex == index }" :key="index" @click="tabsClickEvent(item,index)">
@@ -16,10 +19,10 @@
             </div>
         </div>
         <div class="content-bottom">
-            <div class="corner-list" v-for="(item,index) in departmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
-                <div class="corner-name">{{ item.name}}</div>
+            <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in departmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
+                <div class="corner-name">{{ item.depName}}</div>
                 <div class="corner-right">
-                    <span>{{ item.isQualified }}</span>
+                    <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
                     <van-icon name="arrow" color="#101010"  size="25" />
                 </div>
             </div>
@@ -30,7 +33,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {} from "@/api/environmentalManagement.js";
+import { checkConfirmAll, departmentScanCode, departmentInto } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -41,21 +44,11 @@ export default {
   data() {
     return {
         currentTabIndex: 0,
+        loadingShow: false,
+        emptyShow: false,
+        overlayShow: false,
         tabsList: ['功能区','检查合格','检查不合格'],
-        departmentCornerList: [
-            {
-                name: '门诊部新馆一病区二号电梯',
-                isQualified: '合格'
-            },
-            {
-                name: '门诊部新馆一病区二号电梯',
-                isQualified: '合格'
-            },
-            {
-                name: '门诊部新馆一病区二号电梯',
-                isQualified: '合格'
-            }
-        ]
+        departmentCornerList: []
     }
   },
 
@@ -69,17 +62,22 @@ export default {
           path: "/pollingTaskDetails",
         })
       })
+    };
+    if (this.pollingTaskDepartmentMessage.intoWay == 1) {
+        this.getDepartmentScanCode()
+    } else if (this.pollingTaskDepartmentMessage.intoWay == 2) {
+        this.getDepartmentDetails()
     }
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","pollingTaskDepartmentMessage","cleanTaskDetails"]),
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin"]),
+    ...mapMutations(["changeIsLogin","storePollingTaskDepartmentFunctionalZoneMessage"]),
 
     //tab切换点击事件
     tabsClickEvent (item,index) {
@@ -88,11 +86,107 @@ export default {
 
     // 角落列表点击事件
     cornerClickEvent (item,index) {
+        this.storePollingTaskDepartmentFunctionalZoneMessage(item);
         this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
     },
 
+    // 查询科室详情事件(科室点击)
+    getDepartmentDetails () {
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.emptyShow = false;
+        departmentInto({
+            subId: this.cleanTaskDetails.id, // 子任务id
+            depId: this.pollingTaskDepartmentMessage.depId // 科室id
+        })
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            if (res && res.data.code == 200) {
+                if (res.data.data.length > 0) {
+                    this.departmentCornerList = res.data.data
+                } else {
+                    this.emptyShow = true
+                }
+            } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+            }
+        })
+        .catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
+    // 查询科室详情事件(科室扫码)
+    getDepartmentScanCode () {
+        this.loadingShow = true;
+        this.overlayShow = true;
+        this.emptyShow = false;
+        departmentScanCode({
+            scanTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+            subId: this.cleanTaskDetails.id, // 子任务id
+            depId: this.pollingTaskDepartmentMessage.depId // 科室id
+        })
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            if (res && res.data.code == 200) {
+                if (res.data.data.length > 0) {
+                    this.departmentCornerList = res.data.data
+                } else {
+                    this.emptyShow = true
+                }
+            } else {
+            this.$toast({
+                message: `${res.data.msg}`,
+                type: 'fail'
+            })
+            }
+        })
+        .catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    },
+
     // 全部检查合格事件
-    allExamineQualifiedEvent () {}
+    allExamineQualifiedEvent () {
+        this.loadingShow = true;
+        this.overlayShow = true;
+        checkConfirmAll(this.departmentCornerList[0]['taskId'],this.departmentCornerList[0]['subId'])
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            if (res && res.data.code == 200) {
+               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'});
+            } else {
+                this.$toast({
+                    message: `${res.data.msg}`,
+                    type: 'fail'
+                })
+            }
+        })
+        .catch((err) => {
+            this.$toast({
+                message: `${err}`,
+                type: 'fail'
+            });
+            this.loadingShow = false;
+            this.overlayShow = false
+        })
+    }
   }
 };
 </script>
@@ -102,6 +196,9 @@ export default {
 @import "~@/common/stylus/modifyUi.less";
 .page-box {
   .content-wrapper();
+    /deep/ .van-loading {
+    z-index: 1000000
+  };
   .nav {
     /deep/ .van-nav-bar {
         .van-nav-bar__left {
@@ -126,6 +223,12 @@ export default {
     flex-direction: column;
     background: #F8F8F8;
     height: 0;
+    /deep/ .van-empty {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%)
+    };
     .content-top {
         width: 98%;
         background: #fff;
@@ -188,7 +291,11 @@ export default {
             };
             .corner-right {
                 >span {
-                    vertical-align: middle
+                    vertical-align: middle;
+                    color: #289E8E
+                };
+                .spanStyle {
+                    color: #E86F50 !important
                 };
                 /deep/ .van-icon {
                     vertical-align: middle

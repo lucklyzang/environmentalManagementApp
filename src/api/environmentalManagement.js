@@ -9,10 +9,28 @@ export function queryCleaningManageTaskGlobalStatistics(data) {
     })
 };
 
+// 查询巡检任务总体统计情况
+export function queryPollingTaskGlobalStatistics(data) {
+    return request({
+        url: 'clean/xjTask/app/index',
+        method: 'get',
+        params: data
+    })
+};
+
 // 查询保洁管理任务列表
 export function queryCleaningManageTaskList(data) {
     return request({
         url: 'clean/cleanTask/app/listAll',
+        method: 'get',
+        params: data
+    })
+};
+
+// 查询巡检任务列表
+export function queryPollingTaskList(data) {
+    return request({
+        url: 'clean/xjTask/app/list',
         method: 'get',
         params: data
     })
@@ -111,6 +129,58 @@ export function addForthwithCleanTask(data) {
     return request({
         url: 'clean/cleanTask/add',
         method: 'post',
+        data
+    })
+}
+
+// 获取单个巡检任务详情
+export function getSinglePollingTaskMessage(taskId) {
+    return request({
+        url: `clean/xjSub/app/list/${taskId}`,
+        method: 'get'
+    })
+}
+
+// 科室扫码(巡检任务)
+export function departmentScanCode(data) {
+    return request({
+        url: 'clean/xjResult/dep/scan',
+        method: 'put',
+        data
+    })
+}
+
+// 科室进入(巡检任务)
+export function departmentInto(data) {
+    return request({
+        url: 'clean/xjResult/dep/click',
+        method: 'put',
+        data
+    })
+}
+
+// 检查确认单个检查项(巡检任务)
+export function checkConfirmSingle(data) {
+    return request({
+        url: 'clean/xjResult/ribbon/one/confirm',
+        method: 'put',
+        data
+    })
+}
+
+// 检查确认所有检查项(巡检任务)
+export function checkConfirmAll(subId) {
+    return request({
+        url: `clean/xjResult/ribbon/all/confirm/${subId}`,
+        method: 'put'
+    })
+}
+
+// 未完成原因(巡检任务)
+export function submitUnfinishedReason (data) {
+    return request({
+        url: 'clean/xjTask/app/unfinishedReason',
+        method: 'put',
         data
     })
 }

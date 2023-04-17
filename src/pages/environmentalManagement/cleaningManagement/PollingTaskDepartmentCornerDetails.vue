@@ -7,18 +7,18 @@
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        门整部就撒开了撒娇撒是
+        {{ pollingTaskDepartmentFunctionalZoneMessage.ribbonName }}
       </div>
       <div class="inspection-standard-box">
         <div class="inspection-standard-title">
             功能区检查标准
         </div>
         <div class="inspection-standard-content">
-            <div class="inspection-standard-content-list" v-for="(item,index) in inspectionStandardList" :key="index">
+            <div class="inspection-standard-content-list" v-for="(valueItem,key,index) in inspectionStandardList" :key="index">
                 <div class="describe-name">
-                    {{ item.describe }}
+                    {{ key }}
                 </div>
-                <van-switch v-model="item.isPass" size="20px" active-color="#3dde3d" inactive-color="#cd0909" />
+                <van-switch v-model="value" size="20px" active-color="#3dde3d" inactive-color="#cd0909" />
             </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import {getAliyunSign} from '@/api/login.js'
-import {} from "@/api/environmentalManagement.js";
+import { checkConfirmSingle } from "@/api/environmentalManagement.js";
 import axios from 'axios';
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress, base64ImgtoFile } from "@/common/js/utils";
@@ -101,22 +101,13 @@ export default {
       loadingShow: false,
       currentImgUrl: '',
       imgBoxShow: false,
-      loadingText: '加载中...',
+      loadingText: '提交中...',
       enterRemark: '',
       resultImgList: [],
       imgDeleteUrlArr: [],
       imgOnlinePathArr: [],
       existOnlineImgPath: [],
-      inspectionStandardList: [
-        {
-            describe: '地面干净光亮、无污染、垃圾、碎屑',
-            isPass: true
-        },
-        {
-            describe: '壁面干净光亮',
-            isPass: false
-        }
-      ]
+      inspectionStandardList: []
     }
   },
 
@@ -130,17 +121,37 @@ export default {
           path: "/pollingTaskDepartmentDetails"
         })
       })
-    }
+    };
+    this.disposeStandardsData();
+    if (this.pollingTaskDepartmentFunctionalZoneMessage.images != null) {
+      if (this.pollingTaskDepartmentFunctionalZoneMessage.images.length > 0) {
+        this.resultImgList = this.pollingTaskDepartmentFunctionalZoneMessage.images
+      }
+    }  
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","timeMessage","ossMessage"]),
+    ...mapGetters(["userInfo","timeMessage","ossMessage","pollingTaskDepartmentFunctionalZoneMessage"])
   },
 
   methods: {
-    ...mapMutations(["changeIsLogin","changeTimeMessage","changeOssMessage","storeCurrentCleanTaskName"]),
+    ...mapMutations(["changeIsLogin","changeTimeMessage","changeOssMessage","storeCurrentCleanTaskName","storePollingTaskDepartmentFunctionalZoneMessage"]),
+
+    // 处理检查标准的部分数据
+    disposeStandardsData () {
+      let temporaryPollingTaskDepartmentFunctionalZoneMessage = this.pollingTaskDepartmentFunctionalZoneMessage;
+      Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
+        if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] == '未检' || temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] == '合格') {
+          temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = true
+        } else {
+          temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = false
+        }
+      });
+      this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
+      this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
+    },
 
       // 提交事件
       async submitEvent () {
@@ -162,7 +173,37 @@ export default {
           await this.getSign();
           await this.uploadImageToOss(imgI)
           }
-        }
+        };
+        let temporaryPollingTaskDepartmentFunctionalZoneMessage = this.pollingTaskDepartmentFunctionalZoneMessage;
+        Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
+          if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item]) {
+            temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '合格'
+          } else {
+            temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '不合格'
+          }
+        });
+        this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
+        this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
+        let temporaryInfo = {
+          id: this.pollingTaskDepartmentFunctionalZoneMessage.id,
+          standards: this.inspectionStandardList,
+          images: this.imgOnlinePathArr,
+          remark: this.enterRemark,
+          checkResult: '',
+          reportTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+          subId: this.pollingTaskDepartmentFunctionalZoneMessage.subId,
+          taskId: this.pollingTaskDepartmentFunctionalZoneMessage.taskId
+        };
+        let temporaryArray = [];
+        Object.keys(this.inspectionStandardList['standards']).forEach((item) => {
+          this.temporaryArray.push(this.inspectionStandardList['standards']['item'])
+        });
+        if (temporaryArray.some((item) => { return item == '不合格' })) {
+          temporaryInfo['checkResult'] = 2
+        } else {
+          temporaryInfo['checkResult'] = 1
+        };
+        this.checkConfirmSingle(temporaryInfo)
       },
 
       // 返回事件
@@ -230,7 +271,7 @@ export default {
         };
       },
 
-      // 获取阿里云签名接口
+    // 获取阿里云签名接口
     getSign (filePath = '') {
       return new Promise((resolve, reject) => {
         getAliyunSign().then((res) => {
@@ -308,6 +349,35 @@ export default {
           reject()
         })
       })
+    },
+
+    // 提交检查结果
+    checkConfirmSingle (data) {
+        this.loadingShow = true;
+        this.overlayShow = true;
+        checkConfirmSingle(data)
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            if (res && res.data.code == 200) {
+               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'});
+            } else {
+              this.imgOnlinePathArr = [];
+              this.$toast({
+                  message: `${res.data.msg}`,
+                  type: 'fail'
+              })
+            }
+        })
+        .catch((err) => {
+          this.imgOnlinePathArr = [];
+          this.$toast({
+              message: `${err}`,
+              type: 'fail'
+          });
+          this.loadingShow = false;
+          this.overlayShow = false
+        })
     },
 
       // 拍照点击

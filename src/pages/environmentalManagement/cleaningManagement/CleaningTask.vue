@@ -147,18 +147,21 @@
                         <div class="list-content-left">
                             <div>
                                 <span>开始时间:</span>
-                                <span>{{ item.startTime }}</span>
+                                <span>{{ (item.startTime).split(',') }}</span>
                             </div>
                             <div>
                                 <span>巡检人:</span>
-                                <span>{{ item.checkingPeople }}</span>
+                                <span>{{ item.workerName }}</span>
                             </div>
                         </div>
                         <div class="list-content-right">
-                            <van-circle v-model="item.complete" :rate="50" :speed="100" layer-color="#d0d0cc" :size="30" :stroke-width="100" />
+                            <van-circle v-model="item.complete" :rate="`${(Math.ceil(item['ratioMap']['finish']/item['ratioMap']['all']))*100}`" :speed="100" layer-color="#d0d0cc" 
+                            :size="30" :stroke-width="100"
+                            :color="item['ratioMap']['finish'].finish == 0 ? '#d0d0cc' : '#1864FF'" 
+                            />
                             <div class="complete-text">
                                 <span>完成率:</span>
-                                <span>{{ `${item.complete}%` }}</span>
+                                <span>{{ `${(Math.ceil(item['ratioMap']['finish']/item['ratioMap']['all']))*100}%` }}</span>
                             </div>
                         </div>
                     </div>
@@ -170,7 +173,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import { queryCleaningManageTaskList } from "@/api/environmentalManagement.js";
+import { queryCleaningManageTaskList, queryPollingTaskList } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 let windowTimer
@@ -182,11 +185,11 @@ export default {
   data() {
     return {
       loadingShow: false,
+      overlayShow: false,
       forthwithEmptyShow: false,
       isTimeoutContinue: true,
       specialEmptyShow: false,
       pollingEmptyShow: false,
-      overlayShow: false,
       currentSelectValue: -1,
       selectValue: -1,
       itemNameIndex: 1,
@@ -204,15 +207,7 @@ export default {
       specialTaskList: [],
       allForthwithTaskList: [],
       allSpecialTaskList: [],
-      pollingTaskList: [
-        {
-            pollingTaskName: '巡检任务配置一',
-            state: 0,
-            startTime: '05-31 17:21',
-            checkingPeople: '住院部',
-            complete: 87
-        }
-      ],
+      pollingTaskList: [],
       allPollingTaskList: []
     }
   },
@@ -261,7 +256,7 @@ export default {
     };
     this.getForthwithTaskList(0);
     this.getSpecialTaskList(1);
-    this.getPollingTaskList(2);
+    this.getPollingTaskList();
     // 轮询巡检任务状态
     if (!windowTimer) {
         windowTimer = window.setInterval(() => {
@@ -373,7 +368,7 @@ export default {
         };
         this.getForthwithTaskList(0);
         this.getSpecialTaskList(1);
-        this.getPollingTaskList(2)
+        this.getPollingTaskList()
     },
     
     // 任务状态转换(即时和专项)
@@ -569,11 +564,9 @@ export default {
     // 定时查询巡检任务列表(实时更新任务状态)
     timingGetPollingTaskList() {
         this.isTimeoutContinue = false;
-        queryCleaningManageTaskList({
+        queryPollingTaskList({
             proId : this.userInfo.proIds[0], // 所属项目id
-            queryDate: this.currentCleanTaskName.date, // 查询时间
-            managerId: this.userInfo.id, // 保洁主管id    
-            taskType: 2 // 0-即时，1-专项,2-巡检
+            workerId: this.userInfo.id, // 保洁主管id
         }).then((res) => {
             this.isTimeoutContinue = true;
             let temporaryPollingTaskList;
@@ -602,17 +595,15 @@ export default {
     },
 
     // 查询巡检任务列表
-    getPollingTaskList (taskType) {
+    getPollingTaskList () {
         let data = {
             proId : this.userInfo.proIds[0], // 所属项目id
-            queryDate: this.currentCleanTaskName.date, // 查询时间
-            managerId: this.userInfo.id, // 保洁主管id    
-            taskType: taskType // 0-即时，1-专项,2-巡检
+            workerId: this.userInfo.id // 保洁主管id    
         };
         this.loadingShow = true;
         this.overlayShow = true;
         this.specialTaskList = [];
-        queryCleaningManageTaskList(data).then((res) => {
+        queryPollingTaskList(data).then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
