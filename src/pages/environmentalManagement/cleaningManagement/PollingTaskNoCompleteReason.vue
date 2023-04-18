@@ -39,7 +39,9 @@ export default {
   },
   data() {
     return {
-        reasonValue: ''
+        reasonValue: '',
+        loadingShow: false,
+        overlayShow: false
     }
   },
 
@@ -50,7 +52,7 @@ export default {
       this.gotoURL(() => {
         pushHistory();
         this.$router.push({
-          path: "/pollingTaskDetails",
+          path: "/pollingTaskDetails"
         })
       })
     }
@@ -94,6 +96,13 @@ export default {
         this.loadingShow = false;
         this.overlayShow = false;
         if (res && res.data.code == 200) {
+            this.$toast({
+              message: '提交成功',
+              type: 'sucess'
+            });
+            this.$router.push({
+              path: "/pollingTaskDetails"
+            })
           } else {
             this.$toast({
               message: `${res.data.msg}`,
