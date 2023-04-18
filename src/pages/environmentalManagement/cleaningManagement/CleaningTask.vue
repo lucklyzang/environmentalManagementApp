@@ -649,7 +649,6 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
-              console.log('巡检任务列表',res.data.data);
                 this.pollingTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0});
                 this.allPollingTaskList = this.pollingTaskList;
                 if (this.currentSelectValue == -1) {
@@ -789,7 +788,7 @@ export default {
                 this.currentSelectValue = -1;
                 this.selectValue = -1
             } else {
-                this.forthwithTaskList = this.forthwithTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                this.forthwithTaskList = this.allForthwithTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
                 item.areaImmediateName.indexOf(this.searchValue) != -1  ||  (this.extractSpaceMessage(item.spaces)).indexOf(this.searchValue) != -1 ||
                 item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
                 )
@@ -805,7 +804,7 @@ export default {
                 this.currentSelectValue = -1;
                 this.selectValue = -1
             } else {
-                this.specialTaskList = this.specialTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
+                this.specialTaskList = this.allSpecialTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
                 item.areaSpecialName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
                 )
             };
@@ -820,7 +819,7 @@ export default {
                 this.currentSelectValue = -1;
                 this.selectValue = -1
             } else {
-                this.pollingTaskList = this.pollingTaskList.filter((item) => { return item.settingName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 }
+                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.settingName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 }
                 )
             };
             if (this.pollingTaskList.length == 0) {

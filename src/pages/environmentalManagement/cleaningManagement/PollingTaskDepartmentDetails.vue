@@ -13,7 +13,7 @@
             </div>
             <div class="tabs-area">
                 <span v-for="(item,index) in tabsList" :class="{ 'spanStyle': currentTabIndex == index }" :key="index" @click="tabsClickEvent(item,index)">
-                    {{ `${item}(${currentTabIndex == 0 ? departmentCornerList.length : currentTabIndex == 1 ? qualifiedDepartmentCornerList.length : noQualifiedDepartmentCornerList.length})` }}
+                    {{ `${item}(${index == 0 ? departmentCornerList.length : index == 1 ? qualifiedDepartmentCornerList.length : noQualifiedDepartmentCornerList.length})` }}
                 </span>
             </div>
         </div>
