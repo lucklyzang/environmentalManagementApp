@@ -6,7 +6,6 @@
       <NavBar path="/pollingTaskDetails" title="巡检任务详情" />
     </div>
     <div class="content">
-        <van-empty v-show="emptyShow" description="暂无数据" />
         <div class="content-top">
             <div class="department-name">
                 <van-icon name="location" color="#101010" size="22" />
@@ -14,13 +13,34 @@
             </div>
             <div class="tabs-area">
                 <span v-for="(item,index) in tabsList" :class="{ 'spanStyle': currentTabIndex == index }" :key="index" @click="tabsClickEvent(item,index)">
-                    {{ item }}
+                    {{ `${item}(${currentTabIndex == 0 ? departmentCornerList.length : currentTabIndex == 1 ? qualifiedDepartmentCornerList.length : noQualifiedDepartmentCornerList.length})` }}
                 </span>
             </div>
         </div>
-        <div class="content-bottom">
+        <div class="content-bottom" v-if="currentTabIndex == 0">
+            <van-empty v-show="allEmptyShow" description="暂无数据" />
             <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in departmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
-                <div class="corner-name">{{ item.depName}}</div>
+                <div class="corner-name">{{ item.areaName }}</div>
+                <div class="corner-right">
+                    <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
+                    <van-icon name="arrow" color="#101010"  size="25" />
+                </div>
+            </div>
+        </div>
+        <div class="content-bottom" v-if="currentTabIndex == 1">
+            <van-empty v-show="qualifiedEmptyShow" description="暂无数据" />
+            <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in qualifiedDepartmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
+                <div class="corner-name">{{ item.areaName }}</div>
+                <div class="corner-right">
+                    <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
+                    <van-icon name="arrow" color="#101010"  size="25" />
+                </div>
+            </div>
+        </div>
+        <div class="content-bottom" v-if="currentTabIndex == 2">
+            <van-empty v-show="noQualifiedEmptyShow" description="暂无数据" />
+            <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in noQualifiedDepartmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
+                <div class="corner-name">{{ item.areaName }}</div>
                 <div class="corner-right">
                     <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
                     <van-icon name="arrow" color="#101010"  size="25" />
@@ -45,10 +65,15 @@ export default {
     return {
         currentTabIndex: 0,
         loadingShow: false,
-        emptyShow: false,
+        allEmptyShow: false,
+        qualifiedEmptyShow: false,
+        noQualifiedEmptyShow: false,
         overlayShow: false,
         tabsList: ['功能区','检查合格','检查不合格'],
-        departmentCornerList: []
+        allDepartmentCornerList: [],
+        departmentCornerList: [],
+        qualifiedDepartmentCornerList: [],
+        noQualifiedDepartmentCornerList: []
     }
   },
 
@@ -81,7 +106,29 @@ export default {
 
     //tab切换点击事件
     tabsClickEvent (item,index) {
-        this.currentTabIndex = index
+        this.currentTabIndex = index;
+        if (item == '功能区') {
+            this.departmentCornerList = this.allDepartmentCornerList
+        } else if (item == '检查合格') {
+            this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1})
+        } else if (item == '检查不合格') {
+            this.noQualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 2})
+        };
+        if (this.departmentCornerList.length == 0) {
+            this.allEmptyShow = true
+        } else {
+            this.allEmptyShow = false
+        };
+        if (this.qualifiedDepartmentCornerList.length == 0) {
+            this.qualifiedEmptyShow = true
+        } else {
+            this.qualifiedEmptyShow = false
+        };
+        if (this.noQualifiedDepartmentCornerList.length == 0) {
+            this.noQualifiedEmptyShow = true
+        } else {
+            this.noQualifiedEmptyShow = false
+        }
     },
 
     // 角落列表点击事件
@@ -94,9 +141,9 @@ export default {
     getDepartmentDetails () {
         this.loadingShow = true;
         this.overlayShow = true;
-        this.emptyShow = false;
+        this.allEmptyShow = false;
         departmentInto({
-            subId: this.cleanTaskDetails.id, // 子任务id
+            subId: this.pollingTaskDepartmentMessage.id, // 子任务id
             depId: this.pollingTaskDepartmentMessage.depId // 科室id
         })
         .then((res) => {
@@ -104,9 +151,12 @@ export default {
             this.overlayShow = false;
             if (res && res.data.code == 200) {
                 if (res.data.data.length > 0) {
-                    this.departmentCornerList = res.data.data
+                    this.allDepartmentCornerList = res.data.data;
+                    this.departmentCornerList = res.data.data;
+                    this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1});
+                    this.noQualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 2})
                 } else {
-                    this.emptyShow = true
+                    this.allEmptyShow = true
                 }
             } else {
             this.$toast({
@@ -129,10 +179,10 @@ export default {
     getDepartmentScanCode () {
         this.loadingShow = true;
         this.overlayShow = true;
-        this.emptyShow = false;
+        this.allEmptyShow = false;
         departmentScanCode({
-            scanTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
-            subId: this.cleanTaskDetails.id, // 子任务id
+            scanTime: this.$moment().format('HH:mm:ss'),
+            taskId: this.cleanTaskDetails.id, // 任务id
             depId: this.pollingTaskDepartmentMessage.depId // 科室id
         })
         .then((res) => {
@@ -140,9 +190,12 @@ export default {
             this.overlayShow = false;
             if (res && res.data.code == 200) {
                 if (res.data.data.length > 0) {
-                    this.departmentCornerList = res.data.data
+                    this.allDepartmentCornerList = res.data.data;
+                    this.departmentCornerList = res.data.data;
+                    this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1});
+                    this.noQualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 2})
                 } else {
-                    this.emptyShow = true
+                    this.allEmptyShow = true
                 }
             } else {
             this.$toast({
@@ -223,12 +276,6 @@ export default {
     flex-direction: column;
     background: #F8F8F8;
     height: 0;
-    /deep/ .van-empty {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-50%)
-    };
     .content-top {
         width: 98%;
         background: #fff;
@@ -271,6 +318,13 @@ export default {
     .content-bottom {
         flex: 1;
         overflow: auto;
+        position: relative;
+        /deep/ .van-empty {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%)
+        };
         .corner-list {
             height: 40px;
             background: #fff;

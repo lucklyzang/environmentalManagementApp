@@ -15,8 +15,8 @@
         @click-left="onClickLeft"
     >
         <template #right>
-            <van-icon v-show="cleanTaskDetails.state == 3 && cleanTaskDetails['ratioMap']['finish'] != cleanTaskDetails['ratioMap']['all']" name="scan" size="23" color="#101010" @click="scanQRCode" />
-            <van-icon v-show="cleanTaskDetails.state != 3" name="records" size="23" color="#101010" @click="editReasonEvent"/>
+            <van-icon v-show="cleanTaskDetails.state != 3" name="scan" size="23" color="#101010" @click="scanQRCode" />
+            <van-icon v-show="cleanTaskDetails.state == 3 && cleanTaskDetails['ratioMap']['finish'] != cleanTaskDetails['ratioMap']['all']" name="records" size="23" color="#101010" @click="editReasonEvent"/>
         </template>
     </van-nav-bar>
     </div>
@@ -30,8 +30,8 @@
               {{ item['depName'] }}
           </div>
           <div class="departments-name-right" @click="departmentClickEvent(item)">
-              <span>{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
-              <van-icon name="arrow" color="red" size="24" />
+              <span :class="{'departmentsNameRightStyle':item['flag'] == 1}">{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
+              <van-icon name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
           </div>
       </div>
     </div>
@@ -125,7 +125,7 @@ export default {
             let temporaryPollingTaskDepartmentMessage = this.pollingTaskDepartmentMessage;
             temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
             temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
-            temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == depId })[0]['depName'];
+            temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
             this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
             this.$router.push({
               path: "/pollingTaskDepartmentDetails"
@@ -151,11 +151,13 @@ export default {
       // 0-未扫码，1-已扫码
       if (item.flag == 1) {
         let temporaryPollingTaskDepartmentMessage = item;
-        temporaryPollingTaskDepartmentMessage['intoWay'] = 2;
-        this.storePollingTaskDepartmentMessage(item)
+        temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
+        this.storePollingTaskDepartmentMessage(item);
         this.$router.push({
           path: "/pollingTaskDepartmentDetails"
         })
+      } else {
+        this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'});
       }
     },
 
@@ -164,7 +166,7 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.emptyShow = false;
-      getSinglePollingTaskMessage()
+      getSinglePollingTaskMessage(this.cleanTaskDetails.id)
       .then((res) => {
         this.loadingShow = false;
         this.overlayShow = false;
@@ -172,10 +174,11 @@ export default {
             if (res.data.data.length == 0) {
               this.emptyShow = true
             } else {
-              this.departmentsNameList = res.data.data;
               for (let item of res.data.data) {
                 this.timeTabList.push(item['startTime'])
-              }
+              };
+              this.departmentsNameList = res.data.data;
+              this.currentDepartmentsNameList = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[0] })[0]['spaces']
             }
           } else {
             this.$toast({
@@ -262,17 +265,17 @@ export default {
         };
         .departments-name-right {
             font-size: 14px;
-            color: red;
             /deep/ .van-icon {
-                vertical-align: middle
+              vertical-align: middle
             };
             >span {
-                vertical-align: middle
+              color: red;
+              vertical-align: middle
+            };
+            .departmentsNameRightStyle {
+              color: #00c400 !important
             }
         };
-        .departmentsNameRightStyle {
-            color: green !important
-        }
     };
     .time-tab {
       width: 100%;

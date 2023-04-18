@@ -18,7 +18,7 @@
                 <div class="describe-name">
                     {{ key }}
                 </div>
-                <van-switch v-model="value" size="20px" active-color="#3dde3d" inactive-color="#cd0909" />
+                <van-switch v-model="inspectionStandardList[key]" size="20px" active-color="#3dde3d" inactive-color="#cd0909" />
             </div>
         </div>
       </div>
@@ -30,7 +30,7 @@
             <div class="image-list">
                 <div v-for="(item, index) in resultImgList" :key='index'>
                     <img :src="item" @click="enlareEvent(item)" />
-                    <van-icon name="cross" @click="issueDelete(index)" color="#101010" />
+                    <van-icon name="cross" @click="issueDelete(item,index)" color="#101010" />
                 </div>
                 <div @click="issueClickEvent">
                     <van-icon name="plus" size="30" color="#101010" />
@@ -98,6 +98,7 @@ export default {
     return {
       photoBox: false,
       overlayShow: false,
+      deleteInfoDialogShow: false,
       loadingShow: false,
       currentImgUrl: '',
       imgBoxShow: false,
@@ -151,59 +152,69 @@ export default {
       });
       this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
       this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
+      console.log('真项',this.inspectionStandardList)
     },
 
       // 提交事件
       async submitEvent () {
-        // 上传图片到阿里云服务器(已经上传到阿里云的不在上传)
-        let temporaryResultImgList = this.resultImgList.filter((item) => { return item.indexOf('https://') == -1 && item.indexOf('http://') == -1});
-        this.loadingText ='图片上传中...';
-        this.overlayShow = true;
-        this.loadingShow = true;
-        for (let imgI of temporaryResultImgList) {
-          if (Object.keys(this.timeMessage).length > 0) {
-          // 判断签名信息是否过期
-          if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
+        try {
+          // 上传图片到阿里云服务器(已经上传到阿里云的不在上传)
+          let temporaryResultImgList = this.resultImgList.filter((item) => { return item.indexOf('https://') == -1 && item.indexOf('http://') == -1});
+          this.loadingText ='图片上传中...';
+          this.overlayShow = true;
+          this.loadingShow = true;
+          for (let imgI of temporaryResultImgList) {
+            if (Object.keys(this.timeMessage).length > 0) {
+              // 判断签名信息是否过期
+              if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
+                await this.getSign();
+                await this.uploadImageToOss(imgI)
+              } else {
+                await this.uploadImageToOss(imgI)
+              }
+            } else {
               await this.getSign();
               await this.uploadImageToOss(imgI)
+            }
+          };
+          let temporaryPollingTaskDepartmentFunctionalZoneMessage = this.pollingTaskDepartmentFunctionalZoneMessage;
+          Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
+            if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item]) {
+              temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '合格'
+            } else {
+              temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '不合格'
+            }
+          });
+          this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
+          this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
+          let temporaryInfo = {
+            id: this.pollingTaskDepartmentFunctionalZoneMessage.id,
+            standards: this.inspectionStandardList,
+            images: this.imgOnlinePathArr,
+            remark: this.enterRemark,
+            checkResult: '',
+            reportTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+            subId: this.pollingTaskDepartmentFunctionalZoneMessage.subId,
+            taskId: this.pollingTaskDepartmentFunctionalZoneMessage.taskId
+          };
+          let temporaryArray = [];
+          Object.keys(this.inspectionStandardList).forEach((item) => {
+            temporaryArray.push(this.inspectionStandardList[item])
+          });
+          if (temporaryArray.some((item) => { return item == '不合格' })) {
+            temporaryInfo['checkResult'] = 2
           } else {
-              await this.uploadImageToOss(imgI)
-          }
-          } else {
-          await this.getSign();
-          await this.uploadImageToOss(imgI)
-          }
-        };
-        let temporaryPollingTaskDepartmentFunctionalZoneMessage = this.pollingTaskDepartmentFunctionalZoneMessage;
-        Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
-          if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item]) {
-            temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '合格'
-          } else {
-            temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '不合格'
-          }
-        });
-        this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
-        this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
-        let temporaryInfo = {
-          id: this.pollingTaskDepartmentFunctionalZoneMessage.id,
-          standards: this.inspectionStandardList,
-          images: this.imgOnlinePathArr,
-          remark: this.enterRemark,
-          checkResult: '',
-          reportTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
-          subId: this.pollingTaskDepartmentFunctionalZoneMessage.subId,
-          taskId: this.pollingTaskDepartmentFunctionalZoneMessage.taskId
-        };
-        let temporaryArray = [];
-        Object.keys(this.inspectionStandardList['standards']).forEach((item) => {
-          this.temporaryArray.push(this.inspectionStandardList['standards']['item'])
-        });
-        if (temporaryArray.some((item) => { return item == '不合格' })) {
-          temporaryInfo['checkResult'] = 2
-        } else {
-          temporaryInfo['checkResult'] = 1
-        };
-        this.checkConfirmSingle(temporaryInfo)
+            temporaryInfo['checkResult'] = 1
+          };
+          this.checkConfirmSingle(temporaryInfo)
+        } catch (err) {
+          this.$toast({
+            message: `${err}`,
+            type: 'fail'
+          });
+          this.overlayShow = false;
+          this.loadingShow = false
+        }  
       },
 
       // 返回事件
@@ -228,6 +239,8 @@ export default {
           return
         };  
         reader.addEventListener("load", function () {
+          _this.photoBox = false;
+          _this.overlayShow = false;
           // 压缩图片
           let result = reader.result;
           let img = new Image();
@@ -257,6 +270,8 @@ export default {
           return
         };  
         reader.addEventListener("load", function () {
+          _this.photoBox = false;
+          _this.overlayShow = false;
           // 压缩图片
           let result = reader.result;
           let img = new Image();
@@ -316,8 +331,8 @@ export default {
         const aliyunServerURL = this.ossMessage.host;
         // 存储路径(后台固定位置+随即数+文件格式)
         const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + base64ImgtoFile(filePath).name;
-        // 临时AccessKeyID0
-        const OSSAccessKeyId = this.ossMessage.accessid;
+        // 临时AccessKeyID
+        const OSSAccessKeyId = this.ossMessage.accessId;
         // 加密策略
         const policy = this.ossMessage.policy;
         // 签名
@@ -360,7 +375,8 @@ export default {
             this.loadingShow = false;
             this.overlayShow = false;
             if (res && res.data.code == 200) {
-               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'});
+              this.$Alert({message:"提交成功!",duration:2000,type:'success'});
+              setTimeout(() => { this.$router.push({path: "/pollingTaskDepartmentDetails"}) }, 2000)
             } else {
               this.imgOnlinePathArr = [];
               this.$toast({
@@ -393,7 +409,7 @@ export default {
       },
 
       // 结果照片删除提示
-      issueDelete (index) {
+      issueDelete (item,index) {
         this.deleteInfoDialogShow = true;
         this.imgIndex = index;
         this.imgDeleteUrl = item
@@ -426,6 +442,9 @@ export default {
 .page-box {
   height: 0;
   .content-wrapper();
+  /deep/ .van-loading {
+    z-index: 1000000 !important
+  };
   .img-dislog-box {
     /deep/ .van-dialog {
         .van-dialog__content {
@@ -441,7 +460,7 @@ export default {
     left: 0;
     bottom: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 100000;
     font-size: 0;
     > div {
       width: 100%;

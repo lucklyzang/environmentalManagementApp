@@ -134,12 +134,12 @@
             </div>
             <div class="task-list-box" v-if="currentCleanTaskName.num == 3">
                 <van-empty v-show="pollingEmptyShow" description="暂无数据" />  
-                <div class="task-list polling-list" v-show="!pollingEmptyShow" v-for="(item,index) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
+                <div class="task-list polling-list" v-show="!pollingEmptyShow" v-for="(item) in pollingTaskList" @click="pollingTaskDetailsEvent(item)" :key="item.pollingTaskName">
                     <div class="task-list-title">
                         <div class="task-list-title-left">
-                            {{ generateTaskNumber('巡检',index) }}
+                            {{ item.settingName }}
                         </div>
-                        <div class="task-list-title-right" :class="{'underwayStyle' : item.state == 2, 'completeStyle' : item.state == 3}">
+                        <div class="task-list-title-right" :class="{'noStartStyle': item.state == 1,'underwayStyle' : item.state == 2, 'completeStyle' : item.state == 3}">
                             {{ stausPollingTaskTransfer(item.state) }}
                         </div>
                     </div>
@@ -147,7 +147,7 @@
                         <div class="list-content-left">
                             <div>
                                 <span>开始时间:</span>
-                                <span>{{ (item.startTime).split(',') }}</span>
+                                <span>{{ disposeTime(item) }}</span>
                             </div>
                             <div>
                                 <span>巡检人:</span>
@@ -155,13 +155,13 @@
                             </div>
                         </div>
                         <div class="list-content-right">
-                            <van-circle v-model="item.complete" :rate="`${(Math.ceil(item['ratioMap']['finish']/item['ratioMap']['all']))*100}`" :speed="100" layer-color="#d0d0cc" 
+                            <van-circle v-model="item.complete" :rate="`${Math.ceil((item['ratioMap']['finish']/item['ratioMap']['all'])*100)}`" :speed="100" layer-color="#d0d0cc" 
                             :size="30" :stroke-width="100"
-                            :color="item['ratioMap']['finish'].finish == 0 ? '#d0d0cc' : '#1864FF'" 
+                            :color="item['ratioMap']['finish'] == 0 ? '#d0d0cc' : '#1864FF'" 
                             />
                             <div class="complete-text">
                                 <span>完成率:</span>
-                                <span>{{ `${(Math.ceil(item['ratioMap']['finish']/item['ratioMap']['all']))*100}%` }}</span>
+                                <span>{{ `${Math.ceil((item['ratioMap']['finish']/item['ratioMap']['all'])*100)}%` }}</span>
                             </div>
                         </div>
                     </div>
@@ -370,7 +370,25 @@ export default {
         this.getSpecialTaskList(1);
         this.getPollingTaskList()
     },
-    
+    // 处理巡检任务开始时间
+    disposeTime (item) {
+        if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
+            if (item.startTime.length > 0) {
+                if (item.state == 1 || item.state == 2) {
+                    let temporaryArr = [];
+                    for (let innerItem of item.startTime) {
+                        if (new Date().getTime() < new Date(this.getNowFormatDate(innerItem)).getTime()) {
+                            temporaryArr.push(innerItem)
+                        }
+                    };
+                    return temporaryArr.join(',')
+                } else {
+                    return item.startTime.join(',')
+                }
+            }
+        }
+    },
+
     // 任务状态转换(即时和专项)
     stausTransfer (num) {
         switch(num) {
@@ -398,6 +416,9 @@ export default {
     // 任务状态转换(巡检)
     stausPollingTaskTransfer (num) {
         switch(num) {
+            case -10:
+                return '任务未到开始时间'
+                break;
             case 1:
                 return '未开始'
                 break;
@@ -561,6 +582,23 @@ export default {
         })
     },
 
+    // 拼接完整时间
+    getNowFormatDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
     // 定时查询巡检任务列表(实时更新任务状态)
     timingGetPollingTaskList() {
         this.isTimeoutContinue = false;
@@ -580,9 +618,13 @@ export default {
                     for (let item of temporaryPollingTaskList) {
                         let currentIndex = this.pollingTaskList.indexOf(this.pollingTaskList.filter((innerItem) => { return innerItem.id == item.id})[0]);
                         if (currentIndex != -1) {
-                            // 已完成任务的状态不更改
-                            if (this.digitalCollectionList[currentIndex]['state'] != 3) {
-                                this.pollingTaskList[currentIndex]['state'] = item.state
+                            // 已完成和进行中的任务的状态不更改
+                            if (this.digitalCollectionList[currentIndex]['state'] != 2 && this.digitalCollectionList[currentIndex]['state'] != 3) {
+                                if (new Date().getTime() > new Date(this.getNowFormatDate(this.digitalCollectionList[currentIndex]['startTime'][0])).getTime()) {
+                                    this.pollingTaskList[currentIndex]['state'] = -10
+                                } else {
+                                    this.pollingTaskList[currentIndex]['state'] = 1
+                                }
                             }    
                         }
                     } 
@@ -602,11 +644,12 @@ export default {
         };
         this.loadingShow = true;
         this.overlayShow = true;
-        this.specialTaskList = [];
+        this.pollingTaskList = [];
         queryPollingTaskList(data).then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
 	      if (res && res.data.code == 200) {
+              console.log('巡检任务列表',res.data.data);
                 this.pollingTaskList = res.data.data.filter((item) => { return item.state != 7 && item.state != 0});
                 this.allPollingTaskList = this.pollingTaskList;
                 if (this.currentSelectValue == -1) {
@@ -777,8 +820,7 @@ export default {
                 this.currentSelectValue = -1;
                 this.selectValue = -1
             } else {
-                this.pollingTaskList = this.pollingTaskList.filter((item) => { return item.structureName.indexOf(this.searchValue) != -1 || item.depName.indexOf(this.searchValue) != -1 ||
-                item.areaSpecialName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 || item.managerName.indexOf(this.searchValue) != -1}
+                this.pollingTaskList = this.pollingTaskList.filter((item) => { return item.settingName.indexOf(this.searchValue) != -1 || item.workerName.indexOf(this.searchValue) != -1 }
                 )
             };
             if (this.pollingTaskList.length == 0) {
@@ -811,6 +853,8 @@ export default {
 
     // 巡检任务点击进入任务详情事件
     pollingTaskDetailsEvent(item,number) {
+        // 未到开始时间，不能进入任务
+        if (item.state == -10) { return };
         this.storeCleanTaskDetails(item);
         let temporaryMessage = this.cleanTaskDetails;
         temporaryMessage['num'] = number;
@@ -1002,6 +1046,9 @@ export default {
                         background: #BBBBBB;
                         color: #fff;
                         border-radius: 4px
+                    };
+                    .noStartStyle {
+                        background: #174E97 !important
                     };
                     .underwayStyle {
                         background: #289E8E !important

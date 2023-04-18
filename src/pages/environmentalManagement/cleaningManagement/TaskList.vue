@@ -142,7 +142,7 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="pollingCurrentRate" :rate="`${(Math.ceil(specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all))*100}`" :text="`${(Math.ceil(specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all))*100}%`" :speed="100" 
+                <van-circle v-model="pollingCurrentRate" :rate="`${Math.ceil((specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}`" :text="`${Math.ceil((specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`" :speed="100" 
                 layer-color="#d0d0cc" 
                 :color="specialCleaningTaskGlobalStatistics.finish == 0 ? '#d0d0cc' : '#1864FF'"
                 :size="45" 
@@ -290,36 +290,40 @@ export default {
         .then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
-          if (res && res.data.data) {
+          if (res.length == 2) {
             let [item1,item2] = res;
             if (item1) {
-              if (JSON.stringify(item1) == '{}') {
+              if (JSON.stringify(item1) == '{}' && JSON.stringify(item2) == '{}') {
                 this.emptyShow = true
               } else {
-                if (item1['0']) {
-                  this.forthwithTaskShow = true;
-                  this.forthwithCleaningTaskGlobalStatistics = item1['0'];
-                } else {
-                  this.forthwithTaskShow = false
-                };
-                if (item1['1']) {
-                  this.specialCleaningTaskGlobalStatistics = item1['1'];
-                  this.specialTaskShow = true
-                } else {
-                  this.specialTaskShow = false
-                }
+                if (JSON.stringify(item1) != '{}') {
+                  if (item1['0']) {
+                    this.forthwithTaskShow = true;
+                    this.forthwithCleaningTaskGlobalStatistics = item1['0'];
+                  } else {
+                    this.forthwithTaskShow = false
+                  };
+                  if (item1['1']) {
+                    this.specialCleaningTaskGlobalStatistics = item1['1'];
+                    this.specialTaskShow = true
+                  } else {
+                    this.specialTaskShow = false
+                  }
+                }  
               }
             };
             if (item2) {
-              if (JSON.stringify(item2) == '{}') {
+              if (JSON.stringify(item1) == '{}' && JSON.stringify(item2) == '{}') {
                 this.emptyShow = true
               } else {
-                if (item2) {
-                  this.pollingTaskGlobalStatistics = item2;
-                  this.pollingTaskShow = true
-                } else {
-                  this.pollingTaskShow = false
-                }
+                if (JSON.stringify(item2) != '{}') {
+                  if (item2) {
+                    this.pollingTaskGlobalStatistics = item2;
+                    this.pollingTaskShow = true
+                  } else {
+                    this.pollingTaskShow = false
+                  }
+                }  
               }
             }  
           }
@@ -343,6 +347,8 @@ export default {
           managerId: this.userInfo.id // 保洁主管id
         })
         .then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
           if (res && res.data.code == 200) {
             resolve(res.data.data)
           } else {
@@ -353,6 +359,8 @@ export default {
           }
         })
         .catch((err) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
           reject(err)
         })
       })  
@@ -364,8 +372,10 @@ export default {
         queryPollingTaskGlobalStatistics({
           proId : this.userInfo.proIds[0], // 所属项目id
           queryDate: this.getNowFormatDate(this.currentDayDate,'day'), // 查询时间
-          managerId: this.userInfo.id // 保洁主管id
+          workerId: this.userInfo.id // 保洁主管id
         }).then((res) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
           if (res && res.data.code == 200) {
             resolve(res.data.data)
           } else {
@@ -376,6 +386,8 @@ export default {
           }
         })
         .catch((err) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
           reject(err)
         })
       })
