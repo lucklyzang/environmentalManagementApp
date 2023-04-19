@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-        <div class="btn-box" @click="allExamineQualifiedEvent">全部检查合格</div>
+        <div class="btn-box" @click="allExamineQualifiedEvent" v-if="cleanTaskDetails.state != 3 && new Date().getTime() < new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime()">全部检查合格</div>
     </div>
   </div>
 </template>
@@ -131,10 +131,60 @@ export default {
         }
     },
 
+    // 拼接完整时间
+    getNowFormatDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
     // 角落列表点击事件
     cornerClickEvent (item,index) {
-        this.storePollingTaskDepartmentFunctionalZoneMessage(item);
-        this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
+        // 已完成的任务,已经扫码过的科室里面的功能区依然可以编辑
+        if (this.cleanTaskDetails.state == 3) {
+            // checkResult 检查结果，默认为0，1-合格，2-不合格
+            if (item.checkResult == 0) {
+                this.$toast({
+                    message: '该功能区所在科室的任务已超过规定完成的时间段,不能在提交该功能区',
+                    type: 'fail'
+                })
+            } else {
+                this.storePollingTaskDepartmentFunctionalZoneMessage(item);
+                this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
+            }   
+        } else {
+            // 已过时间段的任务功能区不能在点进去提交,可以编辑提交过的(最后一个时间点除外)
+            if (this.pollingTaskDepartmentMessage['currentTabIndex'] != this.pollingTaskDepartmentMessage['timeTabList'].length - 1) {
+                if (new Date().getTime() >= new Date(this.getNowFormatDate(this.pollingTaskDepartmentMessage['timeTabList'][this.pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime()) {
+                    // checkResult 检查结果，默认为0，1-合格，2-不合格
+                    if (item.checkResult == 0) {
+                        this.$toast({
+                            message: '该功能区所在科室的任务已超过规定完成的时间段,不能在提交该功能区',
+                            type: 'fail'
+                        })
+                    } else {
+                        this.storePollingTaskDepartmentFunctionalZoneMessage(item);
+                        this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
+                    }   
+                } else {
+                    this.storePollingTaskDepartmentFunctionalZoneMessage(item);
+                    this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
+                }
+            } else {
+                this.storePollingTaskDepartmentFunctionalZoneMessage(item);
+                this.$router.push({path: '/pollingTaskDepartmentCornerDetails'})
+            }
+        }
     },
 
     // 查询科室详情事件(科室点击)
@@ -223,7 +273,7 @@ export default {
             this.loadingShow = false;
             this.overlayShow = false;
             if (res && res.data.code == 200) {
-               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'});
+               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'})
             } else {
                 this.$toast({
                     message: `${res.data.msg}`,

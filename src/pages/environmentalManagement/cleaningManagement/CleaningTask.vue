@@ -139,7 +139,7 @@
                         <div class="task-list-title-left">
                             {{ item.settingName }}
                         </div>
-                        <div class="task-list-title-right" :class="{'noStartStyle': item.state == 1,'underwayStyle' : item.state == 2, 'completeStyle' : item.state == 3}">
+                        <div class="task-list-title-right" :class="{'forbidStyle':item.state == -10,'noStartStyle': item.state == 1,'underwayStyle' : item.state == 2, 'completeStyle' : item.state == 3}">
                             {{ stausPollingTaskTransfer(item.state) }}
                         </div>
                     </div>
@@ -336,7 +336,12 @@ export default {
                         }
                     };
                     if (this.itemNameIndex == 3) {
-                        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
+                        // 未到开始时间也算未开始
+                        if (this.currentSelectValue == 1) {
+                            this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == -10 })
+                        } else {
+                            this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                        };
                         if (this.pollingTaskList.length == 0) {
                             this.pollingEmptyShow = true
                         } else {
@@ -370,17 +375,27 @@ export default {
         this.getSpecialTaskList(1);
         this.getPollingTaskList()
     },
+
     // 处理巡检任务开始时间
     disposeTime (item) {
         if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
             if (item.startTime.length > 0) {
+                // 未开始和进行中的任务,开始时间只显示当前检查时间段的开始时间
                 if (item.state == 1 || item.state == 2) {
                     let temporaryArr = [];
-                    for (let innerItem of item.startTime) {
-                        if (new Date().getTime() < new Date(this.getNowFormatDate(innerItem)).getTime()) {
-                            temporaryArr.push(innerItem)
+                    // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
+                    if (new Date(new Date().getTime() >= this.getNowFormatDate(item.startTime[item.startTime.length-1])).getTime()) {
+                        temporaryArr.push(item.startTime[item.startTime.length-1])
+                    } else {        
+                        for (let i=0, len = item.startTime.length; i<len; i++) {
+                            if (i > 0) {
+                                if (new Date().getTime() < new Date(this.getNowFormatDate(item.startTime[i])).getTime()) {
+                                    temporaryArr.push(item.startTime[i-1])
+                                    break
+                                }
+                            }    
                         }
-                    };
+                    };    
                     return temporaryArr.join(',')
                 } else {
                     return item.startTime.join(',')
@@ -618,13 +633,22 @@ export default {
                     for (let item of temporaryPollingTaskList) {
                         let currentIndex = this.pollingTaskList.indexOf(this.pollingTaskList.filter((innerItem) => { return innerItem.id == item.id})[0]);
                         if (currentIndex != -1) {
-                            // 已完成和进行中的任务的状态不更改
-                            if (this.digitalCollectionList[currentIndex]['state'] != 2 && this.digitalCollectionList[currentIndex]['state'] != 3) {
-                                if (new Date().getTime() > new Date(this.getNowFormatDate(this.digitalCollectionList[currentIndex]['startTime'][0])).getTime()) {
-                                    this.pollingTaskList[currentIndex]['state'] = -10
+                            // 已完成任务的状态不更改
+                            if (this.pollingTaskList[currentIndex]['state'] != 3) {
+                                // 进行中的任务不重新定义状态
+                                if (this.pollingTaskList[currentIndex]['state'] != 2) {
+                                    if (new Date().getTime() < new Date(this.getNowFormatDate(this.pollingTaskList[currentIndex]['startTime'][0])).getTime()) {
+                                        this.pollingTaskList[currentIndex]['state'] = -10
+                                    } else {
+                                        this.pollingTaskList[currentIndex]['state'] = 1
+                                    }
                                 } else {
-                                    this.pollingTaskList[currentIndex]['state'] = 1
-                                }
+                                    this.pollingTaskList[currentIndex]['state'] = item.state
+                                } 
+                            };
+                            // 已完成和未到开始时间的任务显示所有开始时间集合
+                            if (this.pollingTaskList[currentIndex]['state'] != 3 && this.pollingTaskList[currentIndex]['state'] != -10) {
+                                this.pollingTaskList[currentIndex]['startTime'] = item['startTime'];
                             }    
                         }
                     } 
@@ -661,7 +685,12 @@ export default {
                     return
                 };
                 if (this.itemNameIndex == 3) {
-                    this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                    // 未到开始时间也算未开始
+                    if (this.currentSelectValue == 1) {
+                        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue || item.state == -10 })
+                    } else {
+                        this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue})
+                    }
                 };
                 if (this.pollingTaskList.length == 0) {
                     this.pollingEmptyShow = true
@@ -770,7 +799,7 @@ export default {
                 }
             };
             if (this.itemNameIndex == 3) {
-                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == currentSelectValue});
+                this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue});
                 if (this.pollingTaskList.length == 0) {
                     this.pollingEmptyShow = true
                 } else {
@@ -782,6 +811,7 @@ export default {
 
     // 搜索事件
     searchEvent () {
+        this.selectValue = -1;
         if (this.itemNameIndex == 1) {
             if (!this.searchValue) {
                 this.forthwithTaskList = this.allForthwithTaskList;
@@ -853,7 +883,13 @@ export default {
     // 巡检任务点击进入任务详情事件
     pollingTaskDetailsEvent(item,number) {
         // 未到开始时间，不能进入任务
-        if (item.state == -10) { return };
+        if (item.state == -10) {
+            this.$toast({
+                message: '还未到达开始时间,请稍候再试',
+                type: 'fail'
+            }); 
+            return
+        };
         this.storeCleanTaskDetails(item);
         let temporaryMessage = this.cleanTaskDetails;
         temporaryMessage['num'] = number;
@@ -1046,6 +1082,11 @@ export default {
                         color: #fff;
                         border-radius: 4px
                     };
+                    .forbidStyle {
+                        color: #3B9DF9 !important;
+                        background: #fff !important;
+                        width: auto !important;
+                    };
                     .noStartStyle {
                         background: #174E97 !important
                     };
@@ -1092,7 +1133,10 @@ export default {
         .polling-list {
             .task-list-title {
                 .task-list-title-left {
-                    color: #E86F50
+                    color: #174E97 !important;
+                    flex: 1;
+                    word-break: break-all;
+                    margin-right: 4px
                 };
                 .task-list-title-right {
                     width: 61px;
@@ -1115,6 +1159,7 @@ export default {
                     width: 65%;
                     >div {
                         word-break: break-all;
+                        line-height: 18px;
                         >span {
                         font-size: 14px;
                             &:first-child  {

@@ -87,6 +87,7 @@ import NavBar from "@/components/NavBar";
 import {getAliyunSign} from '@/api/login.js'
 import { checkConfirmSingle } from "@/api/environmentalManagement.js";
 import axios from 'axios';
+import _ from 'lodash';
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress, base64ImgtoFile } from "@/common/js/utils";
 export default {
@@ -126,8 +127,12 @@ export default {
     this.disposeStandardsData();
     if (this.pollingTaskDepartmentFunctionalZoneMessage.images != null) {
       if (this.pollingTaskDepartmentFunctionalZoneMessage.images.length > 0) {
-        this.resultImgList = this.pollingTaskDepartmentFunctionalZoneMessage.images
+        this.resultImgList = this.pollingTaskDepartmentFunctionalZoneMessage.images;
+        this.existOnlineImgPath = this.pollingTaskDepartmentFunctionalZoneMessage.images
       }
+    };
+    if (this.pollingTaskDepartmentFunctionalZoneMessage.remark != null) {
+      this.enterRemark = this.pollingTaskDepartmentFunctionalZoneMessage.remark
     }  
   },
 
@@ -151,8 +156,7 @@ export default {
         }
       });
       this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
-      this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
-      console.log('真项',this.inspectionStandardList)
+      this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards
     },
 
       // 提交事件
@@ -160,6 +164,7 @@ export default {
         try {
           // 上传图片到阿里云服务器(已经上传到阿里云的不在上传)
           let temporaryResultImgList = this.resultImgList.filter((item) => { return item.indexOf('https://') == -1 && item.indexOf('http://') == -1});
+          let onlineResultImgList = this.resultImgList.filter((item) => { return item.indexOf('https://') != -1 || item.indexOf('http://') != -1});
           this.loadingText ='图片上传中...';
           this.overlayShow = true;
           this.loadingShow = true;
@@ -177,7 +182,7 @@ export default {
               await this.uploadImageToOss(imgI)
             }
           };
-          let temporaryPollingTaskDepartmentFunctionalZoneMessage = this.pollingTaskDepartmentFunctionalZoneMessage;
+          let temporaryPollingTaskDepartmentFunctionalZoneMessage =  _.cloneDeep(this.pollingTaskDepartmentFunctionalZoneMessage);
           Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
             if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item]) {
               temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '合格'
@@ -185,12 +190,10 @@ export default {
               temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '不合格'
             }
           });
-          this.storePollingTaskDepartmentFunctionalZoneMessage(temporaryPollingTaskDepartmentFunctionalZoneMessage);
-          this.inspectionStandardList = this.pollingTaskDepartmentFunctionalZoneMessage.standards;
           let temporaryInfo = {
             id: this.pollingTaskDepartmentFunctionalZoneMessage.id,
-            standards: this.inspectionStandardList,
-            images: this.imgOnlinePathArr,
+            standards: temporaryPollingTaskDepartmentFunctionalZoneMessage.standards,
+            images: this.imgOnlinePathArr.concat(onlineResultImgList),
             remark: this.enterRemark,
             checkResult: '',
             reportTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -198,8 +201,8 @@ export default {
             taskId: this.pollingTaskDepartmentFunctionalZoneMessage.taskId
           };
           let temporaryArray = [];
-          Object.keys(this.inspectionStandardList).forEach((item) => {
-            temporaryArray.push(this.inspectionStandardList[item])
+          Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
+            temporaryArray.push(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item])
           });
           if (temporaryArray.some((item) => { return item == '不合格' })) {
             temporaryInfo['checkResult'] = 2

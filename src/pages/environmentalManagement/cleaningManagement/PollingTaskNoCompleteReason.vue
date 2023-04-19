@@ -96,10 +96,7 @@ export default {
         this.loadingShow = false;
         this.overlayShow = false;
         if (res && res.data.code == 200) {
-            this.$toast({
-              message: '提交成功',
-              type: 'sucess'
-            });
+            this.$Alert({message:"提交成功!",duration:3000,type:'success'});
             this.$router.push({
               path: "/pollingTaskDetails"
             })

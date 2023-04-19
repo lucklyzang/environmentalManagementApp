@@ -29,9 +29,13 @@
           <div class="departments-name-left">
               {{ item['depName'] }}
           </div>
-          <div class="departments-name-right" @click="departmentClickEvent(item)">
-              <span :class="{'departmentsNameRightStyle':item['flag'] == 1}">{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
-              <van-icon name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
+          <div class="departments-name-right" @click="departmentClickEvent(item)" v-if="cleanTaskDetails.state != 3">
+            <span :class="{'departmentsNameRightStyle':item['flag'] == 1,'noScanStyle': (new Date().getTime() >= new Date(getNowFormatDate(timeTabList[currentTabIndex+1])).getTime()) && currentTabIndex != timeTabList.length - 1 && item['flag'] == 0}">{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
+            <van-icon v-show="(new Date().getTime() < new Date(getNowFormatDate(timeTabList[currentTabIndex+1])).getTime()) || currentTabIndex == timeTabList.length - 1 || item['flag'] == 1" name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
+          </div>
+          <div class="departments-name-right" @click="departmentClickEvent(item)" v-else>
+            <span :class="{'departmentsNameRightStyle':item['flag'] == 1,'noScanStyle': item['flag'] == 0}">{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
+            <van-icon v-if="item['flag'] == 1" name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
           </div>
       </div>
     </div>
@@ -105,7 +109,7 @@ export default {
     },
 
     // 扫描二维码方法
-    scanQRCode (item) {
+    scanQRCode () {
       window.android.scanQRcode()
     },
 
@@ -122,14 +126,59 @@ export default {
         let codeData = code.split('|');
         try {
           if (codeData.length > 0) {
-            let temporaryPollingTaskDepartmentMessage = this.pollingTaskDepartmentMessage;
-            temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
-            temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
-            temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
-            this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
-            this.$router.push({
-              path: "/pollingTaskDepartmentDetails"
-            })
+            // 判断该扫描科室是否已经扫过码0-未扫码,1-已扫码
+            if (this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['flag'] == 1) {
+              let temporaryPollingTaskDepartmentMessage = this.pollingTaskDepartmentMessage;
+              temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
+              temporaryPollingTaskDepartmentMessage['timeTabList'] = this.timeTabList;
+              temporaryPollingTaskDepartmentMessage['currentTabIndex'] = this.currentTabIndex;
+              temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
+              temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
+              this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+              this.$router.push({
+                path: "/pollingTaskDepartmentDetails"
+              })
+            } else if (this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['flag'] == 0) {
+              // 未到开始时间也不能扫码检查未到开始时间的任务
+              if (new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex])).getTime() > new Date().getTime()) {
+                this.$toast({
+                  message: '该任务未到开始时间',
+                  type: 'fail'
+                })
+              } else {
+                // 未扫码的科室如果错过当前时间段,则不能在扫码检查已过时间段的任务(最后一个时间段除外)
+                if (this.currentTabIndex != this.timeTabList.length - 1) {
+                  if (new Date().getTime() >= new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime()) {
+                    this.$toast({
+                      message: '该扫描科室所在的任务已超过规定完成的时间段,不能在扫码检查已过时间段的任务',
+                      type: 'fail'
+                    })
+                  } else {
+                    let temporaryPollingTaskDepartmentMessage = this.pollingTaskDepartmentMessage;
+                    temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
+                    temporaryPollingTaskDepartmentMessage['timeTabList'] = this.timeTabList;
+                    temporaryPollingTaskDepartmentMessage['currentTabIndex'] = this.currentTabIndex;
+                    temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
+                    temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
+                    this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+                    this.$router.push({
+                      path: "/pollingTaskDepartmentDetails"
+                    })
+                  }
+                } else {
+                  let temporaryPollingTaskDepartmentMessage = this.pollingTaskDepartmentMessage;
+                  temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
+                  temporaryPollingTaskDepartmentMessage['timeTabList'] = this.timeTabList;
+                  temporaryPollingTaskDepartmentMessage['currentTabIndex'] = this.currentTabIndex;
+                  temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
+                  temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
+                  this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+                  this.$router.push({
+                    path: "/pollingTaskDepartmentDetails"
+                  })
+                }
+              }
+            }
           }
         } catch (err) {
           this.$toast({
@@ -146,18 +195,39 @@ export default {
       }
     },
 
+    // 拼接完整时间
+    getNowFormatDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
     // 科室点击事件
     departmentClickEvent (item) {
       // 0-未扫码，1-已扫码
       if (item.flag == 1) {
         let temporaryPollingTaskDepartmentMessage = item;
         temporaryPollingTaskDepartmentMessage['intoWay'] = 1;
+        temporaryPollingTaskDepartmentMessage['timeTabList'] = this.timeTabList;
+        temporaryPollingTaskDepartmentMessage['currentTabIndex'] = this.currentTabIndex;
         this.storePollingTaskDepartmentMessage(item);
         this.$router.push({
           path: "/pollingTaskDepartmentDetails"
         })
       } else {
-        this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'});
+        if (this.cleanTaskDetails.state != 3 && new Date().getTime() < new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime()) {
+          this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
+        }
       }
     },
 
@@ -274,6 +344,10 @@ export default {
             };
             .departmentsNameRightStyle {
               color: #00c400 !important
+            };
+            .noScanStyle {
+              color: #969799 !important;
+              margin-right: 26px !important
             }
         };
     };

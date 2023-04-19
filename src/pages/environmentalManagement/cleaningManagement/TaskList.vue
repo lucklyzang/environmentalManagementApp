@@ -142,9 +142,9 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="pollingCurrentRate" :rate="`${Math.ceil((specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}`" :text="`${Math.ceil((specialCleaningTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`" :speed="100" 
+                <van-circle v-model="pollingCurrentRate" :rate="`${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}`" :text="`${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`" :speed="100" 
                 layer-color="#d0d0cc" 
-                :color="specialCleaningTaskGlobalStatistics.finish == 0 ? '#d0d0cc' : '#1864FF'"
+                :color="pollingTaskGlobalStatistics.finish == 0 ? '#d0d0cc' : '#1864FF'"
                 :size="45" 
                 :stroke-width="140" 
                 />

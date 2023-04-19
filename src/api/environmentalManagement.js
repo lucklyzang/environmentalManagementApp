@@ -169,9 +169,9 @@ export function checkConfirmSingle(data) {
 }
 
 // 检查确认所有检查项(巡检任务)
-export function checkConfirmAll(subId) {
+export function checkConfirmAll(taskId,subId) {
     return request({
-        url: `clean/xjResult/ribbon/all/confirm/${subId}`,
+        url: `clean/xjResult/ribbon/all/confirm/${taskId}/${subId}`,
         method: 'put'
     })
 }
