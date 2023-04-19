@@ -343,7 +343,8 @@ export default {
                             this.pollingTaskList = this.allPollingTaskList.filter((item) => { return item.state == this.currentSelectValue})
                         };
                         if (this.pollingTaskList.length == 0) {
-                            this.pollingEmptyShow = true
+                            this.pollingEmptyShow = true;
+                            console.log('箱子',this.pollingTaskList,this.currentCleanTaskName.num);
                         } else {
                             this.pollingEmptyShow = false
                         }
@@ -384,7 +385,7 @@ export default {
                 if (item.state == 1 || item.state == 2) {
                     let temporaryArr = [];
                     // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
-                    if (new Date(new Date().getTime() >= this.getNowFormatDate(item.startTime[item.startTime.length-1])).getTime()) {
+                    if (new Date().getTime() >= new Date(this.getNowFormatDate(item.startTime[item.startTime.length-1])).getTime()) {
                         temporaryArr.push(item.startTime[item.startTime.length-1])
                     } else {        
                         for (let i=0, len = item.startTime.length; i<len; i++) {
@@ -1046,6 +1047,7 @@ export default {
         overflow: auto;
         .task-list-box {
             height: 100%;
+            min-height: 600px;
             overflow: auto;
             position: relative;
             /deep/ .van-empty {

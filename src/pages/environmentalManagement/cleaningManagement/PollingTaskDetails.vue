@@ -225,8 +225,14 @@ export default {
           path: "/pollingTaskDepartmentDetails"
         })
       } else {
-        if (this.cleanTaskDetails.state != 3 && new Date().getTime() < new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime()) {
-          this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
+        if (this.cleanTaskDetails.state != 3 && this.currentTabIndex == this.timeTabList.length - 1) {
+          if (new Date().getTime() >= new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex-1])).getTime()) {
+            this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
+          }
+        } else {
+          if (this.cleanTaskDetails.state != 3 && new Date().getTime() < new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime()) {
+            this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
+          }
         }
       }
     },
