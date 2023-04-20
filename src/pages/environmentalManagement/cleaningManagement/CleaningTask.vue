@@ -185,6 +185,7 @@ export default {
   data() {
     return {
       loadingShow: false,
+      currentShowTime: '',
       overlayShow: false,
       forthwithEmptyShow: false,
       isTimeoutContinue: true,
@@ -884,7 +885,7 @@ export default {
     // 巡检任务点击进入任务详情事件
     pollingTaskDetailsEvent(item,number) {
         // 未到开始时间，不能进入任务
-        if (item.state == -10) {
+        if (new Date().getTime() < new Date(this.getNowFormatDate(item['startTime'][0])).getTime()) {
             this.$toast({
                 message: '还未到达开始时间,请稍候再试',
                 type: 'fail'

@@ -47,7 +47,18 @@
                 </div>
             </div>
         </div>
-        <div class="btn-box" @click="allExamineQualifiedEvent" v-if="cleanTaskDetails.state != 3 && new Date().getTime() < new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime()">全部检查合格</div>
+        <div v-if="pollingTaskDepartmentMessage['currentTabIndex'] == pollingTaskDepartmentMessage['timeTabList'].length - 1">
+             <div class="btn-box" @click="allExamineQualifiedEvent"
+                v-if="cleanTaskDetails.state != 3 && (new Date().getTime() >= new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['timeTabList'].length-1])).getTime())">
+                    全部检查合格
+            </div>
+        </div>
+        <div v-else>
+             <div class="btn-box" @click="allExamineQualifiedEvent"
+                v-if="cleanTaskDetails.state != 3 && (new Date().getTime() < new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime())">
+                    全部检查合格
+            </div>
+        </div>
     </div>
   </div>
 </template>
@@ -88,6 +99,7 @@ export default {
         })
       })
     };
+    console.log('sas1',this.pollingTaskDepartmentMessage);
     if (this.pollingTaskDepartmentMessage.intoWay == 1) {
         this.getDepartmentScanCode()
     } else if (this.pollingTaskDepartmentMessage.intoWay == 2) {
@@ -148,7 +160,7 @@ export default {
       return currentdate + ' ' + hourTime
     },
 
-    // 角落列表点击事件
+    // 功能区列表点击事件
     cornerClickEvent (item,index) {
         // 已完成的任务,已经扫码过的科室里面的功能区依然可以编辑
         if (this.cleanTaskDetails.state == 3) {
@@ -232,6 +244,7 @@ export default {
         this.allEmptyShow = false;
         departmentScanCode({
             scanTime: this.$moment().format('HH:mm:ss'),
+            subId: this.pollingTaskDepartmentMessage.id,
             taskId: this.cleanTaskDetails.id, // 任务id
             depId: this.pollingTaskDepartmentMessage.depId // 科室id
         })
@@ -273,7 +286,12 @@ export default {
             this.loadingShow = false;
             this.overlayShow = false;
             if (res && res.data.code == 200) {
-               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'})
+               this.$Alert({message:"全部提交成功!",duration:3000,type:'success'});
+               if (this.pollingTaskDepartmentMessage.intoWay == 1) {
+                    this.getDepartmentScanCode()
+                } else if (this.pollingTaskDepartmentMessage.intoWay == 2) {
+                    this.getDepartmentDetails()
+                }
             } else {
                 this.$toast({
                     message: `${res.data.msg}`,

@@ -183,6 +183,15 @@ export default {
             }
           };
           let temporaryPollingTaskDepartmentFunctionalZoneMessage =  _.cloneDeep(this.pollingTaskDepartmentFunctionalZoneMessage);
+          if (!temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']) {
+            this.$toast({
+              message: '功能区检查标准不能为空',
+              type: 'fail'
+            });
+            this.overlayShow = false;
+            this.loadingShow = false;
+            return
+          };
           Object.keys(temporaryPollingTaskDepartmentFunctionalZoneMessage['standards']).forEach((item) => {
             if (temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item]) {
               temporaryPollingTaskDepartmentFunctionalZoneMessage['standards'][item] = '合格'
