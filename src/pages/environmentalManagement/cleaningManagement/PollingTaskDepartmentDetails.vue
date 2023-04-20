@@ -281,7 +281,7 @@ export default {
     allExamineQualifiedEvent () {
         this.loadingShow = true;
         this.overlayShow = true;
-        checkConfirmAll(this.departmentCornerList[0]['taskId'],this.departmentCornerList[0]['subId'])
+        checkConfirmAll({taskId:this.departmentCornerList[0]['taskId'],subId:this.departmentCornerList[0]['subId'],depId:this.pollingTaskDepartmentMessage.depId})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
