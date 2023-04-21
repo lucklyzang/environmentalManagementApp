@@ -361,7 +361,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(['storeCurrentCleanTaskName','storeCleanTaskDetails']),
+    ...mapMutations(['storeCurrentCleanTaskName','storeCleanTaskDetails','storePollingTaskCurrentShowTime']),
     onClickLeft() {
       this.$router.push({ path: "/cleanTaskList"})
     },
@@ -402,6 +402,29 @@ export default {
                 } else {
                     return item.startTime.join(',')
                 }
+            }
+        }
+    },
+
+    // 处理巡检任务开始时间
+    disposeTimeTwo (item) {
+        if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
+            if (item.startTime.length > 0) {
+                let temporaryArr = [];
+                // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
+                if (new Date().getTime() >= new Date(this.getNowFormatDate(item.startTime[item.startTime.length-1])).getTime()) {
+                    temporaryArr.push(item.startTime[item.startTime.length-1])
+                } else {        
+                    for (let i=0, len = item.startTime.length; i<len; i++) {
+                        if (i > 0) {
+                            if (new Date().getTime() < new Date(this.getNowFormatDate(item.startTime[i])).getTime()) {
+                                temporaryArr.push(item.startTime[i-1])
+                                break
+                            }
+                        }    
+                    }
+                };    
+                return temporaryArr.join(',')
             }
         }
     },
@@ -885,18 +908,22 @@ export default {
     // 巡检任务点击进入任务详情事件
     pollingTaskDetailsEvent(item,number) {
         // 未到开始时间，不能进入任务
-        if (new Date().getTime() < new Date(this.getNowFormatDate(item['startTime'][0])).getTime()) {
-            this.$toast({
-                message: '还未到达开始时间,请稍候再试',
-                type: 'fail'
-            }); 
-            return
-        };
+        if ( item.state != 3) {
+            if (new Date().getTime() < new Date(this.getNowFormatDate(item['startTime'][0])).getTime()) {
+                this.$toast({
+                    message: '还未到达开始时间,请稍候再试',
+                    type: 'fail'
+                }); 
+                return
+            }
+        };    
         this.storeCleanTaskDetails(item);
         let temporaryMessage = this.cleanTaskDetails;
         temporaryMessage['num'] = number;
         temporaryMessage['selectValue'] = this.selectValue;
         this.storeCleanTaskDetails(temporaryMessage);
+        // 保存当前任务显示时间
+        this.storePollingTaskCurrentShowTime(this.disposeTimeTwo(item));
         this.$router.push({path: '/pollingTaskDetails'})
     }
   }

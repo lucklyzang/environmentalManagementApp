@@ -36,7 +36,7 @@
             </div>
             <div v-else>
               <span :class="{'departmentsNameRightStyle':item['flag'] == 1,'noScanStyle': (new Date().getTime() >= new Date(getNowFormatDate(timeTabList[currentTabIndex+1])).getTime() || new Date(getNowFormatDate(timeTabList[currentTabIndex])).getTime() > new Date().getTime()) && item['flag'] == 0}">{{ item['flag'] == 0 ? '未扫码' : '已扫码' }}</span>
-              <van-icon v-show="(new Date().getTime() < new Date(getNowFormatDate(timeTabList[currentTabIndex+1])).getTime() && new Date(getNowFormatDate(timeTabList[currentTabIndex])).getTime() < new Date().getTime()) || item['flag'] == 1" name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
+              <van-icon v-show="(new Date().getTime() < new Date(getNowFormatDate(timeTabList[currentTabIndex+1])).getTime() && new Date(getNowFormatDate(timeTabList[currentTabIndex])).getTime() <= new Date().getTime()) || item['flag'] == 1" name="arrow" :color="item['flag'] == 0 ? 'red':'#00c400'" size="24" />
             </div>
           </div>
           <div class="departments-name-right" @click="departmentClickEvent(item)" v-else>
@@ -93,11 +93,11 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","pollingTaskDepartmentMessage","cleanTaskDetails"]),
+    ...mapGetters(["userInfo","pollingTaskDepartmentMessage","cleanTaskDetails","pollingTaskCurrentShowTime"]),
   },
 
   methods: {
-    ...mapMutations(['storePollingTaskDepartmentMessage']),
+    ...mapMutations(['storePollingTaskDepartmentMessage',"storePollingTaskCurrentShowTime"]),
     onClickLeft() {
       this.$router.push({ path: "/cleaningTask"})
     },
@@ -144,6 +144,7 @@ export default {
               temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
               temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
               this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+              this.storePollingTaskCurrentShowTime(this.timeTabList[this.currentTabIndex]);
               this.$router.push({
                 path: "/pollingTaskDepartmentDetails"
               })
@@ -171,6 +172,7 @@ export default {
                     temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
                     temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
                     this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+                    this.storePollingTaskCurrentShowTime(this.timeTabList[this.currentTabIndex]);
                     this.$router.push({
                       path: "/pollingTaskDepartmentDetails"
                     })
@@ -184,6 +186,7 @@ export default {
                   temporaryPollingTaskDepartmentMessage['depId'] = codeData[0];
                   temporaryPollingTaskDepartmentMessage['depName'] = this.currentDepartmentsNameList.filter((innerItem) => { return innerItem['depId'] == codeData[0] })[0]['depName'];
                   this.storePollingTaskDepartmentMessage(temporaryPollingTaskDepartmentMessage);
+                  this.storePollingTaskCurrentShowTime(this.timeTabList[this.currentTabIndex]);
                   this.$router.push({
                     path: "/pollingTaskDepartmentDetails"
                   })
@@ -233,6 +236,7 @@ export default {
         temporaryPollingTaskDepartmentMessage['timeTabList'] = this.timeTabList;
         temporaryPollingTaskDepartmentMessage['currentTabIndex'] = this.currentTabIndex;
         this.storePollingTaskDepartmentMessage(item);
+        this.storePollingTaskCurrentShowTime(this.timeTabList[this.currentTabIndex]);
         this.$router.push({
           path: "/pollingTaskDepartmentDetails"
         })
@@ -243,7 +247,7 @@ export default {
               this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
             }
           } else {
-            if (new Date().getTime() < new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime() && new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex])).getTime() < new Date().getTime()) {
+            if (new Date().getTime() < new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex+1])).getTime() && new Date(this.getNowFormatDate(this.timeTabList[this.currentTabIndex])).getTime() <= new Date().getTime()) {
               this.$Alert({message:"请扫描科室二维码!",duration:2000,type:'fail'})
             }
           }
@@ -270,8 +274,11 @@ export default {
               // 后台返回的时间列表不一定是升序排列,此处将时间列表统一做升序处理
               this.timeTabList = arrDateTimeSort(this.timeTabList);
               this.departmentsNameList = res.data.data;
-              this.currentDepartmentsNameList = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[0] })[0]['spaces'];
-              this.subId = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[0]})[0]['id']
+              // 回显进入该页面之前选中的时间
+              this.currentTabIndex = this.timeTabList.findIndex((item) => { return item == this.pollingTaskCurrentShowTime});
+              this.currentDepartmentsNameList = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[this.currentTabIndex] })[0]['spaces'];
+              this.subId = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[this.currentTabIndex]})[0]['id'];
+              console.log('验证',this.pollingTaskCurrentShowTime,this.currentTabIndex,this.subId);
             }
           } else {
             this.$toast({

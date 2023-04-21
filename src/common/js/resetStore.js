@@ -25,6 +25,7 @@ export function getDefaultEnvironmentManagementState() {
        storageForthwithTaskMessage: [],
        storageSpecialTaskMessage: [],
        pollingTaskDepartmentMessage: {},
-       pollingTaskDepartmentFunctionalZoneMessage: {}
+       pollingTaskDepartmentFunctionalZoneMessage: {},
+       pollingTaskCurrentShowTime: ''
     }
 };

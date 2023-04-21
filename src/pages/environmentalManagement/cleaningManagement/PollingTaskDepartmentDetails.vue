@@ -55,7 +55,7 @@
         </div>
         <div v-else>
              <div class="btn-box" @click="allExamineQualifiedEvent"
-                v-if="cleanTaskDetails.state != 3 && (new Date().getTime() < new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime())">
+                v-if="cleanTaskDetails.state != 3 && (new Date().getTime() < new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']+1])).getTime() && new Date(getNowFormatDate(pollingTaskDepartmentMessage['timeTabList'][pollingTaskDepartmentMessage['currentTabIndex']])).getTime() <= new Date().getTime())">
                     全部检查合格
             </div>
         </div>
@@ -167,7 +167,7 @@ export default {
             // checkResult 检查结果，默认为0，1-合格，2-不合格
             if (item.checkResult == 0) {
                 this.$toast({
-                    message: '该功能区所在科室的任务已超过规定完成的时间段,不能在提交该功能区',
+                    message: '该功能区所在任务已完成！不能在进入提交',
                     type: 'fail'
                 })
             } else {
@@ -181,7 +181,7 @@ export default {
                     // checkResult 检查结果，默认为0，1-合格，2-不合格
                     if (item.checkResult == 0) {
                         this.$toast({
-                            message: '该功能区所在科室的任务已超过规定完成的时间段,不能在提交该功能区',
+                            message: '该功能区所在任务已过检查时间！不能在进入提交',
                             type: 'fail'
                         })
                     } else {

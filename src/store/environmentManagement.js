@@ -37,6 +37,10 @@ export default {
             return state.locationMessage
         },
 
+        pollingTaskCurrentShowTime : (state) => {
+            return state.pollingTaskCurrentShowTime
+        },
+
         pollingTaskDepartmentMessage : (state) => {
             return state.pollingTaskDepartmentMessage
         },
@@ -64,6 +68,7 @@ export default {
                 state.currentCleanTaskName = playLoad
             }
         },
+
 
         // 保存保洁管理任务列表选择的日期
         storeCurrentCleanTaskDateVlue(state, playLoad) {
@@ -134,10 +139,17 @@ export default {
             }
         },
 
-         // 保存保洁管理巡检任务科室相关信息
-         storePollingTaskDepartmentFunctionalZoneMessage(state, playLoad) {
+        // 保存保洁管理巡检任务科室相关信息
+        storePollingTaskDepartmentFunctionalZoneMessage(state, playLoad) {
             if (playLoad && playLoad != 'null') {
                 state.pollingTaskDepartmentFunctionalZoneMessage = playLoad
+            }
+        },
+
+        // 保存保洁管理巡检任务当前显示时间
+        storePollingTaskCurrentShowTime(state, playLoad) {
+            if (playLoad && playLoad != 'null') {
+                state.pollingTaskCurrentShowTime = playLoad
             }
         },
 

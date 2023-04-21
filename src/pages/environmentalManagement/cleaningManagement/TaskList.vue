@@ -161,7 +161,7 @@
     <div class="add-task-png-box" @click="addTaskEvent">
       <img :src="addTaskPng" alt="">
     </div>
-    <FooterBottom></FooterBottom>  
+    <!-- <FooterBottom></FooterBottom>   -->
   </div>
 </template>
 <script>
