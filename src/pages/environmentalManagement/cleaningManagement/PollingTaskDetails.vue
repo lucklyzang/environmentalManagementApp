@@ -276,9 +276,9 @@ export default {
               this.departmentsNameList = res.data.data;
               // 回显进入该页面之前选中的时间
               this.currentTabIndex = this.timeTabList.findIndex((item) => { return item == this.pollingTaskCurrentShowTime});
+              if (this.currentTabIndex == -1) { this.currentTabIndex = 0 };
               this.currentDepartmentsNameList = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[this.currentTabIndex] })[0]['spaces'];
-              this.subId = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[this.currentTabIndex]})[0]['id'];
-              console.log('验证',this.pollingTaskCurrentShowTime,this.currentTabIndex,this.subId);
+              this.subId = this.departmentsNameList.filter((innerItem) => { return innerItem['startTime'] == this.timeTabList[this.currentTabIndex]})[0]['id']
             }
           } else {
             this.$toast({

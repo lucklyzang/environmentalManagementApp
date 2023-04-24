@@ -35,8 +35,8 @@
                         v-model="searchValue"
                         placeholder="搜索关键词"
                     >
-                        <template #left-icon>
-                           <van-icon @click="searchEvent" name="search" color="#101010" size="20" />
+                        <template #right-icon>
+                           <van-icon @click="searchEvent" name="search" color="#101010" size="24" />
                         </template>
                     </van-field>
                 </div>
@@ -996,12 +996,13 @@ export default {
             align-items: center;
             &:nth-child(1) {
                 border: 1px solid #289E8E;
-                color: #289E8E
+                color: #289E8E;
+                margin-right: 2%;
             };
             &:nth-child(2) {
                 border: 1px solid #174E97;
                 color: #174E97;
-                margin: 0 2%;
+                margin-right: 2%;
             };
             &:nth-child(3) {
                 border: 1px solid #E86F50;

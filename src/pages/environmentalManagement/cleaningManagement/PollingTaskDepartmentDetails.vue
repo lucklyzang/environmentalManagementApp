@@ -116,11 +116,27 @@ export default {
   methods: {
     ...mapMutations(["changeIsLogin","storePollingTaskDepartmentFunctionalZoneMessage"]),
 
+    // 提交过的功能区下沉处理
+    disposeZoneList(arr) {
+      if (Object.prototype.toString.call(arr) != '[object Array]') { return };
+      if (arr.length == 0) { return arr };
+      if (arr.every((item) => { return item.checkResult == 0})) { return arr };
+      let temporary = [];
+      for (let item of arr) {
+        if (item.checkResult == 1 || item.checkResult == 2) {
+          temporary.push(item)
+        } else {
+          temporary.unshift(item)
+        }
+      };
+      return temporary
+    },
+
     //tab切换点击事件
     tabsClickEvent (item,index) {
         this.currentTabIndex = index;
         if (item == '功能区') {
-            this.departmentCornerList = this.allDepartmentCornerList
+            this.departmentCornerList = this.disposeZoneList(this.allDepartmentCornerList)
         } else if (item == '检查合格') {
             this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1})
         } else if (item == '检查不合格') {
@@ -214,7 +230,7 @@ export default {
             if (res && res.data.code == 200) {
                 if (res.data.data.length > 0) {
                     this.allDepartmentCornerList = res.data.data;
-                    this.departmentCornerList = res.data.data;
+                    this.departmentCornerList = this.disposeZoneList(res.data.data);
                     this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1});
                     this.noQualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 2})
                 } else {
@@ -254,7 +270,7 @@ export default {
             if (res && res.data.code == 200) {
                 if (res.data.data.length > 0) {
                     this.allDepartmentCornerList = res.data.data;
-                    this.departmentCornerList = res.data.data;
+                    this.departmentCornerList = this.disposeZoneList(res.data.data);
                     this.qualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 1});
                     this.noQualifiedDepartmentCornerList = this.allDepartmentCornerList.filter((item) => { return item.checkResult == 2})
                 } else {
