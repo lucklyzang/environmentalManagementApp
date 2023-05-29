@@ -1,6 +1,6 @@
 <template>
   <div class="page-box" ref="wrapper">
-    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">提交中...</van-loading>
+    <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadingText }}</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
       <NavBar path="/pollingTaskDetails" title="未完成原因" />
@@ -29,7 +29,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import { submitUnfinishedReason } from "@/api/environmentalManagement.js";
+import { submitUnfinishedReason, getUnfinishedReason } from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC } from "@/common/js/utils";
 export default {
@@ -40,6 +40,7 @@ export default {
   data() {
     return {
         reasonValue: '',
+        loadingText: '提交中...',
         loadingShow: false,
         overlayShow: false
     }
@@ -55,7 +56,8 @@ export default {
           path: "/pollingTaskDetails"
         })
       })
-    }
+    };
+    this.getUnfinishedReasonEvent()
   },
 
   watch: {},
@@ -88,6 +90,7 @@ export default {
       };
       this.loadingShow = true;
       this.overlayShow = true;
+      this.loadingText = '提交中...';
       submitUnfinishedReason({
         id: this.cleanTaskDetails.id,
         unfinishedReason: this.reasonValue
@@ -115,6 +118,35 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false
         })
+    },
+
+    // 查询提交原因事件
+    getUnfinishedReasonEvent () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadingText = '加载中...';
+      getUnfinishedReason(this.cleanTaskDetails.id)
+      .then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        if (res && res.data.code == 200) {
+          if (!res.data.data) { return };
+          this.reasonValue = res.data.data
+        } else {
+          this.$toast({
+            message: `${res.data.msg}`,
+            type: 'fail'
+          })
+        }
+      })
+      .catch((err) => {
+        this.$toast({
+          message: `${err}`,
+          type: 'fail'
+        });
+        this.loadingShow = false;
+        this.overlayShow = false
+      })
     }
   }
 };

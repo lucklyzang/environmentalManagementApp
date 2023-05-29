@@ -46,6 +46,8 @@
          <van-field
             v-model="enterRemark"
             rows="3"
+            maxlength="200"
+            show-word-limit
             autosize
             type="textarea"
             placeholder="请输入备注"
@@ -71,7 +73,7 @@
       <div class="choose-photo-box" v-show="photoBox">
         <div class="choose-photo">
           <van-icon name="photo" />
-          <input name="uploadImg1" id="demo1" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
+          <input name="uploadImg1" id="demo1" ref="inputFile" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
         </div>
         <div class="photo-graph">
           <van-icon name="photograph" />
@@ -259,8 +261,9 @@ export default {
           img.src = result;
           img.onload = function () {
             let src = compress(img);
-             _this.resultImgList.push(src)
-          }
+            _this.resultImgList.push(src)
+          };
+          _this.$refs.inputFile.value = null;
         }, false);
         if (file) {
           reader.readAsDataURL(file);
@@ -410,6 +413,13 @@ export default {
 
       // 拍照点击
       issueClickEvent () {
+        if (this.resultImgList.length > 9) {
+          this.$toast({
+            message: '最多只能上传9张图片!',
+            type: 'fail'
+          });
+          return
+        };
         this.photoBox = true;
         this.overlayShow = true
       },

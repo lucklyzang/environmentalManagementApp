@@ -177,7 +177,7 @@ export function checkConfirmAll(data) {
     })
 }
 
-// 未完成原因(巡检任务)
+// 提交未完成原因(巡检任务)
 export function submitUnfinishedReason (data) {
     return request({
         url: 'clean/xjTask/app/unfinishedReason',
@@ -185,6 +185,15 @@ export function submitUnfinishedReason (data) {
         data
     })
 }
+
+// 查询未完成原因(巡检任务)
+export function getUnfinishedReason (id) {
+    return request({
+        url: `clean/xjTask/app/unfinishedReason/${id}`,
+        method: 'get'
+    })
+}
+
 
 // 考勤日统计
 export function cleanAttendanceDay(data) {
