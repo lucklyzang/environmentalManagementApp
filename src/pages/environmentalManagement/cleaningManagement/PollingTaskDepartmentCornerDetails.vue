@@ -93,7 +93,7 @@ import _ from 'lodash';
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress, base64ImgtoFile } from "@/common/js/utils";
 export default {
-  name: "PollingTaskDepartmentDetails",
+  name: "PollingTaskDepartmentCornerDetails",
   components: {
     NavBar
   },
@@ -413,7 +413,7 @@ export default {
 
       // 拍照点击
       issueClickEvent () {
-        if (this.resultImgList.length > 9) {
+        if (this.resultImgList.length >= 9) {
           this.$toast({
             message: '最多只能上传9张图片!',
             type: 'fail'
