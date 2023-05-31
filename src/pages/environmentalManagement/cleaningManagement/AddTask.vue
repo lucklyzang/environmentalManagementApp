@@ -147,6 +147,7 @@
             name="uploadImg1"
             id="demo1"
             @change="previewFileOne"
+            ref="inputFile"
             type="file"
             accept="image/album"
           />从图库中选择
@@ -187,7 +188,7 @@
 import NavBar from "@/components/NavBar";
 import {addForthwithCleanTask, getViolateStandardMessage,attendanceWorkerList} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
-import { IsPC, compress } from "@/common/js/utils";
+import { IsPC, compress, base64ImgtoFile } from "@/common/js/utils";
 import {getAliyunSign} from '@/api/login.js'
 import axios from 'axios'
 export default {
@@ -287,8 +288,7 @@ export default {
       ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
       resultImgList: [],
-      imgOnlinePathArr: [],
-      temporaryFileArray: []
+      imgOnlinePathArr: []
     }
   },
 
@@ -496,7 +496,7 @@ export default {
         this.loadText ='创建中';
         this.overlayShow = true;
         this.loadingShow = true;
-        for (let imgI of this.temporaryFileArray) {
+        for (let imgI of this.resultImgList) {
           if (Object.keys(this.timeMessage).length > 0) {
             // 判断签名信息是否过期
             if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
@@ -533,7 +533,6 @@ export default {
 						});
             this.resultImgList = [];
             this.imgOnlinePathArr = [];
-            this.temporaryFileArray = [];
             this.storeLocationMessage([]);
             this.violateStandardOption = [{
               text: '请选择违反标准',
@@ -595,10 +594,10 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
-            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           };
+          _this.$refs.inputFile.value = null;
         },
         false
       );
@@ -632,7 +631,6 @@ export default {
           img.onload = function () {
             let src = compress(img);
             _this.resultImgList.push(src);
-            _this.temporaryFileArray.push(file);
             _this.photoBox = false;
             _this.overlayShow = false
           };
@@ -684,7 +682,7 @@ export default {
           // OSS地址
           const aliyunServerURL = this.ossMessage.host;
           // 存储路径(后台固定位置+随即数+文件格式)
-          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + filePath.name;
+          const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + base64ImgtoFile(filePath).name;
           // 临时AccessKeyID0
           const OSSAccessKeyId = this.ossMessage.accessId;
           // 加密策略
@@ -697,7 +695,7 @@ export default {
           formData.append('OSSAccessKeyId',OSSAccessKeyId);
           formData.append('success_action_status','200');
           formData.append('Signature',signature);
-          formData.append('file',filePath);
+          formData.append('file',base64ImgtoFile(filePath));
           axios({
             url: aliyunServerURL,
             method: 'post',
@@ -730,8 +728,7 @@ export default {
 
     // 确定删除提示框确定事件
     sureDeleteEvent () {
-      this.resultImgList.splice(this.imgIndex, 1);
-      this.temporaryFileArray.splice(this.imgIndex, 1)
+      this.resultImgList.splice(this.imgIndex, 1)
     },
 
     // 拍照取消
