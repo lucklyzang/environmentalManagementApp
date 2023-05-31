@@ -526,13 +526,13 @@ export default {
       addForthwithCleanTask(data).then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
+          this.imgOnlinePathArr = [];
 					if (res && res.data.code == 200) {
             this.$toast({
 							message: '任务创建成功',
 							type: 'success'
 						});
             this.resultImgList = [];
-            this.imgOnlinePathArr = [];
             this.storeLocationMessage([]);
             this.violateStandardOption = [{
               text: '请选择违反标准',
@@ -563,6 +563,7 @@ export default {
 						message: `${err}`,
 						type: 'fail'
 					});
+          this.imgOnlinePathArr = [];
 					this.loadingShow = false;
           this.overlayShow = false
 			})
