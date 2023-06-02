@@ -103,11 +103,11 @@
       任务开始
     </div>
     <div class="task-operation-box-one" v-show="cleanTaskDetails.state == 1">
-      <div class="task-no-complete" @click="getTaskEvent">获取任务</div>、
+      <div class="task-no-complete" @click="getTaskEvent">获取任务</div>
       <div class="task-complete" @click="backTaskEvent">退回</div>
     </div>
     <div class="task-operation-box" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
-      <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>、
+      <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
     <div class="task-start" @click="reCheckDialogEvent" v-show="(cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6) && cleanTaskDetails.reviewFlag == 0">
