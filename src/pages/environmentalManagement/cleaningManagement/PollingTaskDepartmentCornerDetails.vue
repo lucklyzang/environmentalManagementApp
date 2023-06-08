@@ -7,7 +7,7 @@
     </div>
     <div class="content">
       <div class="forthwith-task-number">
-        {{ pollingTaskDepartmentFunctionalZoneMessage.ribbonName }}
+        {{ `${pollingTaskDepartmentFunctionalZoneMessage.areaName}${pollingTaskDepartmentFunctionalZoneMessage.ribbonName}` }}
       </div>
       <div class="inspection-standard-box">
         <div class="inspection-standard-title">

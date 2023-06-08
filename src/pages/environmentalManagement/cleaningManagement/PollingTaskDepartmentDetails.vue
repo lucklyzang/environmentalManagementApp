@@ -20,7 +20,7 @@
         <div class="content-bottom" v-if="currentTabIndex == 0">
             <van-empty v-show="allEmptyShow" description="暂无数据" />
             <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in departmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
-                <div class="corner-name">{{ item.areaName }}</div>
+                <div class="corner-name">{{ `${item.areaName}${item.ribbonName}` }}</div>
                 <div class="corner-right">
                     <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
                     <van-icon name="arrow" color="#101010"  size="25" />
@@ -30,7 +30,7 @@
         <div class="content-bottom" v-if="currentTabIndex == 1">
             <van-empty v-show="qualifiedEmptyShow" description="暂无数据" />
             <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in qualifiedDepartmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
-                <div class="corner-name">{{ item.areaName }}</div>
+                <div class="corner-name">{{ `${item.areaName}${item.ribbonName}` }}</div>
                 <div class="corner-right">
                     <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
                     <van-icon name="arrow" color="#101010"  size="25" />
@@ -40,7 +40,7 @@
         <div class="content-bottom" v-if="currentTabIndex == 2">
             <van-empty v-show="noQualifiedEmptyShow" description="暂无数据" />
             <div class="corner-list" :class="{'cornerListStyle' : item.checkResult == 2 }" v-for="(item,index) in noQualifiedDepartmentCornerList" :key="index" @click="cornerClickEvent(item,index)">
-                <div class="corner-name">{{ item.areaName }}</div>
+                <div class="corner-name">{{ `${item.areaName}${item.ribbonName}` }}</div>
                 <div class="corner-right">
                     <span v-if="item.checkResult != 0" :class="{'spanStyle' : item.checkResult == 2}">{{ item.checkResult == 1 ? '合格' : '不合格' }}</span>
                     <van-icon name="arrow" color="#101010"  size="25" />
