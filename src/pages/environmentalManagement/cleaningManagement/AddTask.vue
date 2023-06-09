@@ -92,9 +92,8 @@
             <van-icon name="arrow" color="#174E97" size="20" />
         </div>
       </div>
-      <div class="category-box person-number-box">
+      <div class="category-box person-number-box category-box-other">
         <div class="category-title">
-            <span>*</span>
             <span>预计人数</span>
         </div>
         <div class="person-input-box">
@@ -102,19 +101,17 @@
             <span>人</span>
         </div>
       </div>
-      <div class="category-box person-number-box duration-box">
+      <div class="category-box person-number-box duration-box category-box-other">
         <div class="category-title">
-            <span>*</span>
-            <span>预计时长</span>
+            <span>预计耗时</span>
         </div>
         <div class="person-input-box">
             <van-field v-model="durationValue" type="number"/>
             <span>分钟</span>
         </div>
       </div>
-      <div class="category-box">
+      <div class="category-box category-box-other">
         <div class="category-title">
-            <span>*</span>
             <span>违反标准</span>
         </div>
         <div class="select-box">
@@ -410,7 +407,6 @@ export default {
       attendanceWorkerList(this.userInfo.proIds[0]).then((res) => {
           if (res && res.data.code == 200) {
             if (res.data.data.length > 0) {
-              console.log('保洁员',res.data.data);
               for (let item of res.data.data) {
                 if (this.workerOption.filter((innerItem) => {return innerItem.value == item.workerId}).length == 0) {
                   this.workerOption.push({
@@ -451,18 +447,6 @@ export default {
       };
        if (this.workerOption.filter((item) => { return item.value == this.workerValue })[0]['text'] == '请选择保洁员') {
         this.$toast('请选择保洁员');
-        return
-      };
-      if (!this.personNumberValue) {
-        this.$toast('预计人数不能为空');
-        return
-      };
-      if (!this.durationValue) {
-        this.$toast('预计时长不能为空');
-        return
-      };
-      if (this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text'] == '请选择违反标准') {
-        this.$toast('请选择违反标准');
         return
       };
       let paramsData = {
@@ -887,6 +871,18 @@ export default {
                         border-color: transparent transparent #174E97 #174E97 !important;
                     }
                 }
+            }
+        }
+      }
+    };
+    .category-box-other {
+      .category-title {
+        font-size: 14px;
+        color: #101010 !important;
+         >span {
+            &:first-child {
+              margin-left: 10px;
+              color: #101010
             }
         }
       }
