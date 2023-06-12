@@ -38,7 +38,7 @@
           <span v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4" class="sign">*</span>
           <span class="cleaner">保洁员</span>
         </div>
-        <div class="location-other-right" v-if="loadingComplete && (cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4)">
+        <div class="location-other-right" v-if="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
           <SelectSearch ref="cleanerOption" :isNeedSearch="false" :itemData="cleanerOption" :curData="currentCleaner" @change="currentCleanerOptionChange" />
         </div>
         <div class="location-other-right-other" v-if="cleanTaskDetails.state != 2 && cleanTaskDetails.state != 3 && cleanTaskDetails.state != 4">
@@ -194,11 +194,13 @@ export default {
       backShow: false,
       backReason: '',
       currentCleaner: null,
-      cleanerOption: [],
+      cleanerOption: [{
+        text: '请选择',
+        value: null
+      }],
       queryDialogShow: false,
       imgIndex: '',
       deleteInfoDialogShow: false,
-      loadingComplete: false,
       overlayShow: false,
       loadingShow: false,
       loadText: '更新中',
@@ -282,14 +284,8 @@ export default {
       this.loadText = '加载中...';
       this.loadingShow = true;
       this.overlayShow = true;
-      this.cleanerOption = [];
       attendanceWorkerList(this.userInfo.proIds[0])
       .then((res) => {
-        this.cleanerOption = [{
-          text: '请选择',
-          value: null
-        }],
-        this.loadingComplete = true;
         this.loadText = '';
         this.loadingShow = false;
         this.overlayShow = false;
@@ -316,7 +312,6 @@ export default {
       })
       .catch((err) => {
         this.loadText = '';
-        this.loadingComplete = true;
         this.loadingShow = false;
         this.overlayShow = false;
         this.$dialog.alert({
