@@ -64,15 +64,15 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${Math.ceil(forthwithCleaningTaskGlobalStatistics.percent)}%`" 
+                <van-circle v-model="forthwithCurrentRate" :rate="forthwithCleaningTaskGlobalStatistics.percent" :speed="100" :text="forthwithCleaningTaskGlobalStatistics.finish != 0 ? '' : `${Math.ceil(forthwithCleaningTaskGlobalStatistics.percent)}%`" 
                   layer-color="#d0d0cc"
                   :color="forthwithCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
                   :size="45" 
                   :stroke-width="140" 
                 />
                 <div class="complete-info">
-                  <span>已完成:</span>
-                  <span>{{ forthwithCleaningTaskGlobalStatistics.finish }}</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.finish == 0 ? '已完成:' : '完成率:'}}</span>
+                  <span>{{ forthwithCleaningTaskGlobalStatistics.finish == 0 ? forthwithCleaningTaskGlobalStatistics.finish : `${Math.ceil(forthwithCleaningTaskGlobalStatistics.percent)}%`}}</span>
                 </div>
               </div>
             </div>
@@ -103,15 +103,15 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="`${Math.ceil(specialCleaningTaskGlobalStatistics.percent)}%`" 
+                <van-circle v-model="specialCurrentRate" :rate="specialCleaningTaskGlobalStatistics.percent" :speed="100" :text="specialCleaningTaskGlobalStatistics.finish != 0 ? '' : `${Math.ceil(specialCleaningTaskGlobalStatistics.percent)}%`" 
                   layer-color="#d0d0cc"
                   :color="specialCleaningTaskGlobalStatistics.percent == 0 ? '#d0d0cc' : '#1864FF'"
                   :size="45"
                   :stroke-width="140"
                  />
                 <div class="complete-info">
-                  <span>已完成:</span>
-                  <span>{{ specialCleaningTaskGlobalStatistics.finish }}</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.finish == 0 ? '已完成:' : '完成率'}}</span>
+                  <span>{{ specialCleaningTaskGlobalStatistics.finish == 0 ? specialCleaningTaskGlobalStatistics.finish : `${Math.ceil(specialCleaningTaskGlobalStatistics.percent)}%`}}</span>
                 </div>
               </div>
             </div>
@@ -142,15 +142,15 @@
                 </div>
               </div>
               <div class="forthwith-cleaning-task-content-right">
-                <van-circle v-model="pollingCurrentRate" :rate="`${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}`" :text="`${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`" :speed="100" 
+                <van-circle v-model="pollingCurrentRate" :rate="`${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}`" :text="pollingTaskGlobalStatistics.finish != 0 ? '' : `${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`" :speed="100" 
                 layer-color="#d0d0cc" 
                 :color="pollingTaskGlobalStatistics.finish == 0 ? '#d0d0cc' : '#1864FF'"
                 :size="45" 
                 :stroke-width="140" 
                 />
                 <div class="complete-info">
-                  <span>已完成:</span>
-                  <span>{{ pollingTaskGlobalStatistics.finish }}</span>
+                  <span>{{ pollingTaskGlobalStatistics.finish == 0 ? '已完成:' : '完成率'}}</span>
+                  <span>{{ pollingTaskGlobalStatistics.finish == 0 ? pollingTaskGlobalStatistics.finish : `${Math.ceil((pollingTaskGlobalStatistics.finish/pollingTaskGlobalStatistics.all)*100)}%`}}</span>
                 </div>
               </div>
             </div>

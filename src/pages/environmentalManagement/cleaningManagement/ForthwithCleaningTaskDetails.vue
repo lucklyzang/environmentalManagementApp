@@ -577,7 +577,7 @@ export default {
               id: this.cleanTaskDetails.id,
               resultImgList: _.cloneDeep(this.resultImgList),
               enterRemark: this.enterRemark,
-              cleaner: !this.currentCleaner ? null : this.currentCleaner.value
+              cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
             })
           }
         } else {
@@ -585,7 +585,7 @@ export default {
             id: this.cleanTaskDetails.id,
             resultImgList: _.cloneDeep(this.resultImgList),
             enterRemark: this.enterRemark,
-            cleaner: !this.currentCleaner ? null : this.currentCleaner.value
+            cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
           })
       };
       this.changeTemporaryStorageForthwithTaskMessage(casuallyTemporaryStorageForthwithTaskMessage);
