@@ -554,6 +554,7 @@ export default {
           box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.23);
           padding: 0 0 8px 0;
           box-sizing: border-box;
+          margin-bottom: 14px;
           .forthwith-cleaning-task-title {
             .bottom-border-1px(rgba(0, 0, 0, 0.23));
             width: 96%;
@@ -644,7 +645,6 @@ export default {
           };
         };
         .special-cleaning-task {
-          margin: 14px 0;
           .forthwith-cleaning-task-title-left {
             color: #174E97 !important
           }
