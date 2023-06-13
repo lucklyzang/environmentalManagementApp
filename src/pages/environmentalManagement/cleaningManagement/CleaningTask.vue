@@ -382,7 +382,7 @@ export default {
     disposeTime (item) {
         if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
             if (item.startTime.length > 0) {
-                // 未开始和进行中的任务,开始时间只显示当前检查时间段的开始时间
+                // 未开始(已到开始时间,但是没扫码)和进行中的任务,开始时间只显示当前检查时间段的开始时间
                 if (item.state == 1 || item.state == 2) {
                     let temporaryArr = [];
                     // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
@@ -406,7 +406,7 @@ export default {
         }
     },
 
-    // 处理巡检任务开始时间
+    // 获取巡检任务当前显示的开始时间点
     disposeTimeTwo (item) {
         if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
             if (item.startTime.length > 0) {
@@ -671,8 +671,8 @@ export default {
                                     this.pollingTaskList[currentIndex]['state'] = item.state
                                 } 
                             };
-                            // 已完成和未到开始时间的任务显示所有开始时间集合
-                            if (this.pollingTaskList[currentIndex]['state'] != 3 && this.pollingTaskList[currentIndex]['state'] != -10) {
+                            // 未到开始时间的任务显示所有开始时间集合
+                            if (this.pollingTaskList[currentIndex]['state'] != -10) {
                                 this.pollingTaskList[currentIndex]['startTime'] = item['startTime'];
                             }    
                         }
