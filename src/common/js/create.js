@@ -7,7 +7,7 @@ export default function create(Component, props) {//Component组件  props传进
   //方式一:使用Vue.extend创建
   const Ctor = Vue.extend(Component);
   //创建组件实例
-  const comp = new Ctor({ propsData: props })
+  const comp = new Ctor({ propsData: props });
   //挂载
   comp.$mount();
   document.body.appendChild(comp.$el);//把元素追加到body后面
@@ -15,7 +15,7 @@ export default function create(Component, props) {//Component组件  props传进
   comp.remove = () => {
     document.body.removeChild(comp.$el) //移除元素
     comp.$destroy() //销毁
-  } 
+  }; 
  
   // // 方式二：new一个Vue
   // const vm = new Vue({
