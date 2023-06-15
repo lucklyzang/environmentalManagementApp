@@ -74,7 +74,7 @@ import { deepClone } from '@/common/js/utils'
 		   //单选
 		   this.datalist = this.itemData;
 		   if (!this.multiple) {
-			 if (newVal == null || !isNaN(newVal)) {
+			 if (newVal == null || (!isNaN(newVal) && typeof newVal === 'number')) {
 				this.current = this.datalist.length > 0 ? this.datalist.filter((item) => { return item.value == newVal})[0]['text'] : '';
 		   	 	this.currentFullValue = this.datalist.length > 0 ? this.datalist.filter((item) => { return item.value == newVal})[0] : null
 			 } else {
@@ -138,7 +138,7 @@ import { deepClone } from '@/common/js/utils'
 		this.datalist = this.itemData;
 		//单选
 		if (!this.multiple) {
-			if (this.curData == null || !isNaN(this.curData )) {
+			if (this.curData == null || (!isNaN(this.curData) && typeof this.curData === 'number')) {
 				this.current = this.datalist.length > 0 ? this.datalist.filter((item) => { return item.value == this.curData})[0]['text'] : '';
 				this.currentFullValue = this.datalist.length > 0 ? this.datalist.filter((item) => { return item.value == this.curData})[0] : null
 			} else {
