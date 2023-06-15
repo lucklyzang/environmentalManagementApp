@@ -259,10 +259,10 @@ export default {
       ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
       locationValue: '',
-      violateStandardValue: 0,
+      violateStandardValue: null,
       violateStandardOption: [{
         text: '请选择违反标准',
-        value: 0
+        value: null
       }],
       priorityValue: 1,
       priorityOption: [
@@ -338,7 +338,7 @@ export default {
           if (res && res.data.code == 200) {
             this.violateStandardOption = [{
               text: '请选择违反标准',
-              value: 0
+              value: null
             }];
             if (res.data.data.length > 0) {
               for ( let i =0, len = res.data.data.length; i< len ; i++) {
@@ -467,7 +467,7 @@ export default {
         areaImmediateId: this.locationMessage[2]['id'], // 目的区域id
         areaImmediateName: this.locationMessage[2]['itemName'], // 目的区域名称
         spaces: [],
-        standards: [this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text']], // 检查标准，违反标准，数组
+        standards: this.violateStandardValue == null ? [] : [this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text']], // 检查标准，违反标准，数组
         planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
         planPersons: this.personNumberValue, // 任务预计所需人数
         planUseTime: this.durationValue, // 任务预计用时，单位为分钟
