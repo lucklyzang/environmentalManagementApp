@@ -117,7 +117,7 @@
       <div class="choose-photo-box" v-show="photoBox">
         <div class="choose-photo">
           <van-icon name="photo" />
-          <input name="uploadImg1" id="demo1" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
+          <input name="uploadImg1" id="demo1" ref="inputFile" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
         </div>
         <div class="photo-graph">
           <van-icon name="photograph" />
@@ -590,6 +590,9 @@ export default {
             closeOnPopstate: true
           }).then(() => {
           });
+          _this.$refs.inputFile.value = null;
+          _this.photoBox = false;
+          _this.overlayShow = false;
           return
         };  
         reader.addEventListener("load", function () {
@@ -602,7 +605,8 @@ export default {
             _this.resultImgList.push(src);
             _this.photoBox = false;
             _this.overlayShow = false
-          }
+          };
+          _this.$refs.inputFile.value = null;
         }, false);
         if (file) {
           reader.readAsDataURL(file);
