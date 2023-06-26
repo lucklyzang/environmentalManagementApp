@@ -30,8 +30,20 @@
         <span>{{cleanTaskDetails.startTime }}</span>
       </div>
       <div class="location">
-        <span>计划执行人</span>
-        <span>{{ `${cleanTaskDetails.workerName}、${cleanTaskDetails.managerName}` }}</span>
+        <span>检查主管</span>
+        <span>{{ cleanTaskDetails.managerName }}</span>
+      </div>
+      <div class="location-other">
+        <div class="location-other-left">
+          <span v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4" class="sign">*</span>
+          <span class="cleaner">保洁员</span>
+        </div>
+        <div class="location-other-right" v-if="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
+          <SelectSearch ref="cleanerOption" :isNeedSearch="false" :itemData="cleanerOption" :curData="currentCleaner" @change="currentCleanerOptionChange" />
+        </div>
+        <div class="location-other-right-other" v-if="cleanTaskDetails.state != 2 && cleanTaskDetails.state != 3 && cleanTaskDetails.state != 4">
+          {{ !this.cleanTaskDetails.workerName ? '未选择' : this.cleanTaskDetails.workerName }}
+        </div>
       </div>
       <div class="location" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
         <span>完成时间</span>
@@ -163,16 +175,18 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {updateCleaningManageTaskState, cleaningManageTaskComplete,reviewTask,fetchTask,returnTask} from "@/api/environmentalManagement.js";
+import {updateCleaningManageTaskState, cleaningManageTaskComplete,reviewTask,fetchTask,returnTask,attendanceWorkerList} from "@/api/environmentalManagement.js";
 import {getAliyunSign} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress, getStore, base64ImgtoFile } from "@/common/js/utils";
 import axios from 'axios'
 import _ from 'lodash'
+import SelectSearch from "@/components/SelectSearch";
 export default {
   name: "SpecialCleaningTaskDetails",
   components: {
-    NavBar
+    NavBar,
+    SelectSearch
   },
   data() {
     return {
@@ -181,6 +195,11 @@ export default {
       backReason: '',
       queryDialogShow: false,
       imgOnlinePathArr: [],
+      currentCleaner: null,
+      cleanerOption: [{
+        text: '请选择',
+        value: null
+      }],
       isExpire: false,
       loadingShow: false,
       loadText: '更新中',
@@ -207,6 +226,8 @@ export default {
       })
     };
     this.echoImage();
+    // 查询保洁员
+    this.getRegisterUser();
     if (this.cleanTaskDetails.state == 3 || this.cleanTaskDetails.state == 4) {
       this.echoStorage()
     }
@@ -239,6 +260,48 @@ export default {
         this.enterRemark = temporaryStorageSpecialTaskMessage[0]['enterRemark'];
         this.resultImgList = temporaryStorageSpecialTaskMessage[0]['resultImgList']
       }
+    },
+
+     // 查询保洁员
+    getRegisterUser() {
+      this.loadText = '加载中...';
+      this.loadingShow = true;
+      this.overlayShow = true;
+      attendanceWorkerList(this.userInfo.proIds[0])
+      .then((res) => {
+        this.loadText = '';
+        this.loadingShow = false;
+        this.overlayShow = false;
+        if (res && res.data.code == 200) {
+          if (res.data.data.length > 0) {
+            for (let item of res.data.data) {
+              if (this.cleanerOption.filter((innerItem) => {return innerItem.value == item.workerId}).length == 0) {
+                this.cleanerOption.push({
+                  text: item.workerName,
+                  value: item.workerId
+                })
+              }  
+            };
+            if (this.cleanTaskDetails.workerId) {
+              this.currentCleaner = !this.cleanTaskDetails.workerId ? null : this.cleanTaskDetails.workerId
+            };
+            // 回显暂存的保洁员信息(点击任务未完成时存储的)
+            let temporaryStorageSpecialTaskMessage = this.storageSpecialTaskMessage.filter((item) => { return item.id == this.cleanTaskDetails.id});
+            if (temporaryStorageSpecialTaskMessage.length > 0 ) {
+              this.currentCleaner = temporaryStorageSpecialTaskMessage[0]['cleaner']
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        this.loadText = '';
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.$dialog.alert({
+          message: `${err}`,
+          closeOnPopstate: true
+        }).then(() => {})
+      })
     },
 
     // 任务状态转换
@@ -351,6 +414,12 @@ export default {
         })
       })
     },
+
+    // 提取保洁员姓名
+    extractCleanerName (val) {
+      return this.cleanerOption.filter((item) => { return item.value == val})[0]['text']
+    },
+
       // 任务开始事件
       taskStartEvent () {
         this.overlayShow = true;
@@ -358,7 +427,9 @@ export default {
         this.loadText ='更新中...';
         updateCleaningManageTaskState({
           id : this.cleanTaskDetails.id, // 任务id
-		      state: 3
+		      state: 3,
+          workerId: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.currentCleaner.value : this.currentCleaner,
+          workerName: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.extractCleanerName(this.currentCleaner.value) : this.extractCleanerName(this.currentCleaner)
         })
         .then((res) => {
           this.overlayShow = false;
@@ -411,7 +482,8 @@ export default {
           // 更改store中存储的任务状态
           let temporaryDetails = this.cleanTaskDetails;
           temporaryDetails['state'] = 2;
-          this.storeCleanTaskDetails(temporaryDetails)
+          this.storeCleanTaskDetails(temporaryDetails);
+          this.currentCleaner = null;
           this.$toast({
             message: '获取任务成功',
             type: 'success'
@@ -433,6 +505,12 @@ export default {
         })
       })
     },
+
+    // 保洁员下拉框值改变事件
+    currentCleanerOptionChange (val) {
+      this.currentCleaner = val
+    },
+
 
     // 退回任务事件
     backTaskEvent () {
@@ -483,19 +561,22 @@ export default {
             let temporaryIndex = casuallyTemporaryStorageSpecialTaskMessage.findIndex((item) => { return item.id == this.cleanTaskDetails.id});
             if (temporaryIndex != -1) {
               casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['resultImgList'] = _.cloneDeep(this.resultImgList);
-              casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['enterRemark'] = this.enterRemark
+              casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['enterRemark'] = this.enterRemark;
+              casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['cleaner'] = this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
             } else {
               casuallyTemporaryStorageSpecialTaskMessage.push({
                 id: this.cleanTaskDetails.id,
                 resultImgList: _.cloneDeep(this.resultImgList),
-                enterRemark: this.enterRemark
+                enterRemark: this.enterRemark,
+                cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
               })
             }
           } else {
             casuallyTemporaryStorageSpecialTaskMessage.push({
               id: this.cleanTaskDetails.id,
               resultImgList: _.cloneDeep(this.resultImgList),
-              enterRemark: this.enterRemark
+              enterRemark: this.enterRemark,
+              cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
             })
         };
         this.changeTemporaryStorageSpecialTaskMessage(casuallyTemporaryStorageSpecialTaskMessage);
@@ -506,6 +587,17 @@ export default {
 
       // 任务完成事件
       async taskCompleteEvent () {
+        if (this.currentCleaner == null) {
+          this.$toast('保洁员不能为空');
+          return
+        } else {
+          if (Object.prototype.toString.call(this.currentCleaner) === '[object Object]') {
+            if (!this.currentCleaner.value) {
+              this.$toast('保洁员不能为空');
+              return
+            }
+          }
+        };
         if (this.resultImgList.length == 0) {
           this.$toast('结果图片不能为空');
           return
@@ -540,7 +632,9 @@ export default {
             completeRemark: this.enterRemark, // 任务完成备注
             path: this.imgOnlinePathArr,
             proId: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalId'] : this.chooseProject['value'], // 项目id
-            proName: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalName'] : this.chooseProject['text']  // 项目名称
+            proName: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalName'] : this.chooseProject['text'],  // 项目名称
+            workerId: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.currentCleaner.value : this.currentCleaner,
+            workerName: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.extractCleanerName(this.currentCleaner.value) : this.extractCleanerName(this.currentCleaner)
           })
           .then((res) => {
             this.overlayShow = false;
@@ -980,6 +1074,55 @@ export default {
           padding-left: 8px;
           box-sizing: border-box;
           word-break: break-all
+        }
+      }
+    };
+    .location-other {
+      padding: 10px 8px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+      display: flex;
+      background: #fff;
+      justify-content: space-between;
+      align-items: center;
+      .location-other-left {
+        >span {
+          font-size: 14px;
+          display: inline-block
+        };
+        .sign {
+          color: red
+        };
+        .cleaner {
+          color: #a1a0a0
+        }
+      };
+      .location-other-right {
+        color: #101010;
+        flex: 1;
+        text-align: right;
+        line-height: 24px;
+        padding-left: 8px;
+        box-sizing: border-box;
+        word-break: break-all;
+        /deep/ .vue-dropdown {
+          border: none !important;
+          .cur-name {
+            >span {
+              font-size: 14px;
+              padding-right: 10px;
+              box-sizing: border-box;
+              color: #101010 !important
+            };
+            .van-icon {
+              font-size: 18px !important;
+              color: #101010 !important
+            }
+          };
+          .list-and-search {
+            font-size: 14px;
+            border: none !important
+          }
         }
       }
     };

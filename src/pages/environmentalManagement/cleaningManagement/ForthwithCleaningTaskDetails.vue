@@ -428,7 +428,8 @@ export default {
           // 更改store中存储的任务状态
           let temporaryDetails = this.cleanTaskDetails;
           temporaryDetails['state'] = 2;
-          this.storeCleanTaskDetails(temporaryDetails)
+          this.storeCleanTaskDetails(temporaryDetails);
+          this.currentCleaner = null;
           this.$toast({
             message: '获取任务成功',
             type: 'success'
@@ -636,12 +637,12 @@ export default {
           };
           cleaningManageTaskComplete({
               id : this.cleanTaskDetails.id, // 任务id
-              workerId: !this.currentCleaner.value ? '' : this.currentCleaner.value,
-              workerName: !this.currentCleaner.value ? '' : this.currentCleaner.text,
               state: this.cleanTaskDetails.state,
               taskNumber: this.cleanTaskDetails.taskNumber, // 任务编号
               completeRemark: this.enterRemark, // 任务完成备注
               path: this.imgOnlinePathArr,
+              proId: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalId'] : this.chooseProject['value'], // 项目id
+              proName: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalName'] : this.chooseProject['text'],  // 项目名称
               workerId: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.currentCleaner.value : this.currentCleaner,
               workerName: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.extractCleanerName(this.currentCleaner.value) : this.extractCleanerName(this.currentCleaner)
             })

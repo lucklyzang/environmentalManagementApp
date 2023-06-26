@@ -127,7 +127,7 @@
                         </div>
                         <div class="one-line">
                             <span>计划执行人: </span>
-                            <span>{{ `${item.workerName}、${item.managerName}` }}</span>
+                            <span>{{ `${item.workerName}${item.workerName ? '、' : ''}${item.managerName}` }}</span>
                         </div>
                     </div>
                 </div>
