@@ -175,7 +175,7 @@
 </template>
 <script>
 import NavBar from "@/components/NavBar";
-import {updateCleaningManageTaskState, cleaningManageTaskComplete,reviewTask,fetchTask,returnTask,attendanceWorkerList} from "@/api/environmentalManagement.js";
+import {updateCleaningManageTaskState, cleaningManageTaskComplete,reviewTask,fetchTask,returnTask,attendanceAllWorkerList} from "@/api/environmentalManagement.js";
 import {getAliyunSign} from '@/api/login.js'
 import { mapGetters, mapMutations } from "vuex";
 import { IsPC, compress, getStore, base64ImgtoFile } from "@/common/js/utils";
@@ -267,7 +267,7 @@ export default {
       this.loadText = '加载中...';
       this.loadingShow = true;
       this.overlayShow = true;
-      attendanceWorkerList(this.userInfo.proIds[0])
+      attendanceAllWorkerList(this.userInfo.proIds[0])
       .then((res) => {
         this.loadText = '';
         this.loadingShow = false;
@@ -275,10 +275,10 @@ export default {
         if (res && res.data.code == 200) {
           if (res.data.data.length > 0) {
             for (let item of res.data.data) {
-              if (this.cleanerOption.filter((innerItem) => {return innerItem.value == item.workerId}).length == 0) {
+              if (this.cleanerOption.filter((innerItem) => {return innerItem.value == item.id}).length == 0) {
                 this.cleanerOption.push({
-                  text: item.workerName,
-                  value: item.workerId
+                  text: item.name,
+                  value: item.id
                 })
               }  
             };

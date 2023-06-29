@@ -293,10 +293,18 @@ export function cleanbxWorkerList(proId) {
     })
 }
 
-// 查询保洁员(保洁管理)
+// 查询当天保洁员(保洁管理)
 export function attendanceWorkerList(proId) {
     return request({
         url: `clean/attendance/forIndex/${proId}`,
+        method: 'get'
+    })
+}
+
+// 查询所有保洁员(保洁管理)
+export function attendanceAllWorkerList(proId) {
+    return request({
+        url: `clean/bxWorker/workers/${proId}`,
         method: 'get'
     })
 }
