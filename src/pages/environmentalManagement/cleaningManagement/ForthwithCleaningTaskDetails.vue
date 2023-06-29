@@ -429,7 +429,7 @@ export default {
           let temporaryDetails = this.cleanTaskDetails;
           temporaryDetails['state'] = 2;
           this.storeCleanTaskDetails(temporaryDetails);
-          this.currentCleaner = null;
+          this.currentCleaner = this.cleanerOption.filter((item) => { return item.value == this.currentCleaner}).length == 0 ? null : this.currentCleaner;
           this.$toast({
             message: '获取任务成功',
             type: 'success'
