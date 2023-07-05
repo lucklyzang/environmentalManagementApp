@@ -114,11 +114,15 @@
         <div class="category-title">
             <span>违反标准</span>
         </div>
-        <div class="select-box">
-            <van-dropdown-menu active-color="#174E97">
-                <van-dropdown-item v-model="violateStandardValue" :options="violateStandardOption" @open="standardOptionOpenEvent" />
-            </van-dropdown-menu>
-        </div>
+        <van-field-checkbox
+          placeholder="请选择违反标准"
+          v-model="standardValue"
+          :columns="standardColumns"
+          label-width="100"
+          :option="{label:'text',value:'value'}"
+          @showPopu="standardOptionOpenEvent"
+          @confirm="standardConfirm"
+      />
       </div>
       <div class="enter-remark">
         <div>
@@ -182,6 +186,7 @@
   </div>
 </template>
 <script>
+import VanFieldCheckbox from "@/components/VanFieldCheckbox";
 import NavBar from "@/components/NavBar";
 import {addForthwithCleanTask, getViolateStandardMessage,attendanceWorkerList} from "@/api/environmentalManagement.js";
 import { mapGetters, mapMutations } from "vuex";
@@ -192,10 +197,12 @@ export default {
   name: "AddTask",
   components: {
     NavBar,
+    VanFieldCheckbox
   },
   data() {
     return {
       photoBox: false,
+      selectStandard: [],
       imgIndex: '',
       isExpire: false,
       deleteInfoDialogShow: false,
@@ -210,6 +217,8 @@ export default {
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
       currentDate: new Date(),
+      standardValue: [],
+      standardColumns: [],
       categoryOption: [
         {
             text: '请选择类别',
@@ -259,11 +268,6 @@ export default {
       ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
       locationValue: '',
-      violateStandardValue: null,
-      violateStandardOption: [{
-        text: '请选择违反标准',
-        value: null
-      }],
       priorityValue: 1,
       priorityOption: [
         {
@@ -313,8 +317,7 @@ export default {
       })
     };
     this.echoLoactionMessage();
-    this.getWorkerList();
-    console.log('位置信息',this.locationMessage);
+    this.getWorkerList()
   },
 
   watch: {},
@@ -331,18 +334,31 @@ export default {
       this.showDateBox = true
     },
 
+    // 违反标准下拉框确定事件
+    standardConfirm (data1, data2) {
+      this.selectStandard = [];
+      if (data2.length > 0) {
+        for (let item of data2) {
+          this.selectStandard.push(item.text)
+        }
+      }
+    },
+
     // 违反标准下拉框打开事件
     standardOptionOpenEvent () {
       if (this.locationMessage.length == 4) {
+        this.overlayShow = true;
+        this.loadingShow = true;
+        this.loadText =  '查询中...';
         getViolateStandardMessage({id: this.locationMessage[3]['id']}).then((res) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText =  '';
           if (res && res.data.code == 200) {
-            this.violateStandardOption = [{
-              text: '请选择违反标准',
-              value: null
-            }];
+            this.standardColumns = [];
             if (res.data.data.length > 0) {
               for ( let i =0, len = res.data.data.length; i< len ; i++) {
-                this.violateStandardOption.push({
+                this.standardColumns.push({
                   text: res.data.data[i],
                   value: i+1
                 })
@@ -356,6 +372,9 @@ export default {
           }
         }).
         catch((err) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText =  '';
           this.$toast({
             message: `${err}`,
             type: 'fail'
@@ -467,7 +486,7 @@ export default {
         areaImmediateId: this.locationMessage[2]['id'], // 目的区域id
         areaImmediateName: this.locationMessage[2]['itemName'], // 目的区域名称
         spaces: [],
-        standards: this.violateStandardValue == null ? [] : [this.violateStandardOption.filter((item) => { return item.value == this.violateStandardValue })[0]['text']], // 检查标准，违反标准，数组
+        standards: this.selectStandard, // 检查标准，违反标准，数组
         planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
         planPersons: this.personNumberValue, // 任务预计所需人数
         planUseTime: this.durationValue, // 任务预计用时，单位为分钟
@@ -518,18 +537,15 @@ export default {
 						});
             this.resultImgList = [];
             this.storeLocationMessage([]);
-            this.violateStandardOption = [{
-              text: '请选择违反标准',
-              value: 0
-            }];
+            this.selectStandard = [];
             this.enterRemark = '';
             this.categoryValue = 0;
             this.sourceValue = 0;
             this.workerValue = 0;
             this.priorityValue = 1;
             this.currentDate = new Date();
-            this.violateStandardValue = 0;
             this.locationValue = '';
+            this.standardValue = [];
             this.personNumberValue = '';
             this.durationValue = '';
             this.$router.push({
@@ -875,6 +891,27 @@ export default {
                     }
                 }
             }
+        }
+      };
+      /deep/ .dh-field {
+        flex: 1;
+        padding-left: 6px !important;
+        padding-right: 0 !important;
+        .van-field__control {
+          color: #174E97 !important
+        };
+        .van-hairline--bottom::after {
+          display: none !important
+        };
+        input::placeholder {
+          color: #174E97 !important;
+        };
+        .van-cell__right-icon {
+          font-size: 21px !important;
+          color: #174E97 !important
+        };
+        .van-picker__cancel {
+          color: #a3a3a3 !important
         }
       }
     };
