@@ -46,8 +46,8 @@
         </div>
       </div>
       <div class="location" v-show="cleanTaskDetails.state != 5 && cleanTaskDetails.state != 6">
-        <span>预计时间</span>
-        <span>{{ cleanTaskDetails.planUseTime ? `${(cleanTaskDetails.planUseTime/60).toFixed(2)}小时` : '无'}}</span>
+        <span>预计耗时</span>
+        <span>{{ cleanTaskDetails.planUseTime ? `${cleanTaskDetails.planUseTime}分钟` : '无'}}</span>
       </div>
       <div class="location" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
         <span>完成时间</span>

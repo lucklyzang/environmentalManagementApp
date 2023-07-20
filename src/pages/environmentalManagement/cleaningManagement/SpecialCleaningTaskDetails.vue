@@ -39,10 +39,10 @@
           <span class="cleaner">保洁员</span>
         </div>
         <div class="location-other-right" v-if="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
-          <SelectSearch ref="cleanerOption" :isNeedSearch="false" :itemData="cleanerOption" :curData="currentCleaner" @change="currentCleanerOptionChange" />
+          <SelectSearch ref="cleanerOption" :multiple="true" :isNeedSearch="false" :itemData="cleanerOption" :curData="currentCleaner" @change="currentCleanerOptionChange" />
         </div>
         <div class="location-other-right-other" v-if="cleanTaskDetails.state != 2 && cleanTaskDetails.state != 3 && cleanTaskDetails.state != 4">
-          {{ !this.cleanTaskDetails.workerName ? '未选择' : this.cleanTaskDetails.workerName }}
+          {{ this.cleanTaskDetails.workers.length == 0 ? '未选择' : disposeWorkers(this.cleanTaskDetails.workers) }}
         </div>
       </div>
       <div class="location" v-show="cleanTaskDetails.state == 5 || cleanTaskDetails.state == 6">
@@ -195,7 +195,7 @@ export default {
       backReason: '',
       queryDialogShow: false,
       imgOnlinePathArr: [],
-      currentCleaner: null,
+      currentCleaner: [],
       cleanerOption: [{
         text: '请选择',
         value: null
@@ -215,6 +215,7 @@ export default {
   },
 
   mounted() {
+    console.log('保洁员详情',this.cleanTaskDetails);
     // 控制设备物理返回按键
     if (!IsPC()) {
       pushHistory();
@@ -262,6 +263,39 @@ export default {
       }
     },
 
+    // 提取保洁员姓名
+    disposeWorkers (workerName) {
+        if (workerName.length == 0) { return '' };
+        let temporaryArr = [];
+        for ( let item of workerName) {
+            temporaryArr.push(item.name)
+        };
+        return temporaryArr.join('、')
+    },
+
+    // 提取保洁员id
+    disposeWorkersId (workerName) {
+        if (workerName.length == 0) { return '' };
+        let temporaryArr = [];
+        for ( let item of workerName) {
+          temporaryArr.push({text: item.name,value: item.hasOwnProperty('value') ? item.value : item.id })
+        };
+        return temporaryArr
+    },
+
+    // 处理传给后台的workers
+    disposeNeedWorkers (workers) {
+      if (workers.length == 0) { return [] };
+      let temporaryArr = [];
+      for (let item of workers) {
+        temporaryArr.push({
+          id: item.value,
+          name: item.text
+        })
+      };
+      return temporaryArr
+    },
+
      // 查询保洁员
     getRegisterUser() {
       this.loadText = '加载中...';
@@ -282,8 +316,8 @@ export default {
                 })
               }  
             };
-            if (this.cleanTaskDetails.workerId) {
-              this.currentCleaner = !this.cleanTaskDetails.workerId ? null : this.cleanTaskDetails.workerId
+            if (this.cleanTaskDetails.workers) {
+              this.currentCleaner = this.cleanTaskDetails.workers.length == 0 ? [] : this.disposeWorkersId(this.cleanTaskDetails.workers);
             };
             // 回显暂存的保洁员信息(点击任务未完成时存储的)
             let temporaryStorageSpecialTaskMessage = this.storageSpecialTaskMessage.filter((item) => { return item.id == this.cleanTaskDetails.id});
@@ -428,8 +462,9 @@ export default {
         updateCleaningManageTaskState({
           id : this.cleanTaskDetails.id, // 任务id
 		      state: 3,
-          workerId: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.currentCleaner.value : this.currentCleaner,
-          workerName: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.extractCleanerName(this.currentCleaner.value) : this.extractCleanerName(this.currentCleaner)
+          workerId: '',
+          workerName: '',
+          workers: this.disposeNeedWorkers(this.currentCleaner)
         })
         .then((res) => {
           this.overlayShow = false;
@@ -483,7 +518,7 @@ export default {
           let temporaryDetails = this.cleanTaskDetails;
           temporaryDetails['state'] = 2;
           this.storeCleanTaskDetails(temporaryDetails);
-          this.currentCleaner = this.cleanerOption.filter((item) => { return item.value == this.currentCleaner}).length == 0 ? null : this.currentCleaner;
+          this.currentCleaner = this.cleanTaskDetails.workers.length == 0 ? [] : this.disposeWorkersId(this.cleanTaskDetails.workers);
           this.$toast({
             message: '获取任务成功',
             type: 'success'
@@ -508,7 +543,8 @@ export default {
 
     // 保洁员下拉框值改变事件
     currentCleanerOptionChange (val) {
-      this.currentCleaner = val
+      this.currentCleaner = val;
+      console.log('选中的保机员',this.currentCleaner);
     },
 
 
@@ -562,13 +598,13 @@ export default {
             if (temporaryIndex != -1) {
               casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['resultImgList'] = _.cloneDeep(this.resultImgList);
               casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['enterRemark'] = this.enterRemark;
-              casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['cleaner'] = this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
+              casuallyTemporaryStorageSpecialTaskMessage[temporaryIndex]['cleaner'] = this.currentCleaner
             } else {
               casuallyTemporaryStorageSpecialTaskMessage.push({
                 id: this.cleanTaskDetails.id,
                 resultImgList: _.cloneDeep(this.resultImgList),
                 enterRemark: this.enterRemark,
-                cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
+                cleaner: this.currentCleaner
               })
             }
           } else {
@@ -576,7 +612,7 @@ export default {
               id: this.cleanTaskDetails.id,
               resultImgList: _.cloneDeep(this.resultImgList),
               enterRemark: this.enterRemark,
-              cleaner: this.currentCleaner == null ? null : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value : this.currentCleaner
+              cleaner: this.currentCleaner
             })
         };
         this.changeTemporaryStorageSpecialTaskMessage(casuallyTemporaryStorageSpecialTaskMessage);
@@ -587,16 +623,9 @@ export default {
 
       // 任务完成事件
       async taskCompleteEvent () {
-        if (this.currentCleaner == null) {
+        if (this.currentCleaner.length == 0) {
           this.$toast('保洁员不能为空');
           return
-        } else {
-          if (Object.prototype.toString.call(this.currentCleaner) === '[object Object]') {
-            if (!this.currentCleaner.value) {
-              this.$toast('保洁员不能为空');
-              return
-            }
-          }
         };
         if (this.resultImgList.length == 0) {
           this.$toast('结果图片不能为空');
@@ -633,8 +662,9 @@ export default {
             path: this.imgOnlinePathArr,
             proId: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalId'] : this.chooseProject['value'], // 项目id
             proName: this.userInfo.hospitalList.length == 1 ? this.userInfo.hospitalList[0]['hospitalName'] : this.chooseProject['text'],  // 项目名称
-            workerId: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.currentCleaner.value : this.currentCleaner,
-            workerName: this.currentCleaner == null ? '' : Object.prototype.toString.call(this.currentCleaner) === '[object Object]' ? this.currentCleaner.value == null ? '' : this.extractCleanerName(this.currentCleaner.value) : this.extractCleanerName(this.currentCleaner)
+            workerId: '',
+            workerName: '',
+            workers: this.disposeNeedWorkers(this.currentCleaner)
           })
           .then((res) => {
             this.overlayShow = false;
@@ -1086,6 +1116,7 @@ export default {
       justify-content: space-between;
       align-items: center;
       .location-other-left {
+        width: 60px;
         >span {
           font-size: 14px;
           display: inline-block
@@ -1104,7 +1135,7 @@ export default {
         line-height: 24px;
         padding-left: 8px;
         box-sizing: border-box;
-        word-break: break-all;
+        width: 0;
         /deep/ .vue-dropdown {
           border: none !important;
           .cur-name {

@@ -127,7 +127,7 @@
                         </div>
                         <div class="one-line">
                             <span>计划执行人: </span>
-                            <span>{{ `${item.workerName}${item.workerName ? '、' : ''}${item.managerName}` }}</span>
+                            <span>{{ `${disposeWorkers(item.workers)}${!disposeWorkers(item.workers) ? '' : '、'}${item.managerName}` }}</span>
                         </div>
                     </div>
                 </div>
@@ -376,6 +376,16 @@ export default {
         this.getForthwithTaskList(0);
         this.getSpecialTaskList(1);
         this.getPollingTaskList()
+    },
+
+    // 处理保洁员
+    disposeWorkers (workerName) {
+        if (workerName.length == 0) { return '' };
+        let temporaryArr = [];
+        for ( let item of workerName) {
+            temporaryArr.push(item.name)
+        };
+        return temporaryArr.join('、')
     },
 
     // 处理巡检任务开始时间
