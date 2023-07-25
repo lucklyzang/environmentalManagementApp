@@ -203,7 +203,7 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.departmentShow = false;
-      getGoalAreaMessage({proId: this.userInfo.proIds[0],status: 0}).then((res) => {
+      getGoalAreaMessage({proId: this.userInfo.proIds[0],status: 1}).then((res) => {
           this.loadingShow = false;
           this.overlayShow = false;
 					if (res && res.data.code == 200) {
