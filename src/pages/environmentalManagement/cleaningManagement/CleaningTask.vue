@@ -79,7 +79,7 @@
                         </div>
                         <div class="one-line">
                             <span>计划执行人: </span>
-                            <span>{{ `${item.workerName}${item.workerName ? '、' : ''}${item.managerName}` }}</span>
+                            <span>{{ `${!item.workerName ? '' : item.workerName }${!item.workerName ? '' : '、'}${item.managerName}` }}</span>
                         </div>
                         <div class="one-line">
                             <span>问题描述: </span>
