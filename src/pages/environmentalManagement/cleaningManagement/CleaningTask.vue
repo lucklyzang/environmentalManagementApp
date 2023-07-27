@@ -53,7 +53,7 @@
                         <div class="task-list-title-right" :class="{
                             'underwayStyle' : item.state == 3, 
                             'completeStyle' : item.state == 5,
-                            'reviewStyle' : item.state == 4,
+                            'reviewStyle' : item.state == 4 || item.state == 8,
                             'haveReviewStyle' : item.state == 6
                             }"
                             >
@@ -98,7 +98,7 @@
                         <div class="task-list-title-right" :class="{
                                 'underwayStyle' : item.state == 3, 
                                 'completeStyle' : item.state == 5,
-                                'reviewStyle' : item.state == 4,
+                                'reviewStyle' : item.state == 4 || item.state == 8,
                                 'haveReviewStyle' : item.state == 6
                             }">
                             {{ stausTransfer(item.state) }}
@@ -200,9 +200,10 @@ export default {
         { text: '全部状态', value: -1 },
         { text: '未开始', value: 2 },
         { text: '进行中', value: 3 },
-        { text: '复核中', value: 4 },
+        { text: '待复核', value: 4 },
         { text: '已完成', value: 5},
-        { text: '已复核', value: 6 }
+        { text: '已复核', value: 6 },
+        { text: '复核中', value: 8 }
       ],
       forthwithTaskList: [],
       specialTaskList: [],
@@ -243,9 +244,10 @@ export default {
             { text: '全部状态', value: -1 },
             { text: '未开始', value: 2 },
             { text: '进行中', value: 3 },
-            { text: '复核中', value: 4 },
+            { text: '待复核', value: 4 },
             { text: '已完成', value: 5},
-            { text: '已复核', value: 6 }
+            { text: '已复核', value: 6 },
+            { text: '复核中', value: 8 }
         ]
     } else if (this.itemNameIndex == 3) {
         this.selectOption = [
@@ -452,13 +454,16 @@ export default {
                 return '进行中'
                 break;
             case 4:
-                return '复核中'
+                return '待复核'
                 break;
             case 5:
                 return '已完成'
                 break;
             case 6:
                 return '已复核'
+                break
+            case 8:
+                return '复核中'
                 break
         } 
     },
@@ -764,7 +769,8 @@ export default {
                 { text: '全部状态', value: -1 },
                 { text: '未开始', value: 2 },
                 { text: '进行中', value: 3 },
-                { text: '复核中', value: 4 },
+                { text: '待复核', value: 4 },
+                { text: '复核中', value: 8 },
                 { text: '已完成', value: 5},
                 { text: '已复核', value: 6 }
             ]

@@ -11,7 +11,7 @@
         <span :class="{
             'underwayStyle' : cleanTaskDetails.state == 3, 
             'completeStyle' : cleanTaskDetails.state == 5,
-            'reviewStyle' : cleanTaskDetails.state == 4,
+            'reviewStyle' : cleanTaskDetails.state == 4 || cleanTaskDetails.state == 8,
             'haveReviewStyle' : cleanTaskDetails.state == 6
           }">
             {{stausTransfer(cleanTaskDetails.state)}}
@@ -35,13 +35,13 @@
       </div>
       <div class="location-other">
         <div class="location-other-left">
-          <span v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4" class="sign">*</span>
+          <span v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 8" class="sign">*</span>
           <span class="cleaner">保洁员</span>
         </div>
-        <div class="location-other-right" v-if="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
+        <div class="location-other-right" v-if="cleanTaskDetails.state == 2 || cleanTaskDetails.state == 3 || cleanTaskDetails.state == 8">
           <SelectSearch ref="cleanerOption" :multiple="true" :isNeedSearch="false" :itemData="cleanerOption" :curData="currentCleaner" @change="currentCleanerOptionChange" />
         </div>
-        <div class="location-other-right-other" v-if="cleanTaskDetails.state != 2 && cleanTaskDetails.state != 3 && cleanTaskDetails.state != 4">
+        <div class="location-other-right-other" v-if="cleanTaskDetails.state != 2 && cleanTaskDetails.state != 3 && cleanTaskDetails.state != 8">
           {{ this.cleanTaskDetails.workers.length == 0 ? '未选择' : disposeWorkers(this.cleanTaskDetails.workers) }}
         </div>
       </div>
@@ -75,7 +75,7 @@
           {{ cleanTaskDetails.completeRemark }}
         </div>
       </div>
-      <div class="result-picture" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
+      <div class="result-picture" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 8">
         <div>
           <span>*</span>
           结果图片
@@ -95,7 +95,7 @@
 					</div>
         </div>
       </div>
-      <div class="enter-remark" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
+      <div class="enter-remark" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 8">
         <div>
           <span>*</span>
           备注
@@ -114,11 +114,14 @@
     <div class="task-start" @click="taskStartEvent" v-show="cleanTaskDetails.state == 2">
       任务开始
     </div>
+    <div class="task-start" @click="reCheckStartEvent" v-show="cleanTaskDetails.state == 4">
+      复核开始
+    </div>
     <div class="task-operation-box-one" v-show="cleanTaskDetails.state == 1">
       <div class="task-no-complete" @click="getTaskEvent">获取任务</div>
       <div class="task-complete" @click="backTaskEvent">退回</div>
     </div>
-    <div class="task-operation-box" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 4">
+    <div class="task-operation-box" v-show="cleanTaskDetails.state == 3 || cleanTaskDetails.state == 8">
       <div class="task-no-complete" @click="taskNoCompleteEvent">任务未完成</div>
       <div class="task-complete" @click="taskCompleteEvent">任务完成</div>
     </div>
@@ -215,7 +218,6 @@ export default {
   },
 
   mounted() {
-    console.log('保洁员详情',this.cleanTaskDetails);
     // 控制设备物理返回按键
     if (!IsPC()) {
       pushHistory();
@@ -229,7 +231,7 @@ export default {
     this.echoImage();
     // 查询保洁员
     this.getRegisterUser();
-    if (this.cleanTaskDetails.state == 3 || this.cleanTaskDetails.state == 4) {
+    if (this.cleanTaskDetails.state == 3 || this.cleanTaskDetails.state == 8) {
       this.echoStorage()
     }
   },
@@ -351,13 +353,16 @@ export default {
             return '进行中'
             break;
         case 4:
-            return '复核中'
+            return '待复核'
             break;
         case 5:
             return '已完成'
             break;
         case 6:
             return '已复核'
+            break
+         case 8:
+            return '复核中'
             break
       } 
     },
@@ -493,6 +498,47 @@ export default {
           })
         })
       },
+
+       // 复核开始事件
+      reCheckStartEvent () {
+        this.overlayShow = true;
+        this.loadingShow = true;
+        this.loadText ='复核开始中...';
+        updateCleaningManageTaskState({
+          id : this.cleanTaskDetails.id, // 任务id
+		      state: 8,
+          workerId: '',
+          workerName: '',
+          workers: this.disposeNeedWorkers(this.currentCleaner)
+        })
+        .then((res) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText = '';
+          if (res && res.data.code == 200) {
+            // 更改store中存储的任务状态
+            let temporaryDetails = this.cleanTaskDetails;
+            temporaryDetails['state'] = 8;
+            temporaryDetails['startTime'] = this.getNowFormatDate(new Date());
+            this.storeCleanTaskDetails(temporaryDetails)
+          } else {
+            this.$toast({
+              message: `${res.data.msg}`,
+              type: 'fail'
+            })
+          }
+        })
+        .catch((err) => {
+          this.overlayShow = false;
+          this.loadingShow = false;
+          this.loadText = '';
+          this.$toast({
+            message: `${err}`,
+            type: 'fail'
+          })
+        })
+      },
+      
 
     // 复合质疑弹框事件
     reCheckDialogEvent () {

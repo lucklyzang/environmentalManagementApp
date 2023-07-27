@@ -80,7 +80,7 @@
             </van-dropdown-menu>
         </div>
       </div>
-      <div class="category-box completeDate-box">
+      <!-- <div class="category-box completeDate-box">
         <div class="category-title">
             <span>*</span>
             <span>预计完成时间</span>
@@ -91,7 +91,7 @@
             </span>
             <van-icon name="arrow" color="#174E97" size="20" />
         </div>
-      </div>
+      </div> -->
       <div class="category-box person-number-box category-box-other">
         <div class="category-title">
             <span>预计人数</span>
@@ -487,7 +487,7 @@ export default {
         areaImmediateName: this.locationMessage[2]['itemName'], // 目的区域名称
         spaces: [],
         standards: this.selectStandard, // 检查标准，违反标准，数组
-        planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
+        // planFinishTime: this.getNowFormatDate(this.currentDate), // 任务预计完成时间
         planPersons: this.personNumberValue, // 任务预计所需人数
         planUseTime: this.durationValue, // 任务预计用时，单位为分钟
         taskRemark: this.enterRemark, // 任务备注信息
