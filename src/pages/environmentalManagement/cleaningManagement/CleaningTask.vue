@@ -78,7 +78,7 @@
                             <span>{{ item.finishTime }}</span>
                         </div>
                         <div class="one-line">
-                            <span>计划执行人: </span>
+                            <span>保洁主管: </span>
                             <span>{{ `${!item.workerName ? '' : item.workerName }${!item.workerName ? '' : '、'}${item.managerName}` }}</span>
                         </div>
                         <div class="one-line">
@@ -126,7 +126,7 @@
                             <span>{{ item.finishTime }}</span>
                         </div>
                         <div class="one-line">
-                            <span>计划执行人: </span>
+                            <span>保洁主管: </span>
                             <span>{{ `${disposeWorkers(item.workers)}${!disposeWorkers(item.workers) ? '' : '、'}${item.managerName}` }}</span>
                         </div>
                     </div>
