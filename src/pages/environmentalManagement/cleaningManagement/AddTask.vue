@@ -267,7 +267,7 @@ export default {
         }
       ],
       calendarPng: require("@/common/images/home/calendar-attendance.png"),
-      locationValue: '',
+      locationValue: '请选择位置',
       priorityValue: 1,
       priorityOption: [
         {
@@ -387,6 +387,8 @@ export default {
     echoLoactionMessage () {
       if (this.locationMessage.length == 4) {
         this.locationValue = `${this.locationMessage[0]['structName']}-${this.locationMessage[1]['departmentName']}-${this.locationMessage[2]['itemName']}-${this.locationMessage[3]['name']}`
+      } else {
+        this.locationValue = '请选择位置';
       }
     },
 
@@ -544,7 +546,7 @@ export default {
             this.workerValue = 0;
             this.priorityValue = 1;
             this.currentDate = new Date();
-            this.locationValue = '';
+            this.locationValue = '请选择位置';
             this.standardValue = [];
             this.personNumberValue = '';
             this.durationValue = '';
