@@ -30,7 +30,7 @@
         <span>{{cleanTaskDetails.startTime }}</span>
       </div>
       <div class="location">
-        <span>检查主管</span>
+        <span>保洁主管</span>
         <span>{{ cleanTaskDetails.managerName }}</span>
       </div>
       <div class="location-other">
