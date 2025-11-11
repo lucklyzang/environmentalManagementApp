@@ -277,7 +277,6 @@ export default {
       temporaryMessage['specialTaskShow'] = this.specialTaskShow;
       temporaryMessage['pollingTaskShow'] = this.pollingTaskShow;
       this.storeCurrentCleanTaskName(temporaryMessage);
-      this.storeCurrentCleanTaskDateVlue(this.dateValue);
       this.$router.push({path: '/cleaningTask'})
     },
 
